@@ -142,6 +142,12 @@ private val tailrecLoweringPhase = makeWasmModulePhase(
     description = "Replace `tailrec` call sites with equivalent loop"
 )
 
+private val wasmStringSwitchOptimizerLowering = makeWasmModulePhase(
+    ::WasmStringSwitchOptimizerLowering,
+    name = "!!!",
+    description = "!!!"
+)
+
 private val complexExternalDeclarationsToTopLevelFunctionsLowering = makeWasmModulePhase(
     ::ComplexExternalDeclarationsToTopLevelFunctionsLowering,
     name = "ComplexExternalDeclarationsToTopLevelFunctionsLowering",
@@ -589,6 +595,8 @@ val wasmPhases = NamedCompilerPhase(
             primaryConstructorLoweringPhase then
             delegateToPrimaryConstructorLoweringPhase then
             // Common prefix ends
+
+            wasmStringSwitchOptimizerLowering then
 
             complexExternalDeclarationsToTopLevelFunctionsLowering then
             complexExternalDeclarationsUsagesLowering then
