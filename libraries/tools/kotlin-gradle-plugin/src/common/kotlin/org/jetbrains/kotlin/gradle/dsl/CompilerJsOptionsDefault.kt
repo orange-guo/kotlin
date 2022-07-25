@@ -12,14 +12,14 @@ internal class CompilerJsOptionsDefault @javax.inject.Inject constructor(
     override val friendModulesDisabled: org.gradle.api.provider.Property<kotlin.Boolean> =
         objectFactory.property(kotlin.Boolean::class.java).convention(false)
 
-    override val main: org.gradle.api.provider.Property<kotlin.String> =
-        objectFactory.property(kotlin.String::class.java).convention("call")
+    override val main: org.gradle.api.provider.Property<org.jetbrains.kotlin.gradle.dsl.JsMainFunctionExecutionMode> =
+        objectFactory.property(org.jetbrains.kotlin.gradle.dsl.JsMainFunctionExecutionMode::class.java).convention(org.jetbrains.kotlin.gradle.dsl.JsMainFunctionExecutionMode.CALL)
 
     override val metaInfo: org.gradle.api.provider.Property<kotlin.Boolean> =
         objectFactory.property(kotlin.Boolean::class.java).convention(true)
 
-    override val moduleKind: org.gradle.api.provider.Property<kotlin.String> =
-        objectFactory.property(kotlin.String::class.java).convention("plain")
+    override val moduleKind: org.gradle.api.provider.Property<org.jetbrains.kotlin.gradle.dsl.JsModuleKind> =
+        objectFactory.property(org.jetbrains.kotlin.gradle.dsl.JsModuleKind::class.java).convention(org.jetbrains.kotlin.gradle.dsl.JsModuleKind.MODULE_PLAIN)
 
     override val noStdlib: org.gradle.api.provider.Property<kotlin.Boolean> =
         objectFactory.property(kotlin.Boolean::class.java).convention(true)
@@ -31,8 +31,8 @@ internal class CompilerJsOptionsDefault @javax.inject.Inject constructor(
     override val sourceMap: org.gradle.api.provider.Property<kotlin.Boolean> =
         objectFactory.property(kotlin.Boolean::class.java).convention(false)
 
-    override val sourceMapEmbedSources: org.gradle.api.provider.Property<kotlin.String> =
-        objectFactory.property(kotlin.String::class.java)
+    override val sourceMapEmbedSources: org.gradle.api.provider.Property<org.jetbrains.kotlin.gradle.dsl.JsSourceMapEmbedMode> =
+        objectFactory.property(org.jetbrains.kotlin.gradle.dsl.JsSourceMapEmbedMode::class.java)
 
     override val sourceMapPrefix: org.gradle.api.provider.Property<kotlin.String> =
         objectFactory.property(kotlin.String::class.java)
@@ -46,13 +46,13 @@ internal class CompilerJsOptionsDefault @javax.inject.Inject constructor(
     internal fun toCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.K2JSCompilerArguments) {
         super.toCompilerArguments(args)
         args.friendModulesDisabled = friendModulesDisabled.get()
-        args.main = main.get()
+        args.main = main.get().mode
         args.metaInfo = metaInfo.get()
-        args.moduleKind = moduleKind.get()
+        args.moduleKind = moduleKind.get().kind
         args.noStdlib = noStdlib.get()
         args.outputFile = outputFile.orNull
         args.sourceMap = sourceMap.get()
-        args.sourceMapEmbedSources = sourceMapEmbedSources.orNull
+        args.sourceMapEmbedSources = sourceMapEmbedSources.orNull?.mode
         args.sourceMapPrefix = sourceMapPrefix.orNull
         args.target = target.get()
         args.typedArrays = typedArrays.get()
@@ -61,9 +61,9 @@ internal class CompilerJsOptionsDefault @javax.inject.Inject constructor(
     internal fun fillDefaultValues(args: org.jetbrains.kotlin.cli.common.arguments.K2JSCompilerArguments) {
         super.fillDefaultValues(args)
         args.friendModulesDisabled = false
-        args.main = "call"
+        args.main = org.jetbrains.kotlin.gradle.dsl.JsMainFunctionExecutionMode.CALL.mode
         args.metaInfo = true
-        args.moduleKind = "plain"
+        args.moduleKind = org.jetbrains.kotlin.gradle.dsl.JsModuleKind.MODULE_PLAIN.kind
         args.noStdlib = true
         args.outputFile = null
         args.sourceMap = false
