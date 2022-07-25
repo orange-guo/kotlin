@@ -9,19 +9,19 @@ internal open class CompilerCommonOptionsDefault @javax.inject.Inject constructo
     objectFactory: org.gradle.api.model.ObjectFactory
 ) : org.jetbrains.kotlin.gradle.dsl.CompilerCommonToolOptionsDefault(objectFactory), org.jetbrains.kotlin.gradle.dsl.CompilerCommonOptions {
 
-    override val apiVersion: org.gradle.api.provider.Property<kotlin.String> =
-        objectFactory.property(kotlin.String::class.java)
+    override val apiVersion: org.gradle.api.provider.Property<org.jetbrains.kotlin.gradle.dsl.KotlinVersion> =
+        objectFactory.property(org.jetbrains.kotlin.gradle.dsl.KotlinVersion::class.java)
 
-    override val languageVersion: org.gradle.api.provider.Property<kotlin.String> =
-        objectFactory.property(kotlin.String::class.java)
+    override val languageVersion: org.gradle.api.provider.Property<org.jetbrains.kotlin.gradle.dsl.KotlinVersion> =
+        objectFactory.property(org.jetbrains.kotlin.gradle.dsl.KotlinVersion::class.java)
 
     override val useK2: org.gradle.api.provider.Property<kotlin.Boolean> =
         objectFactory.property(kotlin.Boolean::class.java).convention(false)
 
     internal fun toCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.CommonCompilerArguments) {
         super.toCompilerArguments(args)
-        args.apiVersion = apiVersion.orNull
-        args.languageVersion = languageVersion.orNull
+        args.apiVersion = apiVersion.orNull?.version
+        args.languageVersion = languageVersion.orNull?.version
         args.useK2 = useK2.get()
     }
 

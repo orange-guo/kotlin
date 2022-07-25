@@ -17,14 +17,18 @@ interface KotlinJvmOptions : org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
         get() = options.javaParameters.get()
         set(value) = options.javaParameters.set(value)
 
+    private val kotlin.String?.jvmTargetCompilerOption get() = if (this != null) org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(this) else null
+
+    private val org.jetbrains.kotlin.gradle.dsl.JvmTarget?.jvmTargetKotlinOption get() = this?.target
+
     /**
      * Target version of the generated JVM bytecode (1.8, 9, 10, ..., 18), default is 1.8
      * Possible values: "1.8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18"
      * Default value: null
      */
     var jvmTarget: kotlin.String?
-        get() = options.jvmTarget.orNull
-        set(value) = options.jvmTarget.set(value)
+        get() = options.jvmTarget.orNull.jvmTargetKotlinOption
+        set(value) = options.jvmTarget.set(value.jvmTargetCompilerOption)
 
     /**
      * Name of the generated .kotlin_module file

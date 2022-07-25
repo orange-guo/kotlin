@@ -21,13 +21,11 @@ import kotlin.reflect.full.withNullability
 @Suppress("unused")
 interface AdditionalGradleProperties {
     @GradleOption(
-        value = EmptyList::class,
+        value = DefaultValues.EmptyStringListDefault::class,
         gradleInputType = GradleInputTypes.INPUT
     )
     @Argument(value = "", description = "A list of additional compiler arguments")
     var freeCompilerArgs: List<String>
-
-    object EmptyList : DefaultValues("emptyList()")
 }
 
 private data class GeneratedOptions(
@@ -497,8 +495,6 @@ private fun Printer.generateDeprecatedInterface(
         println("${if (parentType != null) "override " else ""}val options: $compilerOptionType")
         properties.forEach {
             println()
-            generateDoc(it)
-            generateOptionDeprecation(it)
             generatePropertyGetterAndSetter(it)
         }
     }
@@ -534,9 +530,11 @@ private fun Printer.generateImpl(
         withIndent {
             if (parentImplFqName != null) println("super.toCompilerArguments(args)")
             for (property in properties) {
+                val defaultValue = property.gradleValues
                 if (property.name != "freeCompilerArgs") {
                     val getter = if (property.gradleReturnType.endsWith("?")) ".orNull" else ".get()"
-                    println("args.${property.name} = ${property.name}$getter")
+                    val toArg = defaultValue.toArgumentConverter?.substringAfter("this") ?: ""
+                    println("args.${property.name} = ${property.name}$getter$toArg")
                 } else {
                     println("args.freeArgs += ${property.name}.get()")
                 }
@@ -553,7 +551,12 @@ private fun Printer.generateImpl(
             properties
                 .filter { it.name != "freeCompilerArgs" }
                 .forEach {
-                    println("args.${it.name} = ${it.gradleDefaultValue}")
+                    val defaultValue = it.gradleValues
+                    var value = defaultValue.defaultValue
+                    if (value != "null" && defaultValue.toArgumentConverter != null) {
+                       value = "$value${defaultValue.toArgumentConverter!!.substringAfter("this")}"
+                    }
+                    println("args.${it.name} = $value")
                 }
 
             addAdditionalJvmArgs(type)
@@ -642,13 +645,38 @@ private fun Printer.generatePropertyGetterAndSetter(
     property: KProperty1<*, *>,
     modifiers: String = "",
 ) {
+    val defaultValue = property.gradleValues
     val returnType = property.gradleReturnType
 
+    if (defaultValue.type != defaultValue.kotlinOptionsType) {
+        assert(defaultValue.fromKotlinOptionConverterProp != null)
+        assert(defaultValue.toKotlinOptionConverterProp != null)
+    }
+
+    if (defaultValue.fromKotlinOptionConverterProp != null) {
+        println("private val ${defaultValue.kotlinOptionsType}.${property.name}CompilerOption get() = ${defaultValue.fromKotlinOptionConverterProp}")
+        println()
+        println("private val ${defaultValue.type}.${property.name}KotlinOption get() = ${defaultValue.toKotlinOptionConverterProp}")
+        println()
+    }
+
+    generateDoc(property)
+    generateOptionDeprecation(property)
     println("${modifiers.appendWhitespaceIfNotBlank}var ${property.name}: $returnType")
-    val getter = if (returnType.endsWith("?")) ".orNull" else ".get()"
+    val propGetter = if (returnType.endsWith("?")) ".orNull" else ".get()"
+    val getter = if (defaultValue.fromKotlinOptionConverterProp != null) {
+        "$propGetter.${property.name}KotlinOption"
+    } else {
+        propGetter
+    }
+    val setter = if (defaultValue.toKotlinOptionConverterProp != null) {
+        ".set(value.${property.name}CompilerOption)"
+    } else {
+        ".set(value)"
+    }
     withIndent {
         println("get() = options.${property.name}$getter")
-        println("set(value) = options.${property.name}.set(value)")
+        println("set(value) = options.${property.name}$setter")
     }
 }
 
@@ -718,6 +746,7 @@ private val KProperty1<*, *>.gradleReturnType: String
 
 private val KProperty1<*, *>.gradleLazyReturnType: String
     get() {
+        val returnType = gradleValues.type
         val classifier = returnType.classifier
         return when {
             classifier is KClass<*> && classifier == List::class ->
@@ -732,6 +761,7 @@ private val KProperty1<*, *>.gradleLazyReturnType: String
 
 private val KProperty1<*, *>.gradleLazyReturnTypeInstantiator: String
     get() {
+        val returnType = gradleValues.type
         val classifier = returnType.classifier
         return when {
             classifier is KClass<*> && classifier == List::class ->
