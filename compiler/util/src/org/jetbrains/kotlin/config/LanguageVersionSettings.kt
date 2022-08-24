@@ -224,7 +224,6 @@ enum class LanguageFeature(
     ProhibitSimplificationOfNonTrivialConstBooleanExpressions(KOTLIN_1_7),
     SafeCallsAreAlwaysNullable(KOTLIN_1_7),
     JvmPermittedSubclassesAttributeForSealed(KOTLIN_1_7),
-    ProperTypeInferenceConstraintsProcessing(KOTLIN_1_7, kind = BUG_FIX),
     ForbidExposingTypesInPrimaryConstructorProperties(KOTLIN_1_7, kind = BUG_FIX),
     PartiallySpecifiedTypeArguments(KOTLIN_1_7),
     EliminateAmbiguitiesWithExternalTypeParameters(KOTLIN_1_7),
@@ -308,6 +307,7 @@ enum class LanguageFeature(
     ValueClasses(sinceVersion = null, defaultState = State.DISABLED, kind = UNSTABLE_FEATURE),
     JavaSamConversionEqualsHashCode(sinceVersion = null, defaultState = State.DISABLED, kind = UNSTABLE_FEATURE),
     UnitConversionsOnArbitraryExpressions(sinceVersion = null, defaultState = State.DISABLED),
+    ProperTypeInferenceConstraintsProcessing(sinceVersion = null, kind = BUG_FIX, defaultState = State.DISABLED),
     ;
 
     val presentableName: String

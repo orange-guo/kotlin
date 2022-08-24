@@ -309,6 +309,8 @@ interface TypeSystemInferenceExtensionContext : TypeSystemContext, TypeSystemBui
      */
     fun useRefinedBoundsForTypeVariableInFlexiblePosition(): Boolean
 
+    fun forceProperConstraintProcessing(): Boolean
+
     fun createCapturedStarProjectionForSelfType(
         typeVariable: TypeVariableTypeConstructorMarker,
         typesForRecursiveTypeParameters: List<KotlinTypeMarker>,
