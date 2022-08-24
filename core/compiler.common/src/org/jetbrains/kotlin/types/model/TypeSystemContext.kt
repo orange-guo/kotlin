@@ -290,6 +290,8 @@ interface TypeSystemInferenceExtensionContext : TypeSystemContext, TypeSystemBui
      */
     fun SimpleTypeMarker.createConstraintPartForLowerBoundAndFlexibleTypeVariable(): KotlinTypeMarker
 
+    fun forceProperConstraintProcessing(): Boolean
+
     fun createCapturedStarProjectionForSelfType(
         typeVariable: TypeVariableTypeConstructorMarker,
         typesForRecursiveTypeParameters: List<KotlinTypeMarker>,

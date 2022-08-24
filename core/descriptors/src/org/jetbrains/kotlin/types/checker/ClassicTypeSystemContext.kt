@@ -865,6 +865,8 @@ interface ClassicTypeSystemContext : TypeSystemInferenceExtensionContext, TypeSy
             createFlexibleType(this, this.withNullability(true))
         }
 
+    override fun forceProperConstraintProcessing(): Boolean = false
+
     override fun substitutionSupertypePolicy(type: SimpleTypeMarker): TypeCheckerState.SupertypesPolicy {
         require(type is SimpleType, type::errorMessage)
         val substitutor = TypeConstructorSubstitution.create(type).buildSubstitutor()
