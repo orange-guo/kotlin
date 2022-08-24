@@ -10,13 +10,17 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.utils.Printer
 import java.io.File
 
-internal fun generateApiVersion(
+/**
+ * ApiVersion and LanguageVersion are almost the same in the compiler api, so Gradle DSL options
+ * exposes KotlinVersion that covers both of them.
+ */
+internal fun generateKotlinVersion(
     apiDir: File,
     filePrinter: (targetFile: File, Printer.() -> Unit) -> Unit
 ) {
-    val apiVersionFqName = FqName("org.jetbrains.kotlin.gradle.dsl.ApiVersion")
-    filePrinter(file(apiDir, apiVersionFqName)) {
-        generateDeclaration("enum class", apiVersionFqName, afterType = "(val version: String)") {
+    val kotlinVersionFqName = FqName("org.jetbrains.kotlin.gradle.dsl.KotlinVersion")
+    filePrinter(file(apiDir, kotlinVersionFqName)) {
+        generateDeclaration("enum class", kotlinVersionFqName, afterType = "(val version: String)") {
             val languageVersions = LanguageVersion.values()
 
             val lastIndex = languageVersions.size - 1
@@ -28,9 +32,9 @@ internal fun generateApiVersion(
             println()
             println("companion object {")
             withIndent {
-                println("fun fromVersion(version: String): ApiVersion =")
-                println("    ApiVersion.values().firstOrNull { it.version == version }")
-                println("        ?: throw IllegalArgumentException(\"Unknown Kotlin api version: ${'$'}version\")")
+                println("fun fromVersion(version: String): KotlinVersion =")
+                println("    KotlinVersion.values().firstOrNull { it.version == version }")
+                println("        ?: throw IllegalArgumentException(\"Unknown Kotlin version: ${'$'}version\")")
             }
             println("}")
         }

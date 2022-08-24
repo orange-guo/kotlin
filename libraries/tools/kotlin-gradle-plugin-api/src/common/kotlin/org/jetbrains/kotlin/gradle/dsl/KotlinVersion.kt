@@ -3,7 +3,7 @@
 package org.jetbrains.kotlin.gradle.dsl
 
 @Suppress("DEPRECATION")
-enum class ApiVersion (val version: String) {
+enum class KotlinVersion (val version: String) {
     KOTLIN_1_0("1.0"),
     KOTLIN_1_1("1.1"),
     KOTLIN_1_2("1.2"),
@@ -16,8 +16,8 @@ enum class ApiVersion (val version: String) {
     KOTLIN_1_9("1.9");
 
     companion object {
-        fun fromVersion(version: String): ApiVersion =
-            ApiVersion.values().firstOrNull { it.version == version }
-                ?: throw IllegalArgumentException("Unknown Kotlin api version: $version")
+        fun fromVersion(version: String): KotlinVersion =
+            KotlinVersion.values().firstOrNull { it.version == version }
+                ?: throw IllegalArgumentException("Unknown Kotlin version: $version")
     }
 }
