@@ -575,6 +575,8 @@ interface ConeInferenceContext : TypeSystemInferenceExtensionContext, ConeTypeCo
 
     override fun useRefinedBoundsForTypeVariableInFlexiblePosition(): Boolean = true
 
+    override fun forceProperConstraintProcessing(): Boolean  = true
+
     override fun createSubstitutorForSuperTypes(baseType: KotlinTypeMarker): TypeSubstitutorMarker? =
         if (baseType is ConeLookupTagBasedType) createSubstitutionForSupertype(baseType, session) else null
 }

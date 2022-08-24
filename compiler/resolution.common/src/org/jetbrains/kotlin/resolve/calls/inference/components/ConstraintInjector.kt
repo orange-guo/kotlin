@@ -128,11 +128,8 @@ class ConstraintInjector(
         position: IncorporationConstraintPosition,
         missedConstraints: List<Pair<TypeVariableMarker, Constraint>>
     ) {
-        val properConstraintsProcessingEnabled =
-            languageVersionSettings.supportsFeature(LanguageFeature.ProperTypeInferenceConstraintsProcessing)
-
         // If proper constraints processing is enabled, then we don't have missed constraints
-        if (properConstraintsProcessingEnabled) return
+        if (isProperConstraintProcessingEnabled(c)) return
 
         val typeCheckerState = TypeCheckerStateForConstraintInjector(c, position)
         for ((variable, constraint) in missedConstraints) {
@@ -140,6 +137,9 @@ class ConstraintInjector(
         }
         processConstraints(c, typeCheckerState, skipProperEqualityConstraints = false)
     }
+
+    private fun isProperConstraintProcessingEnabled(c: Context): Boolean =
+        c.forceProperConstraintProcessing() || languageVersionSettings.supportsFeature(LanguageFeature.ProperTypeInferenceConstraintsProcessing)
 
     fun processForkConstraints(
         c: Context,
@@ -177,8 +177,9 @@ class ConstraintInjector(
         c: Context,
         skipProperEqualityConstraints: Boolean
     ): MutableList<Pair<TypeVariableMarker, Constraint>>? {
+        c.useRefinedBoundsForTypeVariableInFlexiblePosition()
         val properConstraintsProcessingEnabled =
-            languageVersionSettings.supportsFeature(LanguageFeature.ProperTypeInferenceConstraintsProcessing)
+            isProperConstraintProcessingEnabled(c)
 
         while (typeCheckerState.hasConstraintsToProcess()) {
             processGivenConstraints(c, typeCheckerState, typeCheckerState.extractAllConstraints()!!)

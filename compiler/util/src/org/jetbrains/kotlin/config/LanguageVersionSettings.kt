@@ -303,6 +303,7 @@ enum class LanguageFeature(
     ValueClasses(sinceVersion = null, defaultState = State.DISABLED, kind = UNSTABLE_FEATURE),
     JavaSamConversionEqualsHashCode(sinceVersion = null, defaultState = State.DISABLED, kind = UNSTABLE_FEATURE),
     UnitConversionsOnArbitraryExpressions(sinceVersion = null, defaultState = State.DISABLED),
+    ProperTypeInferenceConstraintsProcessing(sinceVersion = null, kind = BUG_FIX, defaultState = State.DISABLED),
     ;
 
     val presentableName: String
