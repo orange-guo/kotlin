@@ -11,7 +11,6 @@ import com.sun.management.OperatingSystemMXBean
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.file.FileSystemOperations
 import org.gradle.api.internal.tasks.testing.filter.DefaultTestFilter
 import org.gradle.api.tasks.TaskProvider
@@ -108,7 +107,7 @@ fun Project.projectTest(
     body: Test.() -> Unit = {}
 ): TaskProvider<Test> {
     val shouldInstrument = project.providers.gradleProperty("kotlin.test.instrumentation.disable")
-        .forUseAtConfigurationTime().orNull?.toBoolean() != true
+        .orNull?.toBoolean() != true
     if (shouldInstrument) {
         evaluationDependsOn(":test-instrumenter")
     }
@@ -243,7 +242,7 @@ fun Project.projectTest(
         if (parallel && jUnitMode != JUnitMode.JUnit5) {
             val forks = (totalMaxMemoryForTestsMb / memoryPerTestProcessMb).coerceAtMost(16)
             maxParallelForks =
-                project.providers.gradleProperty("kotlin.test.maxParallelForks").forUseAtConfigurationTime().orNull?.toInt()
+                project.providers.gradleProperty("kotlin.test.maxParallelForks").orNull?.toInt()
                     ?: forks.coerceIn(1, Runtime.getRuntime().availableProcessors())
         }
     }.apply { configure(body) }
@@ -282,28 +281,24 @@ object TaskUtils {
 }
 
 private fun Task.useAndroidConfiguration(systemPropertyName: String, configName: String) {
-    val configuration = with(project) {
-        configurations.getOrCreate(configName)
-            .also {
-                if (it.allDependencies.matching { dep ->
-                        dep is ProjectDependency &&
-                                dep.targetConfiguration == configName &&
-                                dep.dependencyProject.path == ":dependencies:android-sdk"
-                    }.count() == 0) {
-                    dependencies.add(
-                        configName,
-                        dependencies.project(":dependencies:android-sdk", configuration = configName)
-                    )
+    val configuration = project.configurations.findByName(configName)
+        ?: project.configurations.create(configName) {
+            dependencies.addLater(
+                project.provider {
+                    project.dependencies.project(":dependencies:android-sdk", configuration = configName)
                 }
-            }
-    }
+            )
+        }
 
     dependsOn(configuration)
 
+    val configurationOutput = project.providers.provider {
+        configuration.singleFile.canonicalPath
+    }
+
     if (this is Test) {
-        val androidFilePath = configuration.singleFile.canonicalPath
         doFirst {
-            systemProperty(systemPropertyName, androidFilePath)
+            systemProperty(systemPropertyName, configurationOutput.get())
         }
     }
 }

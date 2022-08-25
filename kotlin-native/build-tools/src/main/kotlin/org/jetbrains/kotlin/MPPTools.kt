@@ -7,14 +7,11 @@
 
 package org.jetbrains.kotlin
 
-import groovy.lang.Closure
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskState
-import org.gradle.api.execution.TaskExecutionListener
+import org.gradle.api.execution.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinTargetPreset
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.report.*
 import org.jetbrains.report.json.*
@@ -242,6 +239,7 @@ fun toCompileBenchmark(metricDescription: String, status: String, programName: S
 }
 
 // Class time tracker for all tasks.
+@Suppress("DEPRECATION")
 class TaskTimerListener: TaskExecutionListener {
     companion object {
         internal val timerListeners = mutableMapOf<String, TaskTimerListener>()
