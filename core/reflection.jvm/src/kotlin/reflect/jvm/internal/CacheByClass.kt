@@ -35,6 +35,7 @@ internal fun <V : Any> createCache(compute: (Class<*>) -> V): CacheByClass<V> {
     return if (useClassValue) ClassValueCache(compute) else ConcurrentHashMapCache(compute)
 }
 
+@kotlin.reflect.jvm.internal.SuppressAnimalSniffer
 private class ClassValueCache<V>(private val compute: (Class<*>) -> V) : CacheByClass<V>() {
 
     @Volatile
