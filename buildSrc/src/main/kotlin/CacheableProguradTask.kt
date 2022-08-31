@@ -53,25 +53,25 @@ open class CacheableProguardTask : proguard.gradle.ProGuardTask() {
         get() = configuration.printConfiguration?.takeIf { it.path.isNotEmpty() }
 
     @Input
-    override fun getOutJarFilters(): MutableList<Any?> = super.getOutJarFilters()
+    override fun getOutJarFilters(): List<*> = super.getOutJarFilters()
 
     @Input
-    override fun getInJarFilters(): MutableList<Any?> = super.getInJarFilters()
+    override fun getInJarFilters(): List<*> = super.getInJarFilters()
 
     @Input
-    override fun getLibraryJarFilters(): MutableList<Any?> = super.getLibraryJarFilters()
+    override fun getLibraryJarFilters(): List<*> = super.getLibraryJarFilters()
 
     @Internal
-    override fun getOutJarFiles(): MutableList<Any?> = super.getOutJarFiles()
+    override fun getOutJarFiles(): List<*> = super.getOutJarFiles()
 
     @Internal
-    override fun getInJarFiles(): MutableList<Any?> = super.getInJarFiles()
+    override fun getInJarFiles(): List<*> = super.getInJarFiles()
 
     @Internal
-    override fun getInJarCounts(): MutableList<Any?> = super.getInJarCounts()
+    override fun getInJarCounts(): List<*> = super.getInJarCounts()
 
     @Internal
-    override fun getLibraryJarFiles(): MutableList<Any?> = super.getLibraryJarFiles()
+    override fun getLibraryJarFiles(): List<*> = super.getLibraryJarFiles()
 
     /*
      * Inputs properly declared these methods so we don't override them
@@ -271,9 +271,9 @@ open class CacheableProguardTask : proguard.gradle.ProGuardTask() {
     override fun dontobfuscate() = throw NotImplementedError()
 
     override fun extendClassSpecifications(
-        classSpecifications: MutableList<Any?>?,
+        classSpecifications: List<*>?,
         classSpecification: ClassSpecification?
-    ): MutableList<Any?> = throw NotImplementedError()
+    ): List<*> = throw NotImplementedError()
 
     override fun allowaccessmodification() = throw NotImplementedError()
 
@@ -329,7 +329,7 @@ open class CacheableProguardTask : proguard.gradle.ProGuardTask() {
     override fun getmergeinterfacesaggressively(): Any? = throw NotImplementedError()
 
     @Internal
-    override fun getConfigurationFiles(): MutableList<Any?> = throw NotImplementedError()
+    override fun getConfigurationFiles(): List<*> = throw NotImplementedError()
 
     @Internal
     override fun getkeeppackagenames(): Any? = throw NotImplementedError()
