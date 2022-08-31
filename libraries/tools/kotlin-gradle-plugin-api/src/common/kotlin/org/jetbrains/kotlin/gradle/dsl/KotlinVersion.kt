@@ -4,11 +4,11 @@ package org.jetbrains.kotlin.gradle.dsl
 
 @Suppress("DEPRECATION")
 enum class KotlinVersion (val version: String) {
-    KOTLIN_1_0("1.0"),
-    KOTLIN_1_1("1.1"),
-    KOTLIN_1_2("1.2"),
-    KOTLIN_1_3("1.3"),
-    KOTLIN_1_4("1.4"),
+    @Deprecated("Unsupported", level = DeprecationLevel.ERROR) KOTLIN_1_0("1.0"),
+    @Deprecated("Unsupported", level = DeprecationLevel.ERROR) KOTLIN_1_1("1.1"),
+    @Deprecated("Unsupported", level = DeprecationLevel.ERROR) KOTLIN_1_2("1.2"),
+    @Deprecated("Will be removed soon") KOTLIN_1_3("1.3"),
+    @Deprecated("Will be removed soon") KOTLIN_1_4("1.4"),
     KOTLIN_1_5("1.5"),
     KOTLIN_1_6("1.6"),
     KOTLIN_1_7("1.7"),

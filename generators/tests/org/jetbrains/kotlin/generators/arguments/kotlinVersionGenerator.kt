@@ -26,7 +26,13 @@ internal fun generateKotlinVersion(
             val lastIndex = languageVersions.size - 1
             languageVersions.forEachIndexed { index, languageVersion ->
                 val lastChar = if (index == lastIndex) ";" else ","
-                println("KOTLIN_${languageVersion.major}_${languageVersion.minor}(\"${languageVersion.versionString}\")$lastChar")
+                val prefix = when {
+                    languageVersion.isUnsupported -> "@Deprecated(\"Unsupported\", level = DeprecationLevel.ERROR) "
+                    languageVersion.isDeprecated -> "@Deprecated(\"Will be removed soon\") "
+                    else -> ""
+                }
+
+                println("${prefix}KOTLIN_${languageVersion.major}_${languageVersion.minor}(\"${languageVersion.versionString}\")$lastChar")
             }
 
             println()
