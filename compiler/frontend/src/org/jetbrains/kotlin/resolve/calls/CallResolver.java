@@ -195,6 +195,30 @@ public class CallResolver {
     }
 
     @NotNull
+    private <D extends FunctionDescriptor> OverloadResolutionResults<D> computeTasksFromCandidatesAndResolvedCall(
+            @NotNull BasicCallResolutionContext context,
+            @NotNull KtReferenceExpression referenceExpression,
+            @NotNull Collection<OldResolutionCandidate<D>> candidates
+    ) {
+        return computeTasksFromCandidatesAndResolvedCall(context, candidates,
+                                                         TracingStrategyImpl.create(referenceExpression, context.call));
+    }
+
+    @NotNull
+    private <D extends FunctionDescriptor> OverloadResolutionResults<D> computeTasksFromCandidatesAndResolvedCall(
+            @NotNull BasicCallResolutionContext context,
+            @NotNull Collection<OldResolutionCandidate<D>> candidates,
+            @NotNull TracingStrategy tracing
+    ) {
+        return callResolvePerfCounter.<OverloadResolutionResults<D>>time(() -> {
+            ResolutionTask<D> resolutionTask = new ResolutionTask<>(
+                    new NewResolutionOldInference.ResolutionKind.GivenCandidates(), null, candidates
+            );
+            return doResolveCallOrGetCachedResults(context, resolutionTask, tracing);
+        });
+    }
+
+    @NotNull
     public OverloadResolutionResults<FunctionDescriptor> resolveBinaryCall(
             ExpressionTypingContext context,
             ExpressionReceiver receiver,
@@ -412,11 +436,11 @@ public class CallResolver {
             return checkArgumentTypesAndFail(context);
         }
 
-        return resolveConstructorCallAwareTypeParameters(context, constructedType, TracingStrategyImpl.create(functionReference, context.call));
+        return resolveTypeParametersAwaringConstructorCall(context, constructedType, TracingStrategyImpl.create(functionReference, context.call));
     }
 
     @NotNull
-    private OverloadResolutionResults<ConstructorDescriptor> resolveConstructorCallAwareTypeParameters(
+    private OverloadResolutionResults<ConstructorDescriptor> resolveTypeParametersAwaringConstructorCall(
             @NotNull BasicCallResolutionContext context,
             @NotNull KotlinType constructedType,
             @NotNull TracingStrategy tracingStrategy
@@ -521,7 +545,7 @@ public class CallResolver {
                                   TracingStrategyImpl.create(calleeExpression, context.call);
 
         OverloadResolutionResults<ConstructorDescriptor> resolutionResults =
-                resolveConstructorCallAwareTypeParameters(context, superType, tracingStrategy);
+                resolveTypeParametersAwaringConstructorCall(context, superType, tracingStrategy);
 
         PsiElement reportOn = callElement.isImplicit() ? callElement : calleeExpression;
 
@@ -558,10 +582,15 @@ public class CallResolver {
         tracing.bindCall(context.trace, call);
 
         NewResolutionOldInference.ResolutionKind resolutionKind = resolutionTask.resolutionKind;
+        if (psiCallResolver.getDefaultResolutionKinds().contains(resolutionKind)) {
+            assert resolutionTask.name != null;
+            BindingContextUtilsKt.recordScope(context.trace, context.scope, context.call.getCalleeExpression());
+            return psiCallResolver.runResolutionAndInference(context, resolutionTask.name, resolutionKind, tracing);
+        }
 
-        assert resolutionTask.name != null;
+        assert resolutionTask.givenCandidates != null;
         BindingContextUtilsKt.recordScope(context.trace, context.scope, context.call.getCalleeExpression());
-        return psiCallResolver.runResolutionAndInference(context, resolutionTask.name, resolutionKind, tracing);
+        return psiCallResolver.runResolutionAndInferenceForGivenOldCandidates(context, resolutionTask.givenCandidates, tracing);
     }
 
     private <D extends CallableDescriptor> OverloadResolutionResultsImpl<D> checkArgumentTypesAndFail(BasicCallResolutionContext context) {
