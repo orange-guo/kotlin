@@ -9,8 +9,6 @@ import org.gradle.api.Action
 import org.gradle.api.InvalidUserCodeException
 import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
-import org.gradle.api.internal.plugins.DslObject
-import org.gradle.api.logging.Logger
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
@@ -33,17 +31,6 @@ abstract class KotlinMultiplatformExtension(project: Project) :
         { this },
         targets
     )
-
-    init {
-        val presetExtensionWithDeprecation = project.objects.newInstance(
-            TargetsFromPresetExtensionWithDeprecation::class.java,
-            project.logger,
-            project.path,
-            presetExtension
-        )
-        @Suppress("DEPRECATION")
-        DslObject(targets).addConvention("fromPreset", presetExtensionWithDeprecation)
-    }
 
     fun targets(configure: Action<TargetsFromPresetExtension>) {
         configure.execute(presetExtension)
@@ -123,45 +110,6 @@ internal abstract class DefaultTargetsFromPresetExtension @Inject constructor(
         configureAction: Action<T>
     ) = fromPreset(preset, name) {
         configureAction.execute(this)
-    }
-}
-
-internal abstract class TargetsFromPresetExtensionWithDeprecation @Inject constructor(
-    private val logger: Logger,
-    private val projectPath: String,
-    private val parentExtension: DefaultTargetsFromPresetExtension
-) : TargetsFromPresetExtension,
-    NamedDomainObjectCollection<KotlinTarget> by parentExtension.targets {
-
-    override fun <T : KotlinTarget> fromPreset(
-        preset: KotlinTargetPreset<T>,
-        name: String,
-        configureAction: T.() -> Unit
-    ): T {
-        printDeprecationMessage(preset, name)
-        return parentExtension.fromPreset(preset, name, configureAction)
-    }
-
-    override fun <T : KotlinTarget> fromPreset(
-        preset: KotlinTargetPreset<T>,
-        name: String,
-        configureAction: Action<T>
-    ): T {
-        printDeprecationMessage(preset, name)
-        return parentExtension.fromPreset(preset, name, configureAction)
-    }
-
-    private fun <T : KotlinTarget> printDeprecationMessage(
-        preset: KotlinTargetPreset<T>,
-        targetName: String
-    ) {
-        logger.warn(
-            """
-            Creating Kotlin target ${preset.name}:${targetName} via convention 'target.fromPreset()' in $projectPath project is deprecated!"
-            
-            Check https://kotlinlang.org/docs/multiplatform-set-up-targets.html documentation how to create MPP target.
-            """.trimIndent()
-        )
     }
 }
 

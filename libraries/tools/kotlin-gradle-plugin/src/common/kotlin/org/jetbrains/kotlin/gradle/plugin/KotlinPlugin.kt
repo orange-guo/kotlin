@@ -507,12 +507,8 @@ internal abstract class AbstractKotlinPlugin(
                     val kotlinSourceSet = project.kotlinExtension.sourceSets.maybeCreate(kotlinCompilation.name)
                     kotlinSourceSet.kotlin.source(javaSourceSet.java)
                     kotlinCompilation.source(kotlinSourceSet)
-                    @Suppress("DEPRECATION")
-                    javaSourceSet.addConvention(kotlinSourceSetDslName, kotlinSourceSet)
                     javaSourceSet.addExtension(kotlinSourceSetDslName, kotlinSourceSet.kotlin)
                 } else {
-                    @Suppress("DEPRECATION")
-                    javaSourceSet.addConvention(kotlinSourceSetDslName, kotlinCompilation.defaultSourceSet)
                     javaSourceSet.addExtension(kotlinSourceSetDslName, kotlinCompilation.defaultSourceSet.kotlin)
                 }
             }

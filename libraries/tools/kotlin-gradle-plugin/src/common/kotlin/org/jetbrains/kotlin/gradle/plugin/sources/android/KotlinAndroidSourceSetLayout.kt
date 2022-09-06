@@ -23,7 +23,6 @@ internal val singleTargetAndroidSourceSetLayout = KotlinAndroidSourceSetLayout(
     sourceSetConfigurator = KotlinAndroidSourceSetConfigurator(
         KotlinAndroidSourceSetInfoConfigurator,
         AndroidKaptSourceSetConfigurator,
-        AndroidSourceSetConventionConfigurator,
         SingleTargetSourceDirConfigurator,
     ),
     checker = KotlinAndroidSourceSetLayoutChecker()
@@ -35,7 +34,6 @@ internal val multiplatformAndroidSourceSetLayoutV1 = KotlinAndroidSourceSetLayou
     sourceSetConfigurator = KotlinAndroidSourceSetConfigurator(
         KotlinAndroidSourceSetInfoConfigurator,
         AndroidKaptSourceSetConfigurator,
-        AndroidSourceSetConventionConfigurator,
         MultiplatformAndroidResourceDirConfigurator,
         MultiplatformLayoutV1DependsOnConfigurator,
         MultiplatformLayoutV1SourceDirConfigurator
