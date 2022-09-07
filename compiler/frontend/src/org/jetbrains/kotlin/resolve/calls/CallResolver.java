@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.resolve.calls;
 
 import com.intellij.psi.PsiElement;
+import kotlin.collections.CollectionsKt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.builtins.FunctionTypesKt;
@@ -283,12 +284,22 @@ public class CallResolver {
             @NotNull Call call,
             @NotNull Collection<FunctionDescriptor> functionDescriptors
     ) {
-        TracingStrategy tracingStrategy = TracingStrategyImpl.create(expression, call);
-        ReceiverValueWithSmartCastInfo dispatchReceiverValue =
-                NewResolutionOldInferenceKt.transformToReceiverWithSmartCastInfo(context, receiver);
-        return resolveCallWithGivenDescriptors(
-                context, call, functionDescriptors, tracingStrategy, null, null, dispatchReceiverValue
-        );
+        if (languageVersionSettings.supportsFeature(LanguageFeature.NewInferenceInSpecialFunctions)) {
+            TracingStrategy tracingStrategy = TracingStrategyImpl.create(expression, call);
+            ReceiverValueWithSmartCastInfo dispatchReceiverValue =
+                    NewResolutionOldInferenceKt.transformToReceiverWithSmartCastInfo(context, receiver);
+            return resolveCallWithGivenDescriptors(
+                    context, call, functionDescriptors, tracingStrategy, null, null, dispatchReceiverValue
+            );
+        } else {
+            BasicCallResolutionContext callResolutionContext = BasicCallResolutionContext.create(context, call, CheckArgumentTypesMode.CHECK_VALUE_ARGUMENTS);
+            List<OldResolutionCandidate<FunctionDescriptor>> resolutionCandidates = CollectionsKt.map(functionDescriptors, descriptor ->
+                    OldResolutionCandidate.create(
+                            call, descriptor, receiver, ExplicitReceiverKind.DISPATCH_RECEIVER, null));
+
+            return computeTasksFromCandidatesAndResolvedCall(
+                    callResolutionContext, resolutionCandidates, TracingStrategyImpl.create(expression, call));
+        }
     }
 
     @NotNull
