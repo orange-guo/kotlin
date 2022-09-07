@@ -26,6 +26,7 @@ import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
+import org.jetbrains.kotlin.config.LanguageFeature;
 import org.jetbrains.kotlin.config.LanguageVersionSettings;
 import org.jetbrains.kotlin.descriptors.*;
 import org.jetbrains.kotlin.descriptors.annotations.Annotations;
@@ -49,6 +50,7 @@ import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
 import org.jetbrains.kotlin.resolve.calls.results.OverloadResolutionResults;
 import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowInfo;
 import org.jetbrains.kotlin.resolve.calls.tasks.ExplicitReceiverKind;
+import org.jetbrains.kotlin.resolve.calls.tasks.OldResolutionCandidate;
 import org.jetbrains.kotlin.resolve.calls.tasks.TracingStrategy;
 import org.jetbrains.kotlin.resolve.calls.util.CallMaker;
 import org.jetbrains.kotlin.resolve.descriptorUtil.AnnotationsForResolveUtilsKt;
@@ -161,11 +163,21 @@ public class ControlStructureTypingUtils {
     ) {
         TracingStrategy tracing = createTracingForSpecialConstruction(call, construct.getName(), context);
         TypeSubstitutor knownTypeParameterSubstitutor = createKnownTypeParameterSubstitutorForSpecialCall(construct, function, context.expectedType, context.languageVersionSettings);
-        OverloadResolutionResults<FunctionDescriptor> results = callResolver.resolveCallWithGivenDescriptors(
-                context, call, Collections.singletonList(function), tracing, knownTypeParameterSubstitutor, dataFlowInfoForArguments, null
-        );
-        assert results.isSingleResult() : "Not single result after resolving one known candidate";
-        return results.getResultingCall();
+        if (context.languageVersionSettings.supportsFeature(LanguageFeature.NewInferenceInSpecialFunctions)) {
+            OverloadResolutionResults<FunctionDescriptor> results = callResolver.resolveCallWithGivenDescriptors(
+                    context, call, Collections.singletonList(function), tracing, knownTypeParameterSubstitutor, dataFlowInfoForArguments,
+                    null
+            );
+            assert results.isSingleResult() : "Not single result after resolving one known candidate";
+            return results.getResultingCall();
+        } else {
+            OldResolutionCandidate<FunctionDescriptor> resolutionCandidate =
+                    OldResolutionCandidate.create(call, function, knownTypeParameterSubstitutor);
+            OverloadResolutionResults<FunctionDescriptor> results = callResolver.resolveCallWithKnownCandidate(
+                    call, tracing, context, resolutionCandidate, dataFlowInfoForArguments);
+            assert results.isSingleResult() : "Not single result after resolving one known candidate";
+            return results.getResultingCall();
+        }
     }
 
     private static @Nullable TypeSubstitutor createKnownTypeParameterSubstitutorForSpecialCall(

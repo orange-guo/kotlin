@@ -58,6 +58,7 @@ import org.jetbrains.kotlin.resolve.calls.results.OverloadResolutionResultsUtil;
 import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowInfo;
 import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValue;
 import org.jetbrains.kotlin.resolve.calls.smartcasts.Nullability;
+import org.jetbrains.kotlin.resolve.calls.tasks.ExplicitReceiverKind;
 import org.jetbrains.kotlin.resolve.calls.tasks.OldResolutionCandidate;
 import org.jetbrains.kotlin.resolve.calls.tasks.TracingStrategy;
 import org.jetbrains.kotlin.resolve.calls.tower.NewAbstractResolvedCall;
@@ -634,9 +635,34 @@ public class BasicExpressionTypingVisitor extends ExpressionTypingVisitor {
             KtExpression expression
     ) {
         Call call = CallMaker.makeCall(expression, null, null, expression, Collections.emptyList());
-        components.callResolver.resolveCallWithGivenDescriptors(
-                context, call, Collections.singletonList(descriptor), TracingStrategy.EMPTY, null, null, null
-        );
+        if (context.languageVersionSettings.supportsFeature(LanguageFeature.NewInferenceInSpecialFunctions)) {
+            components.callResolver.resolveCallWithGivenDescriptors(
+                    context, call, Collections.singletonList(descriptor), TracingStrategy.EMPTY, null, null, null
+            );
+        } else {
+            OldResolutionCandidate<ReceiverParameterDescriptor> resolutionCandidate =
+                    OldResolutionCandidate.create(
+                            call, descriptor, null, ExplicitReceiverKind.NO_EXPLICIT_RECEIVER, null);
+
+            BindingTrace trace = context.trace;
+            ResolvedCallImpl<ReceiverParameterDescriptor> resolvedCall =
+                    ResolvedCallImpl.create(resolutionCandidate,
+                                            TemporaryBindingTrace.create(trace, "Fake trace for fake 'this' or 'super' resolved call"),
+                                            TracingStrategy.EMPTY,
+                                            new DataFlowInfoForArgumentsImpl(context.dataFlowInfo, call));
+            resolvedCall.markCallAsCompleted();
+
+            trace.record(RESOLVED_CALL, call, resolvedCall);
+            trace.record(CALL, expression, call);
+
+            if (trace.wantsDiagnostics()) {
+                CallCheckerContext callCheckerContext =
+                        createCallCheckerContext(context);
+                for (CallChecker checker : components.callCheckers) {
+                    checker.check(resolvedCall, expression, callCheckerContext);
+                }
+            }
+        }
     }
 
     private static boolean isDeclaredInClass(ReceiverParameterDescriptor receiver) {

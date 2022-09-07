@@ -644,6 +644,27 @@ public class CallResolver {
         return false;
     }
 
+    public OverloadResolutionResults<FunctionDescriptor> resolveCallWithKnownCandidate(
+            @NotNull Call call,
+            @NotNull TracingStrategy tracing,
+            @NotNull ResolutionContext<?> context,
+            @NotNull OldResolutionCandidate<FunctionDescriptor> candidate,
+            @Nullable MutableDataFlowInfoForArguments dataFlowInfoForArguments
+    ) {
+        return callResolvePerfCounter.<OverloadResolutionResults<FunctionDescriptor>>time(() -> {
+            BasicCallResolutionContext basicCallResolutionContext =
+                    BasicCallResolutionContext.create(context, call, CheckArgumentTypesMode.CHECK_VALUE_ARGUMENTS, dataFlowInfoForArguments);
+
+            Set<OldResolutionCandidate<FunctionDescriptor>> candidates = Collections.singleton(candidate);
+
+            ResolutionTask<FunctionDescriptor> resolutionTask = new ResolutionTask<>(
+                    new NewResolutionOldInference.ResolutionKind.GivenCandidates(), null, candidates
+            );
+
+            return doResolveCallOrGetCachedResults(basicCallResolutionContext, resolutionTask, tracing);
+        });
+    }
+
     private <D extends CallableDescriptor> OverloadResolutionResults<D> doResolveCallOrGetCachedResults(
             @NotNull BasicCallResolutionContext context,
             @NotNull ResolutionTask<D> resolutionTask,
