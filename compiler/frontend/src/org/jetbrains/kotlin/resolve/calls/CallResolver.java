@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.resolve.calls;
 
 import com.intellij.psi.PsiElement;
+import kotlin.Pair;
 import kotlin.collections.CollectionsKt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -447,7 +448,18 @@ public class CallResolver {
             return checkArgumentTypesAndFail(context);
         }
 
-        return resolveTypeParametersAwaringConstructorCall(context, constructedType, TracingStrategyImpl.create(functionReference, context.call));
+        if (languageVersionSettings.supportsFeature(LanguageFeature.NewInferenceInSpecialFunctions)) {
+            return resolveTypeParametersAwaringConstructorCall(context, constructedType,
+                                                               TracingStrategyImpl.create(functionReference, context.call));
+        } else {
+            Pair<Collection<OldResolutionCandidate<ConstructorDescriptor>>, BasicCallResolutionContext> candidatesAndContext =
+                    prepareCandidatesAndContextForConstructorCall(constructedType, context, syntheticScopes);
+
+            Collection<OldResolutionCandidate<ConstructorDescriptor>> candidates = candidatesAndContext.getFirst();
+            context = candidatesAndContext.getSecond();
+
+            return computeTasksFromCandidatesAndResolvedCall(context, functionReference, candidates);
+        }
     }
 
     @NotNull
@@ -551,28 +563,76 @@ public class CallResolver {
         KotlinType superType =
                 isThisCall ? currentClassDescriptor.getDefaultType() : DescriptorUtils.getSuperClassType(currentClassDescriptor);
 
-        TracingStrategy tracingStrategy = callElement.isImplicit() ?
-                                  new TracingStrategyForImplicitConstructorDelegationCall(callElement, context.call) :
-                                  TracingStrategyImpl.create(calleeExpression, context.call);
+        if (languageVersionSettings.supportsFeature(LanguageFeature.NewInferenceInSpecialFunctions)) {
+            TracingStrategy tracingStrategy = callElement.isImplicit() ?
+                                              new TracingStrategyForImplicitConstructorDelegationCall(callElement, context.call) :
+                                              TracingStrategyImpl.create(calleeExpression, context.call);
 
-        OverloadResolutionResults<ConstructorDescriptor> resolutionResults =
-                resolveTypeParametersAwaringConstructorCall(context, superType, tracingStrategy);
+            OverloadResolutionResults<ConstructorDescriptor> resolutionResults =
+                    resolveTypeParametersAwaringConstructorCall(context, superType, tracingStrategy);
 
-        PsiElement reportOn = callElement.isImplicit() ? callElement : calleeExpression;
+            PsiElement reportOn = callElement.isImplicit() ? callElement : calleeExpression;
 
-        if (delegateClassDescriptor.isInner()
+            if (delegateClassDescriptor.isInner()
                 && !DescriptorResolver.checkHasOuterClassInstance(context.scope, context.trace, reportOn,
                                                                   (ClassDescriptor) delegateClassDescriptor.getContainingDeclaration())) {
-            return checkArgumentTypesAndFail(context);
-        }
+                return checkArgumentTypesAndFail(context);
+            }
 
-        return resolutionResults;
+            return resolutionResults;
+        } else {
+            Pair<Collection<OldResolutionCandidate<ConstructorDescriptor>>, BasicCallResolutionContext> candidatesAndContext =
+                    prepareCandidatesAndContextForConstructorCall(superType, context, syntheticScopes);
+            Collection<OldResolutionCandidate<ConstructorDescriptor>> candidates = candidatesAndContext.getFirst();
+            context = candidatesAndContext.getSecond();
+
+            TracingStrategy tracing = callElement.isImplicit() ?
+                                      new TracingStrategyForImplicitConstructorDelegationCall(callElement, context.call) :
+                                      TracingStrategyImpl.create(calleeExpression, context.call);
+
+            PsiElement reportOn = callElement.isImplicit() ? callElement : calleeExpression;
+
+            if (delegateClassDescriptor.isInner()
+                && !DescriptorResolver.checkHasOuterClassInstance(context.scope, context.trace, reportOn,
+                                                                  (ClassDescriptor) delegateClassDescriptor.getContainingDeclaration())) {
+                return checkArgumentTypesAndFail(context);
+            }
+
+            return computeTasksFromCandidatesAndResolvedCall(context, candidates, tracing);
+        }
     }
 
     @NotNull
     private static PsiElement calcReportOn(@NotNull KtConstructorDelegationReferenceExpression calleeExpression) {
         PsiElement delegationCall = calleeExpression.getParent();
         return CallResolverUtilKt.reportOnElement(delegationCall);
+    }
+
+    @NotNull
+    private static Pair<Collection<OldResolutionCandidate<ConstructorDescriptor>>, BasicCallResolutionContext> prepareCandidatesAndContextForConstructorCall(
+            @NotNull KotlinType superType,
+            @NotNull BasicCallResolutionContext context,
+            @NotNull SyntheticScopes syntheticScopes
+    ) {
+        if (!(superType.getConstructor().getDeclarationDescriptor() instanceof ClassDescriptor)) {
+            return new Pair<>(Collections.<OldResolutionCandidate<ConstructorDescriptor>>emptyList(), context);
+        }
+
+        // If any constructor has type parameter (currently it only can be true for ones from Java), try to infer arguments for them
+        // Otherwise use NO_EXPECTED_TYPE and known type substitutor
+        boolean anyConstructorHasDeclaredTypeParameters =
+                anyConstructorHasDeclaredTypeParameters(superType.getConstructor().getDeclarationDescriptor());
+
+        if (anyConstructorHasDeclaredTypeParameters) {
+            context = context.replaceExpectedType(superType);
+        }
+
+        List<OldResolutionCandidate<ConstructorDescriptor>> candidates =
+                CallResolverUtilKt.createResolutionCandidatesForConstructors(
+                        context.scope, context.call, superType, !anyConstructorHasDeclaredTypeParameters, syntheticScopes
+                );
+
+        return new Pair<>(candidates, context);
     }
 
     private static boolean anyConstructorHasDeclaredTypeParameters(@Nullable ClassifierDescriptor classDescriptor) {
