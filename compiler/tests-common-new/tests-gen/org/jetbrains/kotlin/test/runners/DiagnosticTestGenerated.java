@@ -8466,6 +8466,12 @@ public class DiagnosticTestGenerated extends AbstractDiagnosticTest {
                 }
 
                 @Test
+                @TestMetadata("noErrorsForImplicitConstraints_oi_special.kt")
+                public void testNoErrorsForImplicitConstraints_oi_special() throws Exception {
+                    runTest("compiler/testData/diagnostics/tests/delegatedProperty/inference/noErrorsForImplicitConstraints_oi_special.kt");
+                }
+
+                @Test
                 @TestMetadata("noExpectedTypeForSupertypeConstraint.kt")
                 public void testNoExpectedTypeForSupertypeConstraint() throws Exception {
                     runTest("compiler/testData/diagnostics/tests/delegatedProperty/inference/noExpectedTypeForSupertypeConstraint.kt");
@@ -9032,6 +9038,12 @@ public class DiagnosticTestGenerated extends AbstractDiagnosticTest {
             @TestMetadata("hiddenPropertyAccessors.kt")
             public void testHiddenPropertyAccessors() throws Exception {
                 runTest("compiler/testData/diagnostics/tests/deprecated/hiddenPropertyAccessors.kt");
+            }
+
+            @Test
+            @TestMetadata("hiddenPropertyAccessors_oi_special.kt")
+            public void testHiddenPropertyAccessors_oi_special() throws Exception {
+                runTest("compiler/testData/diagnostics/tests/deprecated/hiddenPropertyAccessors_oi_special.kt");
             }
 
             @Test

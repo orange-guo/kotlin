@@ -1,4 +1,4 @@
-// !LANGUAGE: +NewInferenceInSpecialFunctions
+// !LANGUAGE: -NewInferenceInSpecialFunctions
 val v1: String
     @Deprecated("", level = DeprecationLevel.HIDDEN)
     get() = ""
@@ -28,14 +28,14 @@ var v6: String
     set(value) {}
 
 fun test() {
-    <!UNRESOLVED_REFERENCE!>v1<!>
+    <!DEPRECATION_ERROR!>v1<!>
     <!UNRESOLVED_REFERENCE!>v2<!>
-    <!UNRESOLVED_REFERENCE!>v3<!>
+    <!DEPRECATION_ERROR!>v3<!>
     v3 = ""
     v4
-    <!UNRESOLVED_REFERENCE!>v4<!> = ""
-    <!UNRESOLVED_REFERENCE!>v5<!>
-    <!UNRESOLVED_REFERENCE!>v5<!> = ""
+    <!DEPRECATION_ERROR!>v4<!> = ""
+    <!DEPRECATION_ERROR!>v5<!>
+    <!DEPRECATION_ERROR!>v5<!> = ""
     <!UNRESOLVED_REFERENCE!>v6<!>
     <!UNRESOLVED_REFERENCE!>v6<!> = ""
 }

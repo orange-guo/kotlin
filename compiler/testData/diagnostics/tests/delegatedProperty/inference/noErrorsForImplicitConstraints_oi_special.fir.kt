@@ -1,5 +1,4 @@
-// FIR_IDENTICAL
-// !LANGUAGE: +NewInferenceInSpecialFunctions
+// !LANGUAGE: -NewInferenceInSpecialFunctions
 package foo
 
 import kotlin.reflect.KProperty

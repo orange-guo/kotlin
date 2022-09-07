@@ -1,3 +1,4 @@
+// !LANGUAGE: +NewInferenceInSpecialFunctions
 val v1: String
     @Deprecated("", level = DeprecationLevel.HIDDEN)
     get() = ""
