@@ -31,6 +31,7 @@ interface AdditionalGradleProperties {
 private data class GeneratedOptions(
     val optionsName: FqName,
     val deprecatedOptionsName: FqName,
+    val dslName: FqName,
     val properties: List<KProperty1<*, *>>
 )
 
@@ -138,11 +139,11 @@ private fun generateKotlinCommonToolOptions(
 ): GeneratedOptions {
     val commonInterfaceFqName = FqName("$OPTIONS_PACKAGE_PREFIX.CompilerCommonToolOptions")
     val commonOptions = gradleOptions<CommonToolArguments>()
-    val additionalOptions = gradleOptions<AdditionalGradleProperties>()
+    val interfaceProperties = commonOptions + gradleOptions<AdditionalGradleProperties>()
     withPrinterToFile(fileFromFqName(apiSrcDir, commonInterfaceFqName)) {
         generateInterface(
             commonInterfaceFqName,
-            commonOptions + additionalOptions
+            interfaceProperties
         )
     }
 
@@ -151,15 +152,29 @@ private fun generateKotlinCommonToolOptions(
         generateDeprecatedInterface(
             deprecatedCommonInterfaceFqName,
             commonInterfaceFqName,
-            commonOptions + additionalOptions,
+            interfaceProperties,
             parentType = null,
         )
     }
 
-    println("### Attributes common for JVM, JS, and JS DCE\n")
-    generateMarkdown(commonOptions + additionalOptions)
+    val dslName = FqName("$OPTIONS_PACKAGE_PREFIX.CompilerCommonToolOptionsDsl")
+    withPrinterToFile(fileFromFqName(apiSrcDir, dslName)) {
+        generateDsl(
+            dslName,
+            commonInterfaceFqName,
+            commonOptions
+        )
+    }
 
-    return GeneratedOptions(commonInterfaceFqName, deprecatedCommonInterfaceFqName, (commonOptions + additionalOptions))
+    println("### Attributes common for JVM, JS, and JS DCE\n")
+    generateMarkdown(commonOptions + interfaceProperties)
+
+    return GeneratedOptions(
+        commonInterfaceFqName,
+        deprecatedCommonInterfaceFqName,
+        dslName,
+        interfaceProperties
+    )
 }
 
 private fun generateKotlinCommonToolOptionsImpl(
@@ -209,10 +224,25 @@ private fun generateKotlinCommonOptions(
         )
     }
 
+    val dslName = FqName("$OPTIONS_PACKAGE_PREFIX.CompilerCommonOptionsDsl")
+    withPrinterToFile(fileFromFqName(apiSrcDir, dslName)) {
+        generateDsl(
+            dslName,
+            commonCompilerInterfaceFqName,
+            commonCompilerOptions,
+            commonToolGeneratedOptions.dslName
+        )
+    }
+
     println("\n### Attributes common for JVM and JS\n")
     generateMarkdown(commonCompilerOptions)
 
-    return GeneratedOptions(commonCompilerInterfaceFqName, deprecatedCommonCompilerInterfaceFqName, commonCompilerOptions)
+    return GeneratedOptions(
+        commonCompilerInterfaceFqName,
+        deprecatedCommonCompilerInterfaceFqName,
+        dslName,
+        commonCompilerOptions
+    )
 }
 
 private fun generateKotlinCommonOptionsImpl(
@@ -263,10 +293,20 @@ private fun generateKotlinJvmOptions(
         )
     }
 
+    val dslName = FqName("$OPTIONS_PACKAGE_PREFIX.CompilerJvmOptionsDsl")
+    withPrinterToFile(fileFromFqName(apiSrcDir, dslName)) {
+        generateDsl(
+            dslName,
+            jvmInterfaceFqName,
+            jvmOptions,
+            commonCompilerGeneratedOptions.dslName
+        )
+    }
+
     println("\n### Attributes specific for JVM\n")
     generateMarkdown(jvmOptions)
 
-    return GeneratedOptions(jvmInterfaceFqName, deprecatedJvmInterfaceFqName, jvmOptions)
+    return GeneratedOptions(jvmInterfaceFqName, deprecatedJvmInterfaceFqName, dslName, jvmOptions)
 }
 
 private fun generateKotlinJvmOptionsImpl(
@@ -314,10 +354,20 @@ private fun generateKotlinJsOptions(
         )
     }
 
+    val dslName = FqName("$OPTIONS_PACKAGE_PREFIX.CompilerJsOptionsDsl")
+    withPrinterToFile(fileFromFqName(apiSrcDir, dslName)) {
+        generateDsl(
+            dslName,
+            jsInterfaceFqName,
+            jsOptions,
+            commonCompilerOptions.dslName
+        )
+    }
+
     println("\n### Attributes specific for JS\n")
     generateMarkdown(jsOptions)
 
-    return GeneratedOptions(jsInterfaceFqName, deprecatedJsInterfaceFqName, jsOptions)
+    return GeneratedOptions(jsInterfaceFqName, deprecatedJsInterfaceFqName, dslName, jsOptions)
 }
 
 private fun generateKotlinJsOptionsImpl(
@@ -365,10 +415,20 @@ private fun generateJsDceOptions(
         )
     }
 
+    val dslName = FqName("$OPTIONS_PACKAGE_PREFIX.CompilerJsDceOptionsDsl")
+    withPrinterToFile(fileFromFqName(apiSrcDir, dslName)) {
+        generateDsl(
+            dslName,
+            jsDceInterfaceFqName,
+            jsDceOptions,
+            commonToolOptions.dslName
+        )
+    }
+
     println("\n### Attributes specific for JS/DCE\n")
     generateMarkdown(jsDceOptions)
 
-    return GeneratedOptions(jsDceInterfaceFqName, deprecatedJsDceInterfaceFqName, jsDceOptions)
+    return GeneratedOptions(jsDceInterfaceFqName, deprecatedJsDceInterfaceFqName, dslName, jsDceOptions)
 }
 
 private fun generateJsDceOptionsImpl(
@@ -416,10 +476,25 @@ private fun generateMultiplatformCommonOptions(
         )
     }
 
+    val dslName = FqName("$OPTIONS_PACKAGE_PREFIX.CompilerMultiplatformCommonOptionsDsl")
+    withPrinterToFile(fileFromFqName(apiSrcDir, dslName)) {
+        generateDsl(
+            dslName,
+            multiplatformCommonInterfaceFqName,
+            multiplatformCommonOptions,
+            commonCompilerOptions.dslName
+        )
+    }
+
     println("\n### Attributes specific for Multiplatform/Common\n")
     generateMarkdown(multiplatformCommonOptions)
 
-    return GeneratedOptions(multiplatformCommonInterfaceFqName, deprecatedMultiplatformCommonInterfaceFqName, multiplatformCommonOptions)
+    return GeneratedOptions(
+        multiplatformCommonInterfaceFqName,
+        deprecatedMultiplatformCommonInterfaceFqName,
+        dslName,
+        multiplatformCommonOptions
+    )
 }
 
 private fun generateMultiplatformCommonOptionsImpl(
@@ -475,6 +550,24 @@ private fun Printer.generateInterface(
             generateDoc(property)
             generateOptionDeprecation(property)
             generatePropertyProvider(property)
+        }
+    }
+}
+
+private fun Printer.generateDsl(
+    type: FqName,
+    optionsInterfaceType: FqName,
+    properties: List<KProperty1<*, *>>,
+    parentType: FqName? = null
+) {
+    val afterType = parentType?.let { " : $it(optionsAccessor)" }
+    val constructorDeclaration = "(\n    private val optionsAccessor: (($optionsInterfaceType) -> Unit) -> Unit\n)"
+    generateDeclaration("open class", type, constructorDeclaration, afterType) {
+        for (property in properties) {
+            println()
+            generateDoc(property)
+            generateOptionDeprecation(property)
+            generatePropertyDsl(property)
         }
     }
 }
@@ -618,6 +711,30 @@ private fun Printer.generatePropertyProvider(
     }
     println("@get:${property.gradleInputType}")
     println("${modifiers.appendWhitespaceIfNotBlank}val ${property.name}: ${property.gradleLazyReturnType}")
+}
+
+private fun Printer.generatePropertyDsl(
+    property: KProperty1<*, *>
+) {
+    val returnType = property.gradleValues.type.withNullability(false)
+    val returnTypeString = returnType
+        .toString()
+        .substringBeforeLast("!")
+        .let {
+            if (property.gradleDefaultValue == "null") "$it?" else it
+        }
+
+    val classifier = returnType.classifier
+    val setter = when {
+        classifier is KClass<*> && classifier == List::class -> "addAll"
+        classifier is KClass<*> && classifier == Set::class -> "addAll"
+        classifier is KClass<*> && classifier == Map::class -> "putAll"
+        else -> "set"
+    }
+
+    println("fun ${property.name}(value: $returnTypeString) {")
+    println("    optionsAccessor { it.${property.name}.$setter(value) }")
+    println("}")
 }
 
 private fun Printer.generatePropertyProviderImpl(
