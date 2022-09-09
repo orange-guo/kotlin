@@ -1,0 +1,10 @@
+/test.kt:44:13: warning: access to enum entry 'EE.entries' is deprecated because synthetic property 'EE.entries' is available. Please rename enum entry
+val e2 = EE.entries
+            ^
+/test.kt:45:19: warning: access to enum property 'JavaEnum.entries' is deprecated because synthetic property 'JavaEnum.entries' is available. Please rename enum entry
+val e3 = JavaEnum.entries
+                  ^
+/test.kt:47:26: warning: access to enum entry 'JavaAnotherEnum.entries' is deprecated because synthetic property 'JavaAnotherEnum.entries' is available. Please rename enum entry
+val e5 = JavaAnotherEnum.entries
+                         ^
+

@@ -1,5 +1,6 @@
 // !LANGUAGE: +EnumEntries
 // FIR_DUMP
+// !RENDER_DIAGNOSTICS_FULL_TEXT
 // FILE: JavaEnum.java
 
 public enum JavaEnum {
@@ -40,8 +41,8 @@ enum class EE {
 }
 
 val e1 = E.entries
-val e2 = EE.<!DEPRECATED_RESOLVE_WITH_AMBIGUOUS_ENUM_ENTRY!>entries<!>
-val e3 = JavaEnum.<!OVERLOAD_RESOLUTION_AMBIGUITY!>entries<!>
+val e2 = EE.<!DEPRECATED_RESOLVE_TO_ENUM_ENTRIES!>entries<!>
+val e3 = JavaEnum.<!DEPRECATED_RESOLVE_TO_ENUM_ENTRIES_PROPERTY!>entries<!>
 val e4 = JavaOtherEnum.entries
-val e5 = JavaAnotherEnum.<!DEPRECATED_RESOLVE_WITH_AMBIGUOUS_ENUM_ENTRY!>entries<!>
+val e5 = JavaAnotherEnum.<!DEPRECATED_RESOLVE_TO_ENUM_ENTRIES!>entries<!>
 

@@ -315,6 +315,15 @@ class EnumEntryAmbiguityWarning(val property: PropertyDescriptor, val enumEntry:
     }
 }
 
+class EnumEntriesAmbiguityWarning(
+    val syntheticProperty: PropertyDescriptor,
+    val otherProperty: PropertyDescriptor
+) : KotlinCallDiagnostic(RESOLVED) {
+    override fun report(reporter: DiagnosticReporter) {
+        reporter.onCall(this)
+    }
+}
+
 class CompatibilityWarning(val candidate: CallableDescriptor) : KotlinCallDiagnostic(RESOLVED) {
     override fun report(reporter: DiagnosticReporter) {
         reporter.onCall(this)

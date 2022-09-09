@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.builtins.UnsignedTypes
 import org.jetbrains.kotlin.builtins.functions.FunctionInvokeDescriptor
 import org.jetbrains.kotlin.builtins.isExtensionFunctionType
 import org.jetbrains.kotlin.config.LanguageFeature
+import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
 import org.jetbrains.kotlin.diagnostics.Errors.*
@@ -80,12 +81,15 @@ class DiagnosticReporterByTrackingStrategy(
                 trace,
                 (diagnostic as NoValueForParameter).parameterDescriptor
             )
+
             TypeCheckerHasRanIntoRecursion::class.java -> {
                 val shouldReportErrorsOnRecursiveTypeInsidePlusAssignment =
                     context.languageVersionSettings.supportsFeature(LanguageFeature.ReportErrorsOnRecursiveTypeInsidePlusAssignment)
                 tracingStrategy.recursiveType(trace, shouldReportErrorsOnRecursiveTypeInsidePlusAssignment)
             }
+
             InstantiationOfAbstractClass::class.java -> tracingStrategy.instantiationOfAbstractClass(trace)
+
             AbstractSuperCall::class.java -> {
                 val superExpression = (diagnostic as AbstractSuperCall).receiver.psiExpression as? KtSuperExpression
                 if (context.languageVersionSettings.supportsFeature(LanguageFeature.ForbidSuperDelegationToAbstractAnyMethod) ||
@@ -97,6 +101,7 @@ class DiagnosticReporterByTrackingStrategy(
                     tracingStrategy.abstractSuperCallWarning(trace)
                 }
             }
+
             AbstractFakeOverrideSuperCall::class.java -> {
                 if (context.languageVersionSettings.supportsFeature(LanguageFeature.ForbidSuperDelegationToAbstractFakeOverride)) {
                     tracingStrategy.abstractSuperCall(trace)
@@ -104,21 +109,40 @@ class DiagnosticReporterByTrackingStrategy(
                     tracingStrategy.abstractSuperCallWarning(trace)
                 }
             }
+
             NonApplicableCallForBuilderInferenceDiagnostic::class.java -> {
                 val reportOn = (diagnostic as NonApplicableCallForBuilderInferenceDiagnostic).kotlinCall
                 trace.reportDiagnosticOnce(NON_APPLICABLE_CALL_FOR_BUILDER_INFERENCE.on(reportOn.psiKotlinCall.psiCall.callElement))
             }
+
             CandidateChosenUsingOverloadResolutionByLambdaAnnotation::class.java -> {
                 trace.report(CANDIDATE_CHOSEN_USING_OVERLOAD_RESOLUTION_BY_LAMBDA_ANNOTATION.on(psiKotlinCall.psiCall.callElement))
             }
+
             EnumEntryAmbiguityWarning::class.java -> {
                 val propertyDescriptor = (diagnostic as EnumEntryAmbiguityWarning).property
                 val enumEntryDescriptor = diagnostic.enumEntry
                 val enumCompanionDescriptor = (enumEntryDescriptor.containingDeclaration as? ClassDescriptor)?.companionObjectDescriptor
                 if (enumCompanionDescriptor == null || propertyDescriptor.containingDeclaration != enumCompanionDescriptor) {
-                    trace.report(DEPRECATED_RESOLVE_WITH_AMBIGUOUS_ENUM_ENTRY.on(psiKotlinCall.psiCall.callElement, propertyDescriptor, enumEntryDescriptor))
+                    val deprecation = if (propertyDescriptor.kind == CallableMemberDescriptor.Kind.SYNTHESIZED) {
+                        DEPRECATED_RESOLVE_TO_ENUM_ENTRIES
+                    } else {
+                        DEPRECATED_RESOLVE_WITH_AMBIGUOUS_ENUM_ENTRY
+                    }
+                    trace.report(deprecation.on(psiKotlinCall.psiCall.callElement, propertyDescriptor, enumEntryDescriptor))
                 }
             }
+
+            EnumEntriesAmbiguityWarning::class.java -> {
+                val propertyDescriptor = (diagnostic as EnumEntriesAmbiguityWarning).otherProperty
+                val syntheticPropertyDescriptor = diagnostic.syntheticProperty
+                trace.report(
+                    DEPRECATED_RESOLVE_TO_ENUM_ENTRIES_PROPERTY.on(
+                        psiKotlinCall.psiCall.callElement, syntheticPropertyDescriptor, propertyDescriptor
+                    )
+                )
+            }
+
             CompatibilityWarning::class.java -> {
                 val callElement = psiKotlinCall.psiCall.callElement
                 trace.report(
@@ -128,6 +152,7 @@ class DiagnosticReporterByTrackingStrategy(
                     )
                 )
             }
+
             NoContextReceiver::class.java -> {
                 val callElement = psiKotlinCall.psiCall.callElement
                 trace.report(
@@ -137,6 +162,7 @@ class DiagnosticReporterByTrackingStrategy(
                     )
                 )
             }
+
             MultipleArgumentsApplicableForContextReceiver::class.java -> {
                 val callElement = psiKotlinCall.psiCall.callElement
                 trace.report(
@@ -146,10 +172,12 @@ class DiagnosticReporterByTrackingStrategy(
                     )
                 )
             }
+
             ContextReceiverAmbiguity::class.java -> {
                 val callElement = psiKotlinCall.psiCall.callElement
                 trace.report(AMBIGUOUS_CALL_WITH_IMPLICIT_CONTEXT_RECEIVER.on(callElement))
             }
+
             UnsupportedContextualDeclarationCall::class.java -> {
                 val callElement = psiKotlinCall.psiCall.callElement
                 trace.report(UNSUPPORTED_CONTEXTUAL_DECLARATION_CALL.on(callElement))

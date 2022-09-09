@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.resolve.calls
 
 import org.jetbrains.kotlin.config.LanguageFeature
+import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.progress.ProgressIndicatorAndCompilationCanceledStatus
@@ -227,8 +228,12 @@ class KotlinCallResolver(
                     val descriptor = it.resolvedCall.candidateDescriptor
                     descriptor is FakeCallableDescriptorForObject && descriptor.classDescriptor.kind == ClassKind.ENUM_ENTRY
                 }
+                val enumEntriesSyntheticCandidate = maximallySpecificCandidates.find {
+                    val descriptor = it.resolvedCall.candidateDescriptor
+                    descriptor is PropertyDescriptor && descriptor.kind == CallableMemberDescriptor.Kind.SYNTHESIZED
+                }
                 if (enumEntryCandidate != null) {
-                    val otherCandidate = maximallySpecificCandidates.find {
+                    val otherCandidate = enumEntriesSyntheticCandidate ?: maximallySpecificCandidates.find {
                         val candidateDescriptor = it.resolvedCall.candidateDescriptor
                         candidateDescriptor !is FakeCallableDescriptorForObject
                     }
@@ -237,7 +242,28 @@ class KotlinCallResolver(
                         if (propertyDescriptor is PropertyDescriptor) {
                             val enumEntryDescriptor =
                                 (enumEntryCandidate.resolvedCall.candidateDescriptor as FakeCallableDescriptorForObject).classDescriptor
-                            otherCandidate.addDiagnostic(EnumEntryAmbiguityWarning(propertyDescriptor, enumEntryDescriptor))
+                            val ambiguityWarning = EnumEntryAmbiguityWarning(propertyDescriptor, enumEntryDescriptor)
+                            return if (propertyDescriptor.kind == CallableMemberDescriptor.Kind.SYNTHESIZED) {
+                                enumEntryCandidate.addDiagnostic(ambiguityWarning)
+                                setOf(enumEntryCandidate)
+                            } else {
+                                otherCandidate.addDiagnostic(ambiguityWarning)
+                                setOf(otherCandidate)
+                            }
+                        }
+                    }
+                } else if (enumEntriesSyntheticCandidate != null) {
+                    val otherCandidate = maximallySpecificCandidates.find {
+                        val candidateDescriptor = it.resolvedCall.candidateDescriptor
+                        candidateDescriptor !is FakeCallableDescriptorForObject
+                    }
+                    if (otherCandidate != null) {
+                        val propertyDescriptor = otherCandidate.resolvedCall.candidateDescriptor
+                        val syntheticPropertyDescriptor =
+                            enumEntriesSyntheticCandidate.resolvedCall.candidateDescriptor
+                        if (propertyDescriptor is PropertyDescriptor && syntheticPropertyDescriptor is PropertyDescriptor) {
+                            val ambiguityWarning = EnumEntriesAmbiguityWarning(syntheticPropertyDescriptor, propertyDescriptor)
+                            otherCandidate.addDiagnostic(ambiguityWarning)
                             return setOf(otherCandidate)
                         }
                     }

@@ -1,10 +1,10 @@
 package
 
 public val e1: kotlin.enums.EnumEntries<E>
-public val e2: kotlin.enums.EnumEntries<EE>
-public val e3: [Error type: Not found recorded type for JavaEnum.entries]
+public val e2: EE
+public val e3: kotlin.String = "E"
 public val e4: kotlin.enums.EnumEntries<JavaOtherEnum>
-public val e5: kotlin.enums.EnumEntries<JavaAnotherEnum>
+public val e5: JavaAnotherEnum
 
 public final enum class E : kotlin.Enum<E> {
     enum entry SINGLE

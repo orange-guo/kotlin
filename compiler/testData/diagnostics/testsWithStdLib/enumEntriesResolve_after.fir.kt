@@ -1,5 +1,6 @@
 // !LANGUAGE: +EnumEntries
 // FIR_DUMP
+// !RENDER_DIAGNOSTICS_FULL_TEXT
 // FILE: JavaEnum.java
 
 public enum JavaEnum {
