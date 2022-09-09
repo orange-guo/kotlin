@@ -34528,6 +34528,18 @@ public class FirOldFrontendDiagnosticsWithLightTreeTestGenerated extends Abstrac
         }
 
         @Test
+        @TestMetadata("enumEntriesResolve_after.kt")
+        public void testEnumEntriesResolve_after() throws Exception {
+            runTest("compiler/testData/diagnostics/testsWithStdLib/enumEntriesResolve_after.kt");
+        }
+
+        @Test
+        @TestMetadata("enumEntriesResolve_before.kt")
+        public void testEnumEntriesResolve_before() throws Exception {
+            runTest("compiler/testData/diagnostics/testsWithStdLib/enumEntriesResolve_before.kt");
+        }
+
+        @Test
         @TestMetadata("enumEntryInitialization.kt")
         public void testEnumEntryInitialization() throws Exception {
             runTest("compiler/testData/diagnostics/testsWithStdLib/enumEntryInitialization.kt");

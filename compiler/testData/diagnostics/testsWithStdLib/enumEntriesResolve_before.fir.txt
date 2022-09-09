@@ -1,0 +1,54 @@
+FILE: test.kt
+    @FILE:R|kotlin/OptIn|(markerClass = vararg(<getClass>(Q|kotlin/ExperimentalStdlibApi|)))
+    public final enum class E : R|kotlin/Enum<E>| {
+        private constructor(): R|E| {
+            super<R|kotlin/Enum<E>|>()
+        }
+
+        public final static enum entry SINGLE: R|E|
+        public final companion object Companion : R|kotlin/Any| {
+            private constructor(): R|E.Companion| {
+                super<R|kotlin/Any|>()
+            }
+
+            public final val entries: R|kotlin/String| = String(E)
+                public get(): R|kotlin/String|
+
+        }
+
+        public final static fun values(): R|kotlin/Array<E>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|E| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<E>|
+            public get(): R|kotlin/enums/EnumEntries<E>|
+
+    }
+    public final enum class EE : R|kotlin/Enum<EE>| {
+        private constructor(): R|EE| {
+            super<R|kotlin/Enum<EE>|>()
+        }
+
+        public final static enum entry entries: R|EE|
+        public final static fun values(): R|kotlin/Array<EE>| {
+        }
+
+        public final static fun valueOf(value: R|kotlin/String|): R|EE| {
+        }
+
+        public final static val entries: R|kotlin/enums/EnumEntries<EE>|
+            public get(): R|kotlin/enums/EnumEntries<EE>|
+
+    }
+    public final val e1: R|kotlin/enums/EnumEntries<E>| = Q|E|.R|/E.entries|
+        public get(): R|kotlin/enums/EnumEntries<E>|
+    public final val e2: R|EE| = Q|EE|.R|/EE.entries|
+        public get(): R|EE|
+    public final val e3: R|kotlin/String| = Q|JavaEnum|.R|/JavaEnum.entries|
+        public get(): R|kotlin/String|
+    public final val e4: R|kotlin/enums/EnumEntries<JavaOtherEnum>| = Q|JavaOtherEnum|.R|/JavaOtherEnum.entries|
+        public get(): R|kotlin/enums/EnumEntries<JavaOtherEnum>|
+    public final val e5: R|JavaAnotherEnum| = Q|JavaAnotherEnum|.R|/JavaAnotherEnum.entries|
+        public get(): R|JavaAnotherEnum|
