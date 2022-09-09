@@ -129,8 +129,8 @@ internal fun applyLanguageSettingsToCompilerOptions(
 
     KotlinBuildStatsService.getInstance()?.apply {
         report(BooleanMetrics.KOTLIN_PROGRESSIVE_MODE, languageSettingsBuilder.progressiveMode)
-        apiVersion?.also { v -> report(StringMetrics.KOTLIN_API_VERSION, v) }
-        languageVersion?.also { v -> report(StringMetrics.KOTLIN_LANGUAGE_VERSION, v) }
+        apiVersion.orNull?.also { v -> report(StringMetrics.KOTLIN_API_VERSION, v.version) }
+        languageVersion.orNull?.also { v -> report(StringMetrics.KOTLIN_LANGUAGE_VERSION, v.version) }
     }
 }
 
