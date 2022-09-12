@@ -704,7 +704,7 @@ internal open class Kotlin2JsPlugin(
             {
                 object : HasCompilerOptions<CompilerJsOptions> {
                     override val options: CompilerJsOptions =
-                        project.objects.newInstance(CompilerJsOptions::class.java)
+                        project.objects.newInstance(CompilerJsOptionsDefault::class.java)
                 }
             },
             { compilerOptions: CompilerJsOptions ->
