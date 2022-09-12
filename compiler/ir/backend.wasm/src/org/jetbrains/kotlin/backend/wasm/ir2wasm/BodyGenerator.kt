@@ -591,11 +591,9 @@ class BodyGenerator(
 
         // NOTHING? -> TYPE? -> (NOTHING?)NULL
         if (actualType.isNullableNothing() && expectedType.isNullable()) {
-            body.buildDrop()
             if (expectedType.getClass()?.isExternal == true) {
+                body.buildDrop()
                 body.buildRefNull(WasmHeapType.Simple.NullNoExtern)
-            } else {
-                body.buildRefNull(WasmHeapType.Simple.NullNone)
             }
             return
         }
