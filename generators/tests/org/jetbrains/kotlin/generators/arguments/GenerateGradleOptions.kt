@@ -177,7 +177,6 @@ private fun generateKotlinCommonToolOptionsImpl(
             commonToolOptionsInterfaceFqName,
             k2CommonToolCompilerArgumentsFqName,
             options,
-            true
         )
     }
 
@@ -231,7 +230,6 @@ private fun generateKotlinCommonOptionsImpl(
             commonOptionsInterfaceFqName,
             k2CommonCompilerArgumentsFqName,
             options,
-            true
         )
     }
 
@@ -505,10 +503,9 @@ private fun Printer.generateImpl(
     parentImplFqName: FqName?,
     parentType: FqName,
     argsType: FqName,
-    properties: List<KProperty1<*, *>>,
-    shouldBeOpen: Boolean = false
+    properties: List<KProperty1<*, *>>
 ) {
-    val modifiers = if (shouldBeOpen) "internal open class" else "internal class"
+    val modifiers = "internal abstract class"
     val afterType = if (parentImplFqName != null) {
         ": $parentImplFqName(objectFactory), $parentType"
     } else {
