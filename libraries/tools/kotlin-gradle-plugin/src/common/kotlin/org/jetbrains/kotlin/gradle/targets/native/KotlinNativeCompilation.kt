@@ -11,7 +11,8 @@ import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
-import org.jetbrains.kotlin.gradle.plugin.*
+import org.jetbrains.kotlin.gradle.plugin.KotlinCompilationWithResources
+import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.KotlinNativeCompilationData
 import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.KotlinNativeFragmentMetadataCompilationData
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
@@ -38,6 +39,10 @@ abstract class AbstractKotlinNativeCompilation(
     @Deprecated("Replaced with compileTaskProvider", replaceWith = ReplaceWith("compileTaskProvider"))
     override val compileKotlinTaskProvider: TaskProvider<out KotlinNativeCompile>
         get() = super.compileKotlinTaskProvider as TaskProvider<out KotlinNativeCompile>
+
+    @Suppress("UNCHECKED_CAST")
+    override val compileTaskProvider: TaskProvider<KotlinNativeCompile>
+        get() = super.compileTaskProvider as TaskProvider<KotlinNativeCompile>
 
     internal val useGenericPluginArtifact: Boolean
         get() = project.nativeUseEmbeddableCompilerJar
