@@ -27,6 +27,10 @@ internal abstract class CompilerJvmOptionsDefault @javax.inject.Inject construct
         args.jvmTarget = jvmTarget.orNull?.target
         args.moduleName = moduleName.orNull
         args.noJdk = noJdk.get()
+
+        // Arguments with always default values when used from build tools
+        args.noStdlib = true
+        args.noReflect = true
     }
 
     internal fun fillDefaultValues(args: org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments) {
@@ -35,5 +39,9 @@ internal abstract class CompilerJvmOptionsDefault @javax.inject.Inject construct
         args.jvmTarget = null
         args.moduleName = null
         args.noJdk = false
+
+        // Arguments with always default values when used from build tools
+        args.noStdlib = true
+        args.noReflect = true
     }
 }
