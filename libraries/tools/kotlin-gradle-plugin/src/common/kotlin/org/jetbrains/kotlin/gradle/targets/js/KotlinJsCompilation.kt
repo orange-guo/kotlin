@@ -12,6 +12,7 @@ import groovy.lang.Closure
 import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.dsl.CompilerJsOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinJsOptions
+import org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilationWithResources
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider
@@ -30,6 +31,10 @@ abstract class KotlinJsCompilation @Inject internal constructor(
     KotlinCompilationWithResources<KotlinJsOptions> {
 
     final override val target: KotlinTarget get() = super.target
+
+    @Suppress("UNCHECKED_CAST")
+    final override val compilerOptions: HasCompilerOptions<CompilerJsOptions>
+        get() = super.compilerOptions as HasCompilerOptions<CompilerJsOptions>
 
     private val kotlinProperties = PropertiesProvider(target.project)
 
@@ -70,8 +75,8 @@ abstract class KotlinJsCompilation @Inject internal constructor(
         get() = super.compileKotlinTaskProvider as TaskProvider<out Kotlin2JsCompile>
 
     @Suppress("UNCHECKED_CAST")
-    override val compileTaskProvider: TaskProvider<KotlinCompilationTask<CompilerJsOptions>>
-        get() = super.compileTaskProvider as TaskProvider<KotlinCompilationTask<CompilerJsOptions>>
+    override val compileTaskProvider: TaskProvider<Kotlin2JsCompile>
+        get() = super.compileTaskProvider as TaskProvider<Kotlin2JsCompile>
 
     internal val packageJsonHandlers = mutableListOf<PackageJson.() -> Unit>()
 
