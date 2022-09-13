@@ -1,5 +1,4 @@
 // IGNORE_BACKEND: NATIVE, JS_IR, WASM
-// IGNORE_BACKEND_FIR: JVM_IR
 // MODULE: lib
 // FILE: 1.kt
 interface B<X>
