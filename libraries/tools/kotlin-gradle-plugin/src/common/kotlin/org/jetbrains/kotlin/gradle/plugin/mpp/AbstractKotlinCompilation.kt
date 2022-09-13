@@ -50,7 +50,7 @@ abstract class AbstractKotlinCompilation<T : KotlinCommonOptions>(
     final override val output: KotlinCompilationOutput get() = compilationData.output
     final override val compileKotlinTaskName: String get() = compilationData.compileKotlinTaskName
 
-    final override val compilerOptions: HasCompilerOptions<*>
+    override val compilerOptions: HasCompilerOptions<*>
         get() = compilationData.compilerOptions
 
     @Suppress("DEPRECATION")
