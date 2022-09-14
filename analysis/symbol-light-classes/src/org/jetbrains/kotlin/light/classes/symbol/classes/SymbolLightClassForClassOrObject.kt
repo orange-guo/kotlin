@@ -122,21 +122,24 @@ internal open class SymbolLightClassForClassOrObject : SymbolLightClassForNamedC
 
             val declaredMemberScope = classOrObjectSymbol.getDeclaredMemberScope()
 
-            val visibleDeclarations = declaredMemberScope.getCallableSymbols().applyIf(isEnum) {
-                filterNot { function ->
-                    function is KtFunctionSymbol && (function.name == ENUM_VALUES || function.name == ENUM_VALUE_OF)
+            val visibleDeclarations = declaredMemberScope.getCallableSymbols()
+                .filterNot {
+                    it.hasTypeForValueClassInSignature(analysisSession)
+                }.applyIf(isEnum) {
+                    filterNot { function ->
+                        function is KtFunctionSymbol && (function.name == ENUM_VALUES || function.name == ENUM_VALUE_OF)
+                    }
+                }.applyIf(isObject) {
+                    filterNot {
+                        it is KtKotlinPropertySymbol && it.isConst
+                    }
+                }.applyIf(classOrObjectSymbol.isData) {
+                    // Technically, synthetic members of `data` class, such as `componentN` or `copy`, are visible.
+                    // They're just needed to be added later (to be in a backward-compatible order of members).
+                    filterNot { function ->
+                        function is KtFunctionSymbol && function.origin == KtSymbolOrigin.SOURCE_MEMBER_GENERATED
+                    }
                 }
-            }.applyIf(isObject) {
-                filterNot {
-                    it is KtKotlinPropertySymbol && it.isConst
-                }
-            }.applyIf(classOrObjectSymbol.isData) {
-                // Technically, synthetic members of `data` class, such as `componentN` or `copy`, are visible.
-                // They're just needed to be added later (to be in a backward-compatible order of members).
-                filterNot { function ->
-                    function is KtFunctionSymbol && function.origin == KtSymbolOrigin.SOURCE_MEMBER_GENERATED
-                }
-            }
 
             val suppressStatic = isCompanionObject
             createMethods(visibleDeclarations, result, suppressStatic = suppressStatic)

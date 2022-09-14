@@ -18,6 +18,11 @@ import com.intellij.psi.scope.PsiScopeProcessor
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.PsiUtil
 import org.jetbrains.annotations.NonNls
+import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
+import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
+import org.jetbrains.kotlin.analysis.api.symbols.KtCallableSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.receiverType
+import org.jetbrains.kotlin.analysis.api.symbols.KtFunctionLikeSymbol
 import org.jetbrains.kotlin.analysis.project.structure.KtModule
 import org.jetbrains.kotlin.analysis.providers.createProjectWideOutOfBlockModificationTracker
 import org.jetbrains.kotlin.asJava.classes.*
@@ -184,6 +189,20 @@ abstract class SymbolLightClassBase protected constructor(val ktModule: KtModule
             visitor.visitClass(this)
         } else {
             visitor.visitElement(this)
+        }
+    }
+
+    protected fun KtCallableSymbol.hasTypeForValueClassInSignature(
+        analysisSession: KtAnalysisSession,
+        ignoreReturnType: Boolean = false
+    ): Boolean = with(analysisSession) {
+        withValidityAssertion {
+            if (!ignoreReturnType && returnType.typeForValueClass) return@withValidityAssertion true
+            if (receiverType?.typeForValueClass == true) return@withValidityAssertion true
+            if (this@hasTypeForValueClassInSignature is KtFunctionLikeSymbol) {
+                return@withValidityAssertion valueParameters.any { it.returnType.typeForValueClass }
+            }
+            false
         }
     }
 }

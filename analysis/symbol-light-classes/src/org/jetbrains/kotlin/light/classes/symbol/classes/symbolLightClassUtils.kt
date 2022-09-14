@@ -335,7 +335,7 @@ internal fun SymbolLightClassBase.createPropertyAccessors(
         !isAnnotationType && it.needToCreateAccessor(AnnotationUseSiteTarget.PROPERTY_SETTER)
     }
 
-    if (isMutable && setter != null) {
+    if (isMutable && setter != null && !declaration.returnType.typeForValueClass) {
         result.add(createSymbolLightAccessorMethod(setter))
     }
 }
@@ -576,3 +576,10 @@ internal fun SymbolLightClassBase.addPropertyBackingFields(
     // Then, regular member properties
     propertyGroups[false]?.forEach(::addPropertyBackingField)
 }
+
+context(KtAnalysisSession)
+internal val KtType.typeForValueClass: Boolean
+    get() {
+        val symbol = expandedClassSymbol as? KtNamedClassOrObjectSymbol ?: return false
+        return symbol.isInline
+    }
