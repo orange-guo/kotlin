@@ -646,7 +646,7 @@ internal open class KotlinCommonPlugin(
             {
                 object : HasCompilerOptions<CompilerMultiplatformCommonOptions> {
                     override val options: CompilerMultiplatformCommonOptions =
-                        project.objects.newInstance(CompilerMultiplatformCommonOptions::class.java)
+                        project.objects.newInstance(CompilerMultiplatformCommonOptionsDefault::class.java)
                 }
             },
             { compilerOptions: CompilerMultiplatformCommonOptions ->
