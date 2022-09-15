@@ -16,7 +16,7 @@ internal abstract class CompilerJsDceOptionsDefault @javax.inject.Inject constru
     override val outputDirectory: org.gradle.api.provider.Property<kotlin.String> =
         objectFactory.property(kotlin.String::class.java)
 
-    internal fun toCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.K2JSDceArguments) {
+    internal fun fillCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.K2JSDceArguments) {
         super.toCompilerArguments(args)
         args.devMode = devMode.get()
         args.outputDirectory = outputDirectory.orNull

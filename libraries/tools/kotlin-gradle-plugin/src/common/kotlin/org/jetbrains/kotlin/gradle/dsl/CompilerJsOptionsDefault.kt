@@ -43,7 +43,7 @@ internal abstract class CompilerJsOptionsDefault @javax.inject.Inject constructo
     override val typedArrays: org.gradle.api.provider.Property<kotlin.Boolean> =
         objectFactory.property(kotlin.Boolean::class.java).convention(true)
 
-    internal fun toCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.K2JSCompilerArguments) {
+    internal fun fillCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.K2JSCompilerArguments) {
         super.toCompilerArguments(args)
         args.friendModulesDisabled = friendModulesDisabled.get()
         args.main = main.get().mode

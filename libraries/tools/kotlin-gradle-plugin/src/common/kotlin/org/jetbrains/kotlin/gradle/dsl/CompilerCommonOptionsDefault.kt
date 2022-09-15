@@ -18,7 +18,7 @@ internal abstract class CompilerCommonOptionsDefault @javax.inject.Inject constr
     override val useK2: org.gradle.api.provider.Property<kotlin.Boolean> =
         objectFactory.property(kotlin.Boolean::class.java).convention(false)
 
-    internal fun toCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.CommonCompilerArguments) {
+    internal fun fillCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.CommonCompilerArguments) {
         super.toCompilerArguments(args)
         args.apiVersion = apiVersion.orNull?.version
         args.languageVersion = languageVersion.orNull?.version

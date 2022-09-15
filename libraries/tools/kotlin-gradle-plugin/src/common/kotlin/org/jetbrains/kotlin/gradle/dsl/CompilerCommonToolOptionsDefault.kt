@@ -21,7 +21,7 @@ internal abstract class CompilerCommonToolOptionsDefault @javax.inject.Inject co
     override val freeCompilerArgs: org.gradle.api.provider.ListProperty<kotlin.String> =
         objectFactory.listProperty(kotlin.String::class.java).convention(emptyList<String>())
 
-    internal fun toCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.CommonToolArguments) {
+    internal fun fillCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.CommonToolArguments) {
         args.allWarningsAsErrors = allWarningsAsErrors.get()
         args.suppressWarnings = suppressWarnings.get()
         args.verbose = verbose.get()

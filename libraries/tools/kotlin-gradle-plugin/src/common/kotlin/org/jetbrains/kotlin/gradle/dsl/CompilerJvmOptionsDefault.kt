@@ -21,7 +21,7 @@ internal abstract class CompilerJvmOptionsDefault @javax.inject.Inject construct
     override val noJdk: org.gradle.api.provider.Property<kotlin.Boolean> =
         objectFactory.property(kotlin.Boolean::class.java).convention(false)
 
-    internal fun toCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments) {
+    internal fun fillCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments) {
         super.toCompilerArguments(args)
         args.javaParameters = javaParameters.get()
         args.jvmTarget = jvmTarget.orNull?.target

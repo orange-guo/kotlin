@@ -9,7 +9,7 @@ internal abstract class CompilerMultiplatformCommonOptionsDefault @javax.inject.
     objectFactory: org.gradle.api.model.ObjectFactory
 ) : org.jetbrains.kotlin.gradle.dsl.CompilerCommonOptionsDefault(objectFactory), org.jetbrains.kotlin.gradle.dsl.CompilerMultiplatformCommonOptions {
 
-    internal fun toCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.K2MetadataCompilerArguments) {
+    internal fun fillCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.K2MetadataCompilerArguments) {
         super.toCompilerArguments(args)
     }
 

@@ -523,7 +523,7 @@ private fun Printer.generateImpl(
         }
 
         println()
-        println("internal fun toCompilerArguments(args: $argsType) {")
+        println("internal fun fillCompilerArguments(args: $argsType) {")
         withIndent {
             if (parentImplFqName != null) println("super.toCompilerArguments(args)")
             for (property in properties) {
