@@ -10,6 +10,7 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.dsl.CompilerJvmOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
+import org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilationWithResources
 import org.jetbrains.kotlin.gradle.plugin.internal.JavaSourceSetsAccessor
 import org.jetbrains.kotlin.gradle.plugin.variantImplementationFactory
@@ -22,6 +23,10 @@ abstract class KotlinJvmCompilation @Inject constructor(
 ) : AbstractKotlinCompilationToRunnableFiles<KotlinJvmOptions>(compilationDetails),
     KotlinCompilationWithResources<KotlinJvmOptions> {
     override val target: KotlinJvmTarget get() = compilationDetails.target as KotlinJvmTarget
+
+    @Suppress("UNCHECKED_CAST")
+    override val compilerOptions: HasCompilerOptions<CompilerJvmOptions>
+        get() = super.compilerOptions as HasCompilerOptions<CompilerJvmOptions>
 
     override val processResourcesTaskName: String
         get() = disambiguateName("processResources")
