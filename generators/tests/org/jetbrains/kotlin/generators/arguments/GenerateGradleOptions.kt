@@ -771,7 +771,7 @@ private val KProperty1<*, *>.gradleLazyReturnTypeInstantiator: String
         }
     }
 
-private val KProperty1<*, *>.gradleInputType: GradleInputTypes get() =
+private val KProperty1<*, *>.gradleInputType: String get() =
     findAnnotation<GradleOption>()!!.gradleInputType
 
 private inline fun <reified T> KAnnotatedElement.findAnnotation(): T? =
