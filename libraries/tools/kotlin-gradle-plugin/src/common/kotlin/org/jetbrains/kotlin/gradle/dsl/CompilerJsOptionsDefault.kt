@@ -44,7 +44,7 @@ internal abstract class CompilerJsOptionsDefault @javax.inject.Inject constructo
         objectFactory.property(kotlin.Boolean::class.java).convention(true)
 
     internal fun fillCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.K2JSCompilerArguments) {
-        super.toCompilerArguments(args)
+        super.fillCompilerArguments(args)
         args.friendModulesDisabled = friendModulesDisabled.get()
         args.main = main.get().mode
         args.metaInfo = metaInfo.get()

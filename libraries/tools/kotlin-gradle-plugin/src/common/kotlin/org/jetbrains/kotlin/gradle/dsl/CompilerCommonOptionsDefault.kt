@@ -19,7 +19,7 @@ internal abstract class CompilerCommonOptionsDefault @javax.inject.Inject constr
         objectFactory.property(kotlin.Boolean::class.java).convention(false)
 
     internal fun fillCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.CommonCompilerArguments) {
-        super.toCompilerArguments(args)
+        super.fillCompilerArguments(args)
         args.apiVersion = apiVersion.orNull?.version
         args.languageVersion = languageVersion.orNull?.version
         args.useK2 = useK2.get()

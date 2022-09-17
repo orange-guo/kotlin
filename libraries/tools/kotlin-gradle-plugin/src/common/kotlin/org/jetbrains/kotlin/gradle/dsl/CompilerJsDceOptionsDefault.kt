@@ -17,7 +17,7 @@ internal abstract class CompilerJsDceOptionsDefault @javax.inject.Inject constru
         objectFactory.property(kotlin.String::class.java)
 
     internal fun fillCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.K2JSDceArguments) {
-        super.toCompilerArguments(args)
+        super.fillCompilerArguments(args)
         args.devMode = devMode.get()
         args.outputDirectory = outputDirectory.orNull
     }

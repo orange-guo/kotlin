@@ -22,7 +22,7 @@ internal abstract class CompilerJvmOptionsDefault @javax.inject.Inject construct
         objectFactory.property(kotlin.Boolean::class.java).convention(false)
 
     internal fun fillCompilerArguments(args: org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments) {
-        super.toCompilerArguments(args)
+        super.fillCompilerArguments(args)
         args.javaParameters = javaParameters.get()
         args.jvmTarget = jvmTarget.orNull?.target
         args.moduleName = moduleName.orNull

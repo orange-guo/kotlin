@@ -525,7 +525,7 @@ private fun Printer.generateImpl(
         println()
         println("internal fun fillCompilerArguments(args: $argsType) {")
         withIndent {
-            if (parentImplFqName != null) println("super.toCompilerArguments(args)")
+            if (parentImplFqName != null) println("super.fillCompilerArguments(args)")
             for (property in properties) {
                 val defaultValue = property.gradleValues
                 if (property.name != "freeCompilerArgs") {
