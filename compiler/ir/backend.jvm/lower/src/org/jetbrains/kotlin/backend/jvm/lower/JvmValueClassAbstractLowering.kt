@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitor
 import org.jetbrains.kotlin.load.java.JvmAbi
+import org.jetbrains.kotlin.name.JvmNames
 import org.jetbrains.kotlin.name.Name
 
 internal abstract class JvmValueClassAbstractLowering(
@@ -118,12 +119,12 @@ internal abstract class JvmValueClassAbstractLowering(
         allScopes.pop()
         replacement.copyAttributes(function)
 
-        // Don't create a wrapper for functions which are only used in an unboxed context
-        if (function.overriddenSymbols.isEmpty() || replacement.dispatchReceiverParameter != null)
+        // Don't create a wrapper for functions which are only used in an unboxed context, except the one are annotated with JvmExposeBoxed
+        val hasJvmExposeBoxed = function.parentClassOrNull?.hasAnnotation(JvmNames.JVM_EXPOSE_BOXED) == true
+        if ((!hasJvmExposeBoxed && function.overriddenSymbols.isEmpty()) || replacement.dispatchReceiverParameter != null)
             return listOf(replacement)
 
         val bridgeFunction = createBridgeFunction(function, replacement)
-
         return listOf(replacement, bridgeFunction)
     }
 
