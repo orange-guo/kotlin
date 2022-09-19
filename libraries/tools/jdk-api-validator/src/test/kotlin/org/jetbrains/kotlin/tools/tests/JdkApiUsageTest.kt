@@ -25,7 +25,7 @@ class JdkApiUsageTest {
     fun kotlinReflect() {
         testApiUsage(
             jarArtifact("../../reflect/build/libs", "kotlin-reflect"),
-            dependencies = listOf(jarArtifact("../../stdlib/jvm/build/libs", "kotlin-stdlib"))
+            dependencies = listOf(jarArtifact("../../stdlib/jvm/build/libs", "kotlin-stdlib-jdk6"))
         )
     }
 
