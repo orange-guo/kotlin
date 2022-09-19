@@ -609,7 +609,7 @@ private fun Printer.generatePropertyProvider(
     modifiers: String = ""
 ) {
     if (property.gradleDefaultValue == "null" &&
-        property.gradleInputType == GradleInputTypes.INPUT
+        property.gradleInputType == GradleInputTypes.INPUT.typeAsString
     ) {
         println("@get:org.gradle.api.tasks.Optional")
     }
@@ -772,7 +772,7 @@ private val KProperty1<*, *>.gradleLazyReturnTypeInstantiator: String
     }
 
 private val KProperty1<*, *>.gradleInputType: String get() =
-    findAnnotation<GradleOption>()!!.gradleInputType
+    findAnnotation<GradleOption>()!!.gradleInputType.toString()
 
 private inline fun <reified T> KAnnotatedElement.findAnnotation(): T? =
     annotations.filterIsInstance<T>().firstOrNull()
