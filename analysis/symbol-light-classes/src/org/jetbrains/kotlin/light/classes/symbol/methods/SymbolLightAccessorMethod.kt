@@ -164,6 +164,7 @@ internal class SymbolLightAccessorMethod private constructor(
             modifierList = modifierList,
             nullability = NullabilityType.Unknown,
             annotationUseSiteTarget = accessorSite,
+            doNotAddOverrideAnnotation = true,
         )
 
         annotationsFromProperty + annotationsFromAccessor
