@@ -16,6 +16,10 @@
 #include "MultiSourceQueue.hpp"
 #include "Weak.h"
 
+#ifdef CUSTOM_ALLOCATOR
+#include "AtomicStack.hpp"
+#endif
+
 namespace kotlin {
 namespace mm {
 
@@ -27,6 +31,7 @@ public:
         FLAGS_FROZEN = 0,
         FLAGS_NEVER_FROZEN = 1,
         FLAGS_IN_FINALIZER_QUEUE = 2,
+        FLAGS_FINALIZED = 3,
     };
 
     static constexpr unsigned WEAK_REF_TAG = 1;
@@ -83,9 +88,13 @@ public:
     }
     ~ExtraObjectData();
 private:
-
     // Must be first to match `TypeInfo` layout.
     const TypeInfo* typeInfo_;
+
+#ifdef CUSTOM_ALLOCATOR
+    friend alloc::AtomicStack<ExtraObjectData>;
+    ExtraObjectData* next_;
+#endif
 
     std::atomic<uint32_t> flags_ = 0;
 

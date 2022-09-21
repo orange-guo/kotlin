@@ -11,9 +11,12 @@
 #include <limits>
 #include <stdlib.h>
 
+#include "ExtraObjectData.hpp"
+
 namespace kotlin::alloc {
 
 bool TryResetMark(void* ptr) noexcept;
+bool TryFinalize(mm::ExtraObjectData* extraObject, AtomicStack<mm::ExtraObjectData>& finalizerQueue, size_t& finalizersScheduled) noexcept;
 
 void* SafeAlloc(uint64_t size) noexcept;
 

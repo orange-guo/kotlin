@@ -34,6 +34,7 @@ public:
         } while (!stack_.compare_exchange_weak(head, elm, std::memory_order_acq_rel));
     }
 
+    // This will put the contents of the other stack on top of this stack
     void TransferAllFrom(AtomicStack<T>& other) noexcept {
         // Clear out the `other` stack.
         T* otherHead = nullptr;

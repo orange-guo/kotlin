@@ -9,6 +9,7 @@
 
 #include "ConcurrentMarkAndSweep.hpp"
 #include "CustomLogging.hpp"
+#include "FinalizerHooks.hpp"
 #include "ObjectFactory.hpp"
 
 namespace kotlin::alloc {
@@ -19,14 +20,56 @@ bool TryResetMark(void* ptr) noexcept {
     Node& node = Node::FromData(ptr);
     NodeRef ref = NodeRef(node);
     auto& objectData = ref.ObjectData();
-    if (!objectData.tryResetMark()) {
-        auto* objHeader = ref.GetObjHeader();
-        if (HasFinalizers(objHeader)) {
-            CustomAllocWarning("FINALIZER IGNORED");
-        }
+    bool reset = objectData.tryResetMark();
+    CustomAllocDebug("TryResetMark(%p) = %d", ptr, reset);
+    return reset;
+}
+
+using ObjectFactory = mm::ObjectFactory<gc::ConcurrentMarkAndSweep>;
+using ExtraObjectsFactory = mm::ExtraObjectDataFactory;
+
+static void KeepAlive(ObjHeader* baseObject) noexcept {
+    auto& objectData = ObjectFactory::NodeRef::From(baseObject).ObjectData();
+    objectData.tryMark();
+}
+
+bool TryFinalize(mm::ExtraObjectData* extraObject, AtomicStack<mm::ExtraObjectData>& finalizerQueue, size_t& finalizersScheduled) noexcept {
+    if (extraObject->getFlag(mm::ExtraObjectData::FLAGS_FINALIZED)) {
+        CustomAllocDebug("TryFinalize(%p): already finalized", extraObject);
+        return true;
+    }
+    auto* baseObject = extraObject->GetBaseObject();
+    if (!baseObject->heap()) {
+        CustomAllocDebug("TryFinalize(%p): not a heap object", extraObject);
         return false;
     }
-    return true;
+    if (extraObject->getFlag(mm::ExtraObjectData::FLAGS_IN_FINALIZER_QUEUE)) {
+        CustomAllocDebug("TryFinalize(%p): already in finalizer queue, keep base object (%p) alive", extraObject, baseObject);
+        KeepAlive(baseObject);
+        return false;
+    }
+    extraObject->ClearWeakReferenceCounter();
+    if (extraObject->HasAssociatedObject()) {
+        extraObject->DetachAssociatedObject();
+        extraObject->setFlag(mm::ExtraObjectData::FLAGS_IN_FINALIZER_QUEUE);
+        finalizerQueue.Push(extraObject);
+        finalizersScheduled++;
+        KeepAlive(baseObject);
+        CustomAllocDebug("TryFinalize(%p): add to finalizerQueue", extraObject);
+        return false;
+    } else {
+        if (HasFinalizers(baseObject)) {
+            extraObject->setFlag(mm::ExtraObjectData::FLAGS_IN_FINALIZER_QUEUE);
+            finalizerQueue.Push(extraObject);
+            finalizersScheduled++;
+            KeepAlive(baseObject);
+            CustomAllocDebug("TryFinalize(%p): addings to finalizerQueue, keep base object (%p) alive", extraObject, baseObject);
+            return false;
+        }
+        extraObject->Uninstall();
+        CustomAllocDebug("TryFinalize(%p): uninstalled extraObject", extraObject);
+        return true;
+    }
 }
 
 void* SafeAlloc(uint64_t size) noexcept {
