@@ -172,8 +172,9 @@ internal class SymbolLightSimpleMethod(
 
             ktType.asPsiType(
                 this@SymbolLightSimpleMethod,
-                KtTypeMappingMode.RETURN_TYPE,
-                containingClass.isAnnotationType,
+                allowErrorTypes = true,
+            KtTypeMappingMode.RETURN_TYPE,
+            containingClass.isAnnotationType,
             )
         } ?: nonExistentType()
     }

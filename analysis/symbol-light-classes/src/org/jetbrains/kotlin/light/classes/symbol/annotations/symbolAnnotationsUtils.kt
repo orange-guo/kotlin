@@ -230,8 +230,9 @@ internal fun KtAnnotatedSymbol.computeThrowsList(
         is KtKClassAnnotationValue.KtNonLocalKClassAnnotationValue -> {
             val psiType = buildClassType(annotationValue.classId).asPsiType(
                 useSitePosition,
+                allowErrorTypes = true,
                 KtTypeMappingMode.DEFAULT,
-                containingClass.isAnnotationType
+                containingClass.isAnnotationType,
             )
             (psiType as? PsiClassType)?.let {
                 builder.addReference(it)
