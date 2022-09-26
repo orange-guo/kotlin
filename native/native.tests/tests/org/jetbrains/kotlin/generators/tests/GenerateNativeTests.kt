@@ -81,6 +81,16 @@ fun main() {
                 model("CInterop/KT-39120/defs", pattern = "^([^_](.+))$", recursive = false)
             }
         }
+
+        // Atomicfu compiler plugin native tests.
+        testGroup("plugins/atomicfu/atomicfu-compiler/test", "plugins/atomicfu/atomicfu-compiler/testData") {
+            testClass<AbstractNativeBlackBoxTest>(
+                suiteTestClassName = "AtomicfuNativeTestGenerated",
+                annotations = listOf(codegen(), provider<UseStandardTestCaseGroupProvider>())
+            ) {
+                model("nativeBox", targetBackend = TargetBackend.NATIVE)
+            }
+        }
     }
 }
 

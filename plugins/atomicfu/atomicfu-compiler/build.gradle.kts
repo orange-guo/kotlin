@@ -10,6 +10,8 @@ plugins {
     id("jps-compatible")
 }
 
+project.configureJvmToolchain(JdkMajorVersion.JDK_11_0)
+
 val antLauncherJar by configurations.creating
 val testJsRuntime by configurations.creating {
     attributes {
@@ -68,6 +70,11 @@ dependencies {
     testImplementation(projectTests(":js:js.tests"))
     testApi(commonDependency("junit:junit"))
     testApi(project(":kotlin-test:kotlin-test-jvm"))
+
+    testImplementation(projectTests(":native:native.tests"))
+    testImplementation(project(":native:kotlin-native-utils"))
+
+    testApiJUnit5()
 
     testRuntimeOnly(kotlinStdlib())
     testRuntimeOnly(project(":kotlin-preloader")) // it's required for ant tests
@@ -145,3 +152,5 @@ fun Test.setUpJsIrBoxTests() {
     systemProperty("kotlin.js.kotlin.test.path", "libraries/kotlin.test/js-ir/build/classes/kotlin/js/main")
     systemProperty("kotlin.js.test.root.out.dir", "$buildDir/")
 }
+
+val nativeBoxTest = nativeTest("nativeBoxTest", "codegen")
