@@ -67,6 +67,7 @@ public abstract class KtUsualClassType : KtNonErrorClassType()
 
 public abstract class KtClassErrorType : KtClassType(), KtErrorType {
     public abstract val candidateClassSymbols: Collection<KtClassLikeSymbol>
+    public abstract val presentableQualifiedName: String?
 }
 
 public abstract class KtTypeParameterType : KtType {

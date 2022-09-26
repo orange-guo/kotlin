@@ -20,8 +20,10 @@ import org.jetbrains.kotlin.analysis.api.types.KtTypeNullability
 import org.jetbrains.kotlin.fir.diagnostics.ConeDiagnostic
 import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeUnmatchedTypeArgumentsError
 import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeUnresolvedError
+import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeUnresolvedTypeQualifierError
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
+import org.jetbrains.kotlin.fir.types.ConeErrorType
 import org.jetbrains.kotlin.fir.types.renderForDebugging
 
 internal class KtFirClassErrorType(
@@ -54,6 +56,12 @@ internal class KtFirClassErrorType(
         val symbols = coneDiagnostic.getCandidateSymbols().filterIsInstance<FirClassLikeSymbol<*>>()
         symbols.map { builder.classifierBuilder.buildClassLikeSymbol(it) }
     }
+
+    override val presentableQualifiedName: String?
+        get() {
+            val diagnostic = (coneType as? ConeErrorType)?.diagnostic ?: return null
+            return (diagnostic as? ConeUnresolvedTypeQualifierError)?.qualifier
+        }
 
     override fun asStringForDebugging(): String = withValidityAssertion { coneType.renderForDebugging() }
     override fun equals(other: Any?) = typeEquals(other)

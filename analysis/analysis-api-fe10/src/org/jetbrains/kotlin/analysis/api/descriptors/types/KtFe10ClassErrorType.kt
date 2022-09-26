@@ -42,6 +42,9 @@ internal class KtFe10ClassErrorType(
     override val candidateClassSymbols: Collection<KtClassLikeSymbol>
         get() = withValidityAssertion { emptyList() }
 
+    override val presentableQualifiedName: String?
+        get() = null
+
     override val nullability: KtTypeNullability
         get() = withValidityAssertion { type.ktNullability }
 }
