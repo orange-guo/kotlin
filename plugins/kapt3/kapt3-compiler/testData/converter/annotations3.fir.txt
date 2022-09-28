@@ -86,5 +86,5 @@ import java.lang.System;
 @kotlin.annotation.Target(allowedTargets = {kotlin.annotation.AnnotationTarget.CLASS, kotlin.annotation.AnnotationTarget.PROPERTY})
 @kotlin.annotation.Repeatable()
 @kotlin.annotation.Retention(value = kotlin.annotation.AnnotationRetention.SOURCE)
-public abstract @interface TypeParceler<T extends java.lang.Object, P extends Parceler<? super T>> extends java.lang.annotation.Annotation {
+public abstract @interface TypeParceler<T extends java.lang.Object, P extends Parceler<? super T>> {
 }

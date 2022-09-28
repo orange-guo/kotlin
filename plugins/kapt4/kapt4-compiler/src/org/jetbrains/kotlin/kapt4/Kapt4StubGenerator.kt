@@ -156,14 +156,17 @@ class Kapt4StubGenerator(private val analysisSession: KtAnalysisSession) {
         packageFqName: String,
         isTopLevel: Boolean
     ): JCClassDecl? {
-//        if (isSynthetic(lightClass.access)) return null
         if (!checkIfValidTypeName(lightClass, lightClass.defaultType)) return null
 
-        val isInnerOrNested = lightClass.parent is PsiClass
+        val parentClass = lightClass.parent as? PsiClass
+        // Java supports only public nested classes inside interfaces and annotations
+        if ((parentClass?.isInterface == true || parentClass?.isAnnotationType == true) && !lightClass.isPublic) return null
+
+        val isInnerOrNested = parentClass != null
         val isNested = isInnerOrNested && lightClass.isStatic
         val isInner = isInnerOrNested && !isNested
 
-        val flags = lightClass.accessFlags//getClassAccessFlags(lightClass, isInner)
+        val flags = lightClass.accessFlags
 
         val metadata = runUnless(stripMetadata) {
             when (lightClass) {
