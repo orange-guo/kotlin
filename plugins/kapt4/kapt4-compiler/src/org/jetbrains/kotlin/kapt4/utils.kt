@@ -123,6 +123,15 @@ val PsiType.qualifiedNameOrNull: String?
         }
     }
 
+val PsiType.simpleNameOrNull: String?
+    get() {
+        if (this is PsiPrimitiveType) return name
+        return when (val resolvedClass = resolvedClass) {
+            is PsiTypeParameter -> resolvedClass.name
+            else -> resolvedClass?.name
+        }
+    }
+
 val PsiType.isErrorType: Boolean
     get() = qualifiedNameOrNull == null
 

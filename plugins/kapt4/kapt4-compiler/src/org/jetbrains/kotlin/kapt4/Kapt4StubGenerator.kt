@@ -30,6 +30,7 @@ import org.jetbrains.kotlin.light.classes.symbol.classes.SymbolLightClassForClas
 import org.jetbrains.kotlin.light.classes.symbol.classes.SymbolLightClassForFacade
 import org.jetbrains.kotlin.load.java.JvmAbi
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.name.isOneSegmentFQN
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import org.jetbrains.kotlin.resolve.ArrayFqNames
@@ -116,7 +117,7 @@ class Kapt4StubGenerator(private val analysisSession: KtAnalysisSession) {
         val packageName = (lightClass.parent as? PsiJavaFile)?.packageName ?: TODO()
         val packageClause = runUnless(packageName.isBlank()) { treeMaker.FqName(packageName) }
 
-        val unresolvedQualifiersRecorder = UnresolvedQualifiersRecorder()
+        val unresolvedQualifiersRecorder = UnresolvedQualifiersRecorder(ktFile)
         val classDeclaration = with(unresolvedQualifiersRecorder) {
             convertClass(lightClass, lineMappings, packageName, true) ?: return null
         }
@@ -148,9 +149,8 @@ class Kapt4StubGenerator(private val analysisSession: KtAnalysisSession) {
         return KaptStub(topLevel, lineMappings.serialize())
     }
 
-    context(UnresolvedQualifiersRecorder)
-    @Suppress("InconsistentCommentForJavaParameter", "IncorrectFormatting") // KTIJ-22227
-    private fun convertClass(
+    // TODO: convert to context after fix of KT-54197
+    private fun UnresolvedQualifiersRecorder.convertClass(
         lightClass: PsiClass,
         lineMappings: Kapt4LineMappingCollector,
         packageFqName: String,
@@ -411,9 +411,8 @@ class Kapt4StubGenerator(private val analysisSession: KtAnalysisSession) {
         return treeMaker.Annotation(annotationFqName, values)
     }
 
-    context(UnresolvedQualifiersRecorder)
-    @Suppress("IncorrectFormatting") // KTIJ-22227
-    private fun convertPsiAnnotationMemberValue(
+    // TODO: convert to context after fix of KT-54197
+    private fun UnresolvedQualifiersRecorder.convertPsiAnnotationMemberValue(
         containingClass: PsiClass,
         value: PsiAnnotationMemberValue,
         packageFqName: String? = "",
@@ -428,6 +427,11 @@ class Kapt4StubGenerator(private val analysisSession: KtAnalysisSession) {
             }
 
             is PsiLiteral -> convertLiteralExpression(containingClass = null, value.value)
+            is PsiClassObjectAccessExpression -> {
+                val type = value.operand.type
+                checkIfValidTypeName(containingClass, type)
+                treeMaker.Select(treeMaker.SimpleName(type.qualifiedName), treeMaker.name("class"))
+            }
             is PsiExpression -> treeMaker.SimpleName(value.text)
             is PsiAnnotation -> convertAnnotation(containingClass, value, packageFqName, filtered) ?: TODO()
             else -> error("Should not be here")
@@ -845,10 +849,20 @@ class Kapt4StubGenerator(private val analysisSession: KtAnalysisSession) {
         return annotations?.any { it.hasQualifiedName(kaptIgnoredAnnotationFqName) } ?: false
     }
 
-    private tailrec fun checkIfValidTypeName(containingClass: PsiClass, type: PsiType): Boolean {
+    // TODO: convert to context after fix of KT-54197
+    private tailrec fun UnresolvedQualifiersRecorder.checkIfValidTypeName(
+        containingClass: PsiClass,
+        type: PsiType
+    ): Boolean {
         when (type) {
             is PsiArrayType -> return checkIfValidTypeName(containingClass, type.componentType)
             is PsiPrimitiveType -> return true
+        }
+
+
+        if (type.toString() == "PsiType:RootClass") {
+            val res = type.resolvedClass
+            Unit
         }
 
 //        TODO
@@ -902,17 +916,17 @@ class Kapt4StubGenerator(private val analysisSession: KtAnalysisSession) {
         return doesInnerClassNameConflictWithOuter(clazz, containingClassForOuterClass)
     }
 
-    private fun reportIfIllegalTypeUsage(containingClass: PsiClass, type: PsiType) {
-//        TODO()
-//        val file = getFileForClass(containingClass)
-//        importsFromRoot[file]?.let { importsFromRoot ->
-//            val typeName = type.className
-//            if (importsFromRoot.contains(typeName)) {
-//                val msg = "${containingClass.className}: Can't reference type '${typeName}' from default package in Java stub."
-//                if (strictMode) kaptContext.reportKaptError(msg)
-//                else kaptContext.logger.warn(msg)
-//            }
-//        }
+    // TODO: convert to context after fix of KT-54197
+    private fun UnresolvedQualifiersRecorder.reportIfIllegalTypeUsage(
+        containingClass: PsiClass,
+        type: PsiType
+    ) {
+        val typeName = type.simpleNameOrNull ?: return
+        if (typeName in importsFromRoot) {
+            val msg = "${containingClass.qualifiedName}: Can't reference type '${typeName}' from default package in Java stub."
+            if (strictMode) reportKaptError(msg)
+            else logger.warn(msg)
+        }
     }
 
     @OptIn(ExperimentalContracts::class)
@@ -1077,7 +1091,15 @@ class Kapt4StubGenerator(private val analysisSession: KtAnalysisSession) {
         return treeMaker.TypeParameter(treeMaker.name(typeParameter.name!!), JavacList.from(classBounds + interfaceBounds))
     }
 
-    private class UnresolvedQualifiersRecorder {
+    private class UnresolvedQualifiersRecorder(ktFile: KtFile) {
+        val importsFromRoot: Set<String> by lazy {
+            val importsFromRoot =
+                ktFile.importDirectives
+                    .filter { !it.isAllUnder }
+                    .mapNotNull { im -> im.importPath?.fqName?.takeIf { it.isOneSegmentFQN() } }
+            importsFromRoot.mapTo(mutableSetOf()) { it.asString() }
+        }
+
         private val _qualifiedNames = mutableSetOf<String>()
         private val _simpleNames = mutableSetOf<String>()
 
