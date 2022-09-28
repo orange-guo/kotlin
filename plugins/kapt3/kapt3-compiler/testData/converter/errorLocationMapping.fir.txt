@@ -1,4 +1,4 @@
-import kotlin.reflect.KClass;
+import java.lang.System;
 
 @kotlin.Metadata()
 @java.lang.annotation.Retention(value = java.lang.annotation.RetentionPolicy.RUNTIME)
@@ -10,7 +10,7 @@ public abstract @interface Anno {
 ////////////////////
 
 
-import kotlin.reflect.KClass;
+import java.lang.System;
 
 @kotlin.Metadata()
 @Anno(a = ABC.class)
@@ -24,7 +24,7 @@ public final class ErrorInAnnotation {
 ////////////////////
 
 
-import kotlin.reflect.KClass;
+import java.lang.System;
 
 @kotlin.Metadata()
 public final class ErrorInConstructorParameter {
@@ -36,7 +36,7 @@ public final class ErrorInConstructorParameter {
 
     public ErrorInConstructorParameter(@org.jetbrains.annotations.NotNull()
     java.lang.String a, ABC b, @org.jetbrains.annotations.NotNull()
-    java.util.List<ABC> c) {
+    java.util.List<? extends ABC> c) {
         super();
     }
 
@@ -58,7 +58,7 @@ public final class ErrorInConstructorParameter {
 ////////////////////
 
 
-import kotlin.reflect.KClass;
+import java.lang.System;
 
 @kotlin.Metadata()
 public final class ErrorInDeclarations {
@@ -118,7 +118,7 @@ public final class ErrorInDeclarations {
 ////////////////////
 
 
-import kotlin.reflect.KClass;
+import java.lang.System;
 
 @kotlin.Metadata()
 public final class ErrorInSupertype implements ABC {
@@ -131,7 +131,7 @@ public final class ErrorInSupertype implements ABC {
 ////////////////////
 
 
-import kotlin.reflect.KClass;
+import java.lang.System;
 
 @kotlin.Metadata()
 public final class ErrorInSupertype2 extends ABC<java.lang.String> {

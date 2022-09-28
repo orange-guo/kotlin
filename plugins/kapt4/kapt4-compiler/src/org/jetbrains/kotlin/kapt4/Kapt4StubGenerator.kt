@@ -15,6 +15,9 @@ import com.sun.tools.javac.tree.JCTree
 import com.sun.tools.javac.tree.JCTree.*
 import kotlinx.kapt.KaptIgnored
 import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
+import org.jetbrains.kotlin.analysis.api.symbols.KtCallableSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KtClassOrObjectSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KtEnumEntrySymbol
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.base.kapt3.KaptFlag
 import org.jetbrains.kotlin.builtins.StandardNames
@@ -287,59 +290,40 @@ class Kapt4StubGenerator(private val analysisSession: KtAnalysisSession) {
                 importDirective.isAllUnder -> true
                 else -> {
                     val fqName = importDirective.importedFqName ?: continue
-                    fqName.shortName().identifier in unresolvedQualifiers.simpleNames
+                    fqName.asString() in unresolvedQualifiers.qualifiedNames || fqName.shortName().identifier in unresolvedQualifiers.simpleNames
                 }
             }
 
             if (!acceptableByName) continue
 
-            with(analysisSession) {
-                val importedReference = importDirective.importedReference!!
-                val referenceExpression = importedReference.referenceExpression()
-                val callee = importedReference.getCalleeExpressionIfAny()
-                val reference = callee?.references?.firstOrNull() as? KtReference
-                val symbol = reference?.resolveToSymbol()
-                Unit
+            val importedSymbols = with(analysisSession) {
+                val importedReference = importDirective.importedReference
+                    ?.getCalleeExpressionIfAny()
+                    ?.references
+                    ?.firstOrNull() as? KtReference
+                importedReference?.resolveToSymbols().orEmpty()
             }
+
+            val isAllUnderClassifierImport = importDirective.isAllUnder && importedSymbols.any { it is KtClassOrObjectSymbol }
+            val isCallableImport = !importDirective.isAllUnder && importedSymbols.any { it is KtCallableSymbol }
+            val isEnumEntryImport = !importDirective.isAllUnder && importedSymbols.any { it is KtEnumEntrySymbol }
+
+            if (isAllUnderClassifierImport || isCallableImport || isEnumEntryImport) continue
+
 
             // Qualified name should be valid Java fq-name
             val importedFqName = importDirective.importedFqName?.takeIf { it.pathSegments().size > 1 } ?: continue
             if (!isValidQualifiedName(importedFqName)) continue
+            val importedExpr = treeMaker.FqName(importedFqName.asString())
+            imports += if (importDirective.isAllUnder) {
+                treeMaker.Import(treeMaker.Select(importedExpr, treeMaker.nameTable.names.asterisk), false)
+            } else {
+                if (!importedShortNames.add(importedFqName.shortName().asString())) {
+                    continue
+                }
 
-            val shortName = importedFqName.shortName()
-//            if (shortName.asString() == classDeclaration.simpleName.toString()) continue
-//            TODO
-//            val importedReference = /* resolveImportReference */ run {
-//                val referenceExpression = getReferenceExpression(importDirective.importedReference) ?: return@run null
-//
-//                val bindingContext = kaptContext.bindingContext
-//                bindingContext[BindingContext.REFERENCE_TARGET, referenceExpression]?.let { return@run it }
-//
-//                val allTargets = bindingContext[BindingContext.AMBIGUOUS_REFERENCE_TARGET, referenceExpression] ?: return@run null
-//                allTargets.find { it is CallableDescriptor }?.let { return@run it }
-//
-//                return@run allTargets.firstOrNull()
-//            }
-
-//            val isCallableImport = importedReference is CallableDescriptor
-//            val isEnumEntry = (importedReference as? ClassDescriptor)?.kind == ClassKind.ENUM_ENTRY
-//            val isAllUnderClassifierImport = importDirective.isAllUnder && importedReference is ClassifierDescriptor
-//
-//            if (isCallableImport || isEnumEntry || isAllUnderClassifierImport) {
-//                continue@loop
-//            }
-//
-//            val importedExpr = treeMaker.FqName(importedFqName.asString())
-//
-//            imports += if (importDirective.isAllUnder) {
-//                treeMaker.Import(treeMaker.Select(importedExpr, treeMaker.nameTable.names.asterisk), false)
-//            } else {
-//                if (!importedShortNames.add(importedFqName.shortName().asString())) {
-//                    continue
-//                }
-//
-//                treeMaker.Import(importedExpr, false)
-//            }
+                treeMaker.Import(importedExpr, false)
+            }
         }
 
         return JavacList.from(imports)
