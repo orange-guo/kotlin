@@ -193,9 +193,7 @@ internal fun ConeKotlinType.asPsiType(
         val containingFile = useSitePosition.containingKtFile
         // parameters for default setters does not have kotlin origin, but setter has
             ?: (useSitePosition as? KtLightParameter)?.parent?.parent?.containingKtFile
-            ?: run {
-                return@mapType null
-            }
+            ?: return@mapType null
         val correspondingImport = containingFile.findImportByAlias(it) ?: return@mapType null
         correspondingImport.importPath?.pathStr
     }
