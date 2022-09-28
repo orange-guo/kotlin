@@ -265,6 +265,12 @@ public class SymbolLightClassesLoadingForLibraryTestGenerated extends AbstractSy
     }
 
     @Test
+    @TestMetadata("unresolvedQuialifierInAnnotation.kt")
+    public void testUnresolvedQuialifierInAnnotation() throws Exception {
+        runTest("compiler/testData/asJava/ultraLightClasses/unresolvedQuialifierInAnnotation.kt");
+    }
+
+    @Test
     @TestMetadata("unresolvedWithAliasedImport.kt")
     public void testUnresolvedWithAliasedImport() throws Exception {
         runTest("compiler/testData/asJava/ultraLightClasses/unresolvedWithAliasedImport.kt");
