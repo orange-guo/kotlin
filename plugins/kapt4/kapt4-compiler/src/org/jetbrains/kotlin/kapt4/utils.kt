@@ -283,9 +283,13 @@ val PsiClass.qualifiedNameWithDollars: String?
     get() {
         val packageName = PsiUtil.getPackageName(this) ?: return null
         val qualifiedName = this.qualifiedName ?: return null
-        val className = qualifiedName.substringAfter(packageName)
+        val className = qualifiedName.substringAfter("$packageName.")
         val classNameWithDollars = className.replace(".", "$")
-        return "$packageName$classNameWithDollars"
+        return if (packageName.isBlank()) {
+            classNameWithDollars
+        } else {
+            "$packageName.$classNameWithDollars"
+        }
     }
 
 // ----------------------------- TODO delete -----------------------------
@@ -319,3 +323,6 @@ val allAccOpcodes = listOf(
 )
 
 fun showOpcodes(flags: Int) = allAccOpcodes.filter { (flags and it.second) != 0 }.map { it.first }
+
+val PsiMethod.properName: String
+    get() = if (isConstructor) "<init>" else name

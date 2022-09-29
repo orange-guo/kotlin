@@ -23,26 +23,31 @@ class Kapt4LineMappingCollector {
     private val filePaths = mutableMapOf<PsiFile, Pair<String, Boolean>>()
 
     fun registerClass(lightClass: PsiClass) {
-        register(lightClass, lightClass.name ?: NO_NAME_PROVIDED)
+        register(lightClass, lightClass.qualifiedNameWithSlashes)
     }
 
     fun registerMethod(lightClass: PsiClass, method: PsiMethod) {
-        register(method, lightClass.name + "#" + method.name + method.signature)
+        register(method, lightClass.qualifiedNameWithSlashes + "#" + method.properName + method.signature)
     }
 
     fun registerField(lightClass: PsiClass, field: PsiField) {
-        register(field, lightClass.name + "#" + field.name)
+        register(field, lightClass.qualifiedNameWithSlashes + "#" + field.name)
     }
 
     fun registerSignature(declaration: JCTree.JCMethodDecl, method: PsiMethod) {
-        signatureInfo[declaration.getJavacSignature()] = method.name + method.signature
+        signatureInfo[declaration.getJavacSignature()] = method.properName + method.signature
     }
 
-    fun getPosition(lightClass: PsiClass): KotlinPosition? = lineInfo[lightClass.name]
-    fun getPosition(lightClass: PsiClass, method: PsiMethod): KotlinPosition? =
-        lineInfo[lightClass.name + "#" + method.name + method.signature]
+    fun getPosition(lightClass: PsiClass): KotlinPosition? {
+        return lineInfo[lightClass.qualifiedNameWithSlashes]
+    }
 
-    fun getPosition(lightClass: PsiClass, field: PsiField): KotlinPosition? = lineInfo[lightClass.name + "#" + field.name]
+    fun getPosition(lightClass: PsiClass, method: PsiMethod): KotlinPosition? =
+        lineInfo[lightClass.qualifiedNameWithSlashes + "#" + method.properName + method.signature]
+
+    fun getPosition(lightClass: PsiClass, field: PsiField): KotlinPosition? {
+        return lineInfo[lightClass.qualifiedNameWithSlashes + "#" + field.name]
+    }
 
     private fun register(asmNode: Any, fqName: String) {
         val psiElement = (asmNode as? KtLightElement<*, *>)?.kotlinOrigin ?: return
@@ -101,4 +106,7 @@ class Kapt4LineMappingCollector {
         oos.flush()
         return os.toByteArray()
     }
+
+    private val PsiClass.qualifiedNameWithSlashes: String
+        get() = qualifiedNameWithDollars?.replace(".", "/") ?: NO_NAME_PROVIDED
 }

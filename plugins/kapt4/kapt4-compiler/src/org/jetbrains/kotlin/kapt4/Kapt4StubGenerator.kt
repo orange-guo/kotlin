@@ -741,7 +741,7 @@ class Kapt4StubGenerator(private val analysisSession: KtAnalysisSession) {
 
         val isConstructor = method.isConstructor
 
-        val name = method.name
+        val name = method.properName
         if (!isValidIdentifier(name, canBeConstructor = isConstructor)) return null
 
         val modifiers = convertModifiers(
@@ -864,9 +864,6 @@ class Kapt4StubGenerator(private val analysisSession: KtAnalysisSession) {
             val res = type.resolvedClass
             Unit
         }
-
-//        TODO
-//        if (type.sort != Type.OBJECT) return true
 
         val internalName = type.qualifiedName
         // Ignore type names with Java keywords in it
