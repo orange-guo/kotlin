@@ -21,11 +21,11 @@ public final class NonExistentType {
     private static final kotlin.jvm.functions.Function1<ABCDEF, kotlin.Unit> c = null;
     private static final ABCDEF<java.lang.String, kotlin.jvm.functions.Function1<java.util.List<? extends ABCDEF>, kotlin.Unit>> d;
     public static java.lang.String string2;
-    public static error.NonExistentClass coocoo;
-    public static error.NonExistentClass coocoo2;
-    public static error.NonExistentClass coocoo21;
-    public static error.NonExistentClass coocoo3;
-    public static error.NonExistentClass coocoo31;
+    public static ABC coocoo;
+    public static ABC<T> coocoo2;
+    public static ABC<T> coocoo21;
+    public static ABC<java.lang.String, X> coocoo3;
+    public static ABC<java.lang.String, X> coocoo31;
 
     private NonExistentType() {
         super();
@@ -59,48 +59,48 @@ public final class NonExistentType {
     }
 
     @org.jetbrains.annotations.NotNull()
-    public final error.NonExistentClass getCoocoo() {
+    public final ABC getCoocoo() {
         return null;
     }
 
     public final void setCoocoo(@org.jetbrains.annotations.NotNull()
-    error.NonExistentClass p0) {
+    ABC p0) {
     }
 
     @org.jetbrains.annotations.NotNull()
-    public final error.NonExistentClass getCoocoo2() {
+    public final ABC<T> getCoocoo2() {
         return null;
     }
 
     public final void setCoocoo2(@org.jetbrains.annotations.NotNull()
-    error.NonExistentClass p0) {
+    ABC<T> p0) {
     }
 
     @org.jetbrains.annotations.NotNull()
-    public final error.NonExistentClass getCoocoo21() {
+    public final ABC<T> getCoocoo21() {
         return null;
     }
 
     public final void setCoocoo21(@org.jetbrains.annotations.NotNull()
-    error.NonExistentClass p0) {
+    ABC<T> p0) {
     }
 
     @org.jetbrains.annotations.NotNull()
-    public final error.NonExistentClass getCoocoo3() {
+    public final ABC<java.lang.String, X> getCoocoo3() {
         return null;
     }
 
     public final void setCoocoo3(@org.jetbrains.annotations.NotNull()
-    error.NonExistentClass p0) {
+    ABC<java.lang.String, X> p0) {
     }
 
     @org.jetbrains.annotations.NotNull()
-    public final error.NonExistentClass getCoocoo31() {
+    public final ABC<java.lang.String, X> getCoocoo31() {
         return null;
     }
 
     public final void setCoocoo31(@org.jetbrains.annotations.NotNull()
-    error.NonExistentClass p0) {
+    ABC<java.lang.String, X> p0) {
     }
 
     public final ABCDEF a(ABCDEF a, @org.jetbrains.annotations.NotNull()

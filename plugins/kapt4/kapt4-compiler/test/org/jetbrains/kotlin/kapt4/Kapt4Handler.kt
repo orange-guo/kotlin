@@ -14,6 +14,8 @@ import com.sun.tools.javac.util.Log
 import org.jetbrains.kotlin.kapt3.base.javac.KaptJavaLogBase
 import org.jetbrains.kotlin.kapt3.base.parseJavaFiles
 import org.jetbrains.kotlin.kapt3.test.KaptTestDirectives
+import org.jetbrains.kotlin.kapt3.test.KaptTestDirectives.EXPECTED_ERROR
+import org.jetbrains.kotlin.kapt3.test.KaptTestDirectives.EXPECTED_ERROR_K2
 import org.jetbrains.kotlin.kapt3.test.handlers.ClassFileToSourceKaptStubHandler
 import org.jetbrains.kotlin.kapt3.test.handlers.checkTxtAccordingToBackendAndFrontend
 import org.jetbrains.kotlin.kapt3.test.handlers.removeMetadataAnnotationContents
@@ -69,7 +71,7 @@ class Kapt4Handler(testServices: TestServices) : AnalysisHandler<Kapt4ContextBin
         kaptContext: Kapt4ContextForStubGeneration,
         actualDump: String
     ) {
-        val expectedErrors = module.directives[KaptTestDirectives.EXPECTED_ERROR].sorted()
+        val expectedErrors = (module.directives[EXPECTED_ERROR] + module.directives[EXPECTED_ERROR_K2]).sorted()
         val log = Log.instance(kaptContext.context) as KaptJavaLogBase
 
         val actualErrors = log.reportedDiagnostics
@@ -150,5 +152,5 @@ class Kapt4Handler(testServices: TestServices) : AnalysisHandler<Kapt4ContextBin
         }
     }
 
-    private fun String.toDirectiveView(): String = "// ${KaptTestDirectives.EXPECTED_ERROR.name}: $this"
+    private fun String.toDirectiveView(): String = "// ${EXPECTED_ERROR.name}: $this"
 }

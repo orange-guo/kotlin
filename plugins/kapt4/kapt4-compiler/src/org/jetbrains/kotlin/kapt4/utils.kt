@@ -282,14 +282,14 @@ private fun computeFieldAccessFlags(field: PsiField): Int {
 val PsiClass.qualifiedNameWithDollars: String?
     get() {
         val packageName = PsiUtil.getPackageName(this) ?: return null
+        if (packageName.isBlank()) {
+            return qualifiedName?.replace(".", "$") ?: return null
+        }
+
         val qualifiedName = this.qualifiedName ?: return null
         val className = qualifiedName.substringAfter("$packageName.")
         val classNameWithDollars = className.replace(".", "$")
-        return if (packageName.isBlank()) {
-            classNameWithDollars
-        } else {
-            "$packageName.$classNameWithDollars"
-        }
+        return "$packageName.$classNameWithDollars"
     }
 
 // ----------------------------- TODO delete -----------------------------

@@ -870,7 +870,7 @@ class Kapt4StubGenerator(private val analysisSession: KtAnalysisSession) {
         if (internalName.split('/', '.').any { it in JAVA_KEYWORDS }) {
             if (strictMode) {
                 reportKaptError(
-                    "Can't generate a stub for '${containingClass.qualifiedNameWithDollars}'.",
+                    "Can't generate a stub for '${internalName}'.",
                     "Type name '${type.qualifiedName}' contains a Java keyword."
                 )
             }
@@ -883,7 +883,7 @@ class Kapt4StubGenerator(private val analysisSession: KtAnalysisSession) {
         if (doesInnerClassNameConflictWithOuter(clazz)) {
             if (strictMode) {
                 reportKaptError(
-                    "Can't generate a stub for '${containingClass.qualifiedNameWithDollars}'.",
+                    "Can't generate a stub for '${clazz.qualifiedNameWithDollars}'.",
                     "Its name '${clazz.name}' is the same as one of the outer class names.",
                     "Java forbids it. Please change one of the class names."
                 )
