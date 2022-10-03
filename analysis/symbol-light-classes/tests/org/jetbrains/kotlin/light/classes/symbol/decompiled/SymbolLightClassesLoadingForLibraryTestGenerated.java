@@ -259,6 +259,12 @@ public class SymbolLightClassesLoadingForLibraryTestGenerated extends AbstractSy
     }
 
     @Test
+    @TestMetadata("typealiasInTypeArguments.kt")
+    public void testTypealiasInTypeArguments() throws Exception {
+        runTest("compiler/testData/asJava/ultraLightClasses/typealiasInTypeArguments.kt");
+    }
+
+    @Test
     @TestMetadata("unresolvedWithAliasedImport.kt")
     public void testUnresolvedWithAliasedImport() throws Exception {
         runTest("compiler/testData/asJava/ultraLightClasses/unresolvedWithAliasedImport.kt");
