@@ -48,7 +48,7 @@ public final class Test {
     @org.jetbrains.annotations.NotNull()
     private final java.lang.Object broken$delegate = null;
     @org.jetbrains.annotations.NotNull()
-    private final java.io.Serializable overridden$delegate;
+    private final java.io.Serializable overridden$delegate = null;
     @org.jetbrains.annotations.NotNull()
     private final kotlin.Lazy<java.lang.Runnable> lazyProp$delegate = null;
     private final ConcreteDelegate concreteDelegate$delegate = null;
