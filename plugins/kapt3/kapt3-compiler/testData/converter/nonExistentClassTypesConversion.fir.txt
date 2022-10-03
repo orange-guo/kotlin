@@ -39,17 +39,17 @@ public final class NonExistentClassTypesConversionKt {
 ////////////////////
 
 
-import java.util.Calendar;
+import java.lang.System;
 
 @kotlin.Metadata()
-@Anno(a = Blah.class, b = {NoFoo1.class, NoBar1.class}, c = {NoFoo2.class, kotlin.String.class}, d = {kotlin.Boolean.class, NoBar3.class})
+@Anno(a = Blah.class, b = {NoFoo1.class, NoBar1.class}, c = {NoFoo2.class, java.lang.String.class}, d = {boolean.class, NoBar3.class})
 public final class Test<G extends java.lang.Object> {
     public ABC a;
-    private final ABC b = null;
+    private final ABC b;
     @org.jetbrains.annotations.Nullable()
-    private final java.util.List<ABC> c = null;
+    private final java.util.List<ABC> c;
     @org.jetbrains.annotations.Nullable()
-    private final java.util.List<java.util.Map<BCD, ABC<java.util.List<BCD>>>> d = null;
+    private final java.util.List<java.util.Map<BCD, ABC<java.util.List<BCD>>>> d;
     public java.util.List<java.util.Map<? extends ABC, BCD>> e;
     public ABC<?> f;
     public java.util.List<?> g;
@@ -64,8 +64,7 @@ public final class Test<G extends java.lang.Object> {
     public ABC<java.lang.String, java.lang.String> coocoo3;
     public ABC<java.lang.String, ABC<ABC>> coocoo31;
     public ABC nested;
-    @org.jetbrains.annotations.NotNull()
-    private final java.lang.Object m = null;
+    private final error.NonExistentClass m = null;
     @org.jetbrains.annotations.NotNull()
     private final java.lang.String n = "";
     public java.util.List<java.util.List<java.util.List<java.util.List<java.util.List<java.util.List<java.util.List<java.util.List<java.util.List<java.util.List<ABC>>>>>>>>>> o11;
@@ -217,8 +216,7 @@ public final class Test<G extends java.lang.Object> {
     ABC p0) {
     }
 
-    @org.jetbrains.annotations.NotNull()
-    public final java.lang.Object getM() {
+    public final error.NonExistentClass getM() {
         return null;
     }
 
@@ -265,8 +263,7 @@ public final class Test<G extends java.lang.Object> {
         return 0L;
     }
 
-    @org.jetbrains.annotations.NotNull()
-    public final java.lang.Object f4() {
+    public final error.NonExistentClass f4() {
         return null;
     }
 

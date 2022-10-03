@@ -22,10 +22,10 @@ public final class NonExistentType {
     private static final ABCDEF<java.lang.String, kotlin.jvm.functions.Function1<java.util.List<? extends ABCDEF>, kotlin.Unit>> d;
     public static java.lang.String string2;
     public static ABC coocoo;
-    public static ABC<T> coocoo2;
-    public static ABC<T> coocoo21;
-    public static ABC<java.lang.String, X> coocoo3;
-    public static ABC<java.lang.String, X> coocoo31;
+    public static ABC<java.lang.String> coocoo2;
+    public static ABC<ABC> coocoo21;
+    public static ABC<java.lang.String, java.lang.String> coocoo3;
+    public static ABC<java.lang.String, ABC<ABC>> coocoo31;
 
     private NonExistentType() {
         super();
@@ -68,39 +68,39 @@ public final class NonExistentType {
     }
 
     @org.jetbrains.annotations.NotNull()
-    public final ABC<T> getCoocoo2() {
+    public final ABC<java.lang.String> getCoocoo2() {
         return null;
     }
 
     public final void setCoocoo2(@org.jetbrains.annotations.NotNull()
-    ABC<T> p0) {
+    ABC<java.lang.String> p0) {
     }
 
     @org.jetbrains.annotations.NotNull()
-    public final ABC<T> getCoocoo21() {
+    public final ABC<ABC> getCoocoo21() {
         return null;
     }
 
     public final void setCoocoo21(@org.jetbrains.annotations.NotNull()
-    ABC<T> p0) {
+    ABC<ABC> p0) {
     }
 
     @org.jetbrains.annotations.NotNull()
-    public final ABC<java.lang.String, X> getCoocoo3() {
+    public final ABC<java.lang.String, java.lang.String> getCoocoo3() {
         return null;
     }
 
     public final void setCoocoo3(@org.jetbrains.annotations.NotNull()
-    ABC<java.lang.String, X> p0) {
+    ABC<java.lang.String, java.lang.String> p0) {
     }
 
     @org.jetbrains.annotations.NotNull()
-    public final ABC<java.lang.String, X> getCoocoo31() {
+    public final ABC<java.lang.String, ABC<ABC>> getCoocoo31() {
         return null;
     }
 
     public final void setCoocoo31(@org.jetbrains.annotations.NotNull()
-    ABC<java.lang.String, X> p0) {
+    ABC<java.lang.String, ABC<ABC>> p0) {
     }
 
     public final ABCDEF a(ABCDEF a, @org.jetbrains.annotations.NotNull()
