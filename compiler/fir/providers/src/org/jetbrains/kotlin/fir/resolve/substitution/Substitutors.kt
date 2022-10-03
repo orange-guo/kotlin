@@ -7,7 +7,6 @@ package org.jetbrains.kotlin.fir.resolve.substitution
 
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.resolve.withCombinedAttributesFrom
-import org.jetbrains.kotlin.fir.symbols.ConeClassLikeLookupTag
 import org.jetbrains.kotlin.fir.symbols.impl.FirTypeParameterSymbol
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.types.impl.ConeClassLikeTypeImpl
@@ -30,7 +29,7 @@ abstract class AbstractConeSubstitutor(protected val typeContext: ConeTypeContex
     }
 
     abstract fun substituteType(type: ConeKotlinType): ConeKotlinType?
-    open fun substituteArgument(projection: ConeTypeProjection, lookupTag: ConeClassLikeLookupTag, index: Int): ConeTypeProjection? {
+    open fun substituteArgument(projection: ConeTypeProjection, index: Int): ConeTypeProjection? {
         val type = (projection as? ConeKotlinTypeProjection)?.type ?: return null
         val newType = substituteOrNull(type) ?: return null
         return wrapProjection(projection, newType)
@@ -133,7 +132,7 @@ abstract class AbstractConeSubstitutor(protected val typeContext: ConeTypeContex
         require(this is ConeClassLikeType) { "Unknown type to substitute: $this, ${this::class}" }
 
         for ((index, typeArgument) in this.typeArguments.withIndex()) {
-            newArguments[index] = substituteArgument(typeArgument, lookupTag, index)?.also {
+            newArguments[index] = substituteArgument(typeArgument, index)?.also {
                 initialized = true
             }
         }
