@@ -33946,6 +33946,32 @@ public class DiagnosisCompilerTestFE10TestdataTestGenerated extends AbstractDiag
         }
 
         @Nested
+        @TestMetadata("compiler/testData/diagnostics/tests/warningsForBreakingChanges")
+        @TestDataPath("$PROJECT_ROOT")
+        public class WarningsForBreakingChanges {
+            @Test
+            public void testAllFilesPresentInWarningsForBreakingChanges() throws Exception {
+                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/tests/warningsForBreakingChanges"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+            }
+
+            @Nested
+            @TestMetadata("compiler/testData/diagnostics/tests/warningsForBreakingChanges/capturedTypes")
+            @TestDataPath("$PROJECT_ROOT")
+            public class CapturedTypes {
+                @Test
+                public void testAllFilesPresentInCapturedTypes() throws Exception {
+                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/tests/warningsForBreakingChanges/capturedTypes"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                }
+
+                @Test
+                @TestMetadata("incorrectCapturedApproximationForValueParameters.kt")
+                public void testIncorrectCapturedApproximationForValueParameters() throws Exception {
+                    runTest("compiler/testData/diagnostics/tests/warningsForBreakingChanges/capturedTypes/incorrectCapturedApproximationForValueParameters.kt");
+                }
+            }
+        }
+
+        @Nested
         @TestMetadata("compiler/testData/diagnostics/tests/when")
         @TestDataPath("$PROJECT_ROOT")
         public class When {
