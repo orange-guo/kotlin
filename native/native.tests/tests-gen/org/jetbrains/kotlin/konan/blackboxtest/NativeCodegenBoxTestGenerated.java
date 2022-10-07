@@ -24076,6 +24076,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
                 public void testAllFilesPresentInPackage() throws Exception {
                     KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/javaVisibility/package"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.NATIVE, true);
                 }
+
+                @Test
+                @TestMetadata("publicInterfaceImplementedByPackagePrivateClass.kt")
+                public void testPublicInterfaceImplementedByPackagePrivateClass() throws Exception {
+                    runTest("compiler/testData/codegen/box/javaVisibility/package/publicInterfaceImplementedByPackagePrivateClass.kt");
+                }
             }
 
             @Nested
