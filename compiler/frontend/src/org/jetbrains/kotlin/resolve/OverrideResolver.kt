@@ -900,6 +900,10 @@ class OverrideResolver(
                 if (checkPropertyKind(overridden, true) && checkPropertyKind(memberDescriptor, false)) {
                     reportError.varOverriddenByVal(memberDescriptor, overridden)
                 }
+
+                if (overridden.modality != Modality.ABSTRACT && (overridden.containingDeclaration as? ClassDescriptor)?.kind == ClassKind.INTERFACE) {
+                    println()
+                }
             }
         }
 
