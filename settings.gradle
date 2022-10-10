@@ -70,6 +70,8 @@ buildCache {
         remote(HttpBuildCache) {
             url = buildProperties.buildCacheUrl
             push = buildProperties.pushToBuildCache
+            allowUntrustedServer = true
+            allowInsecureProtocol = true
             if (buildProperties.buildCacheUser != null && buildProperties.buildCachePassword != null) {
                 credentials.username = buildProperties.buildCacheUser
                 credentials.password = buildProperties.buildCachePassword
