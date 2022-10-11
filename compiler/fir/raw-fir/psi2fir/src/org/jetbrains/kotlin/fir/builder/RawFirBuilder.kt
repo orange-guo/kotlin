@@ -9,7 +9,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
 import org.jetbrains.kotlin.*
 import org.jetbrains.kotlin.builtins.StandardNames.BACKING_FIELD
-import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibilities
@@ -37,6 +36,8 @@ import org.jetbrains.kotlin.fir.types.impl.FirQualifierPartImpl
 import org.jetbrains.kotlin.fir.types.impl.FirTypeArgumentListImpl
 import org.jetbrains.kotlin.lexer.KtTokens.*
 import org.jetbrains.kotlin.name.CallableId
+import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 import org.jetbrains.kotlin.psi.*
@@ -1126,7 +1127,19 @@ open class RawFirBuilder(
                         this.status = status
                         this.classKind = classKind
                         scopeProvider = baseScopeProvider
-                        symbol = FirRegularClassSymbol(context.currentClassId)
+                        val classId = if (isLocal) {
+                            val nameCount = generateSequence(classOrObject) { it.containingClassOrObject }.count()
+                            val classNameSequence = context.className
+                                .pathSegments()
+                                .takeLast(nameCount)
+                                .map { it.asString() }
+
+                            val relativeClassName = FqName.fromSegments(classNameSequence)
+                            ClassId(context.packageFqName, relativeClassName, true)
+                        } else {
+                            context.currentClassId
+                        }
+                        symbol = FirRegularClassSymbol(classId)
 
                         classOrObject.extractAnnotationsTo(this)
                         classOrObject.extractTypeParametersTo(this, symbol)

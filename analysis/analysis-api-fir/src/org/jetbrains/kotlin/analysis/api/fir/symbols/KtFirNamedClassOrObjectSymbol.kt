@@ -104,11 +104,6 @@ internal class KtFirNamedClassOrObjectSymbol(
     override val symbolKind: KtSymbolKind
         get() = withValidityAssertion {
             when {
-                // TODO: hack should be dropped after KT-54390
-                firSymbol.isLocal && (firSymbol.fir.getContainingDeclaration(firResolveSession.useSiteFirSession) as? FirClass)?.let { clazz ->
-                    clazz.declarations.none { it === firSymbol.fir }
-                } == true -> KtSymbolKind.LOCAL
-
                 firSymbol.classId.isNestedClass -> KtSymbolKind.CLASS_MEMBER
                 firSymbol.isLocal -> KtSymbolKind.LOCAL
                 else -> KtSymbolKind.TOP_LEVEL
