@@ -71,6 +71,9 @@ abstract class KotlinJsIrLink @Inject constructor(
     internal val incrementalJsIr: Boolean = propertiesProvider.incrementalJsIr
 
     @get:Input
+    val incrementalJsKlibKeepPatchesLimit: Int = propertiesProvider.incrementalJsKlibKeepPatchesLimit
+
+    @get:Input
     val outputGranularity: KotlinJsIrOutputGranularity = propertiesProvider.jsIrOutputGranularity
 
     // Incremental stuff of link task is inside compiler

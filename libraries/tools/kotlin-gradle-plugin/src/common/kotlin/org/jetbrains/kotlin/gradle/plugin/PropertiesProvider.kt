@@ -122,6 +122,9 @@ internal class PropertiesProvider private constructor(private val project: Proje
     val incrementalJsKlib: Boolean?
         get() = booleanProperty("kotlin.incremental.js.klib")
 
+    val incrementalJsKlibKeepPatchesLimit: Int
+        get() = property("kotlin.incremental.js.klib.keepPatchesLimit")?.toIntOrNull() ?: 0
+
     val incrementalJsIr: Boolean
         get() = booleanProperty("kotlin.incremental.js.ir") ?: true
 

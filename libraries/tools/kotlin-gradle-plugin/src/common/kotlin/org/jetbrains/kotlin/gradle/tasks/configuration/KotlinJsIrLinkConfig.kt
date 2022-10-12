@@ -44,6 +44,12 @@ internal open class KotlinJsIrLinkConfig(
                     .map { it.dir(NpmProject.DIST_FOLDER) }
             )
             task.compilerOptions.moduleName.convention(project.provider { compilation.npmProject.name })
+
+            if (task.incrementalJsKlibKeepPatchesLimit > 0) {
+                task.doFirst {
+                    KlibPatchMaker(task, task.incrementalJsKlibKeepPatchesLimit).saveKLibPatches()
+                }
+            }
         }
     }
 
