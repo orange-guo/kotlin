@@ -40,7 +40,7 @@ FILE: throwableSubclass.kt
 
         public final fun foo(): R|kotlin/Unit| {
             local final class Test7<T, B> : R|kotlin/Throwable| {
-                public constructor(): R|Test5.Test7<T, B>| {
+                public constructor(): R|Test7<T, B>| {
                     super<R|kotlin/Throwable|>()
                 }
 

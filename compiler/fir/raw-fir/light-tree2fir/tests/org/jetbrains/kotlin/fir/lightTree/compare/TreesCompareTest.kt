@@ -79,7 +79,7 @@ class TreesCompareTest : AbstractRawFirBuilderTestCase() {
             val firFileFromLightTree = lightTreeConverter.buildFirFile(text, KtIoFileSourceFile(file), linesMapping)
             val treeFromLightTree = FirRenderer().renderElementAsString(firFileFromLightTree)
                 .replace("<ERROR TYPE REF:.*?>".toRegex(), "<ERROR TYPE REF>")
-
+            assertEquals(treeFromPsi, treeFromLightTree)
             return@compareBase treeFromLightTree == treeFromPsi
         }
     }
@@ -118,7 +118,7 @@ class TreesCompareTest : AbstractRawFirBuilderTestCase() {
             val treeFromLightTree = FirRenderer().renderElementAsString(firFileFromLightTree)
                 .replace("<Unsupported LValue.*?>".toRegex(), "<Unsupported LValue>")
                 .replace("<ERROR TYPE REF:.*?>".toRegex(), "<ERROR TYPE REF>")
-
+            assertEquals(treeFromPsi, treeFromLightTree)
             return@compareBase treeFromLightTree == treeFromPsi
         }
     }
