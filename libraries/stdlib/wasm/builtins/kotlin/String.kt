@@ -135,8 +135,8 @@ internal fun stringLiteral(poolId: Int, startAddress: Int, length: Int, hashCode
     if (cached !== null) {
         return cached
     }
-    val chars = WasmCharArray(length)
-    unsafeRawMemoryToWasmCharArray(startAddress, 0, length, chars)
+
+    val chars = array_new_data0<WasmCharArray>(startAddress, length)
     val newString = String(null, length, chars)
     newString._hashCode = hashCode
     stringPool[poolId] = newString
