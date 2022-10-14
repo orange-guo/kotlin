@@ -10,12 +10,12 @@ import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.lower.createIrBuilder
 import org.jetbrains.kotlin.backend.common.lower.irComposite
 import org.jetbrains.kotlin.backend.wasm.WasmBackendContext
+import org.jetbrains.kotlin.backend.wasm.utils.getWasmArrayAnnotation
 import org.jetbrains.kotlin.ir.builders.*
-import org.jetbrains.kotlin.ir.declarations.IrConstructor
-import org.jetbrains.kotlin.ir.declarations.IrFile
-import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
-import org.jetbrains.kotlin.ir.declarations.IrVariable
+import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.expressions.*
+import org.jetbrains.kotlin.ir.interpreter.toIrConst
+import org.jetbrains.kotlin.ir.symbols.IrFunctionSymbol
 import org.jetbrains.kotlin.ir.types.*
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
@@ -164,10 +164,75 @@ internal class WasmVarargExpressionLowering(
             this@irSize.irSize()
         }
 
+    private fun tryGetConstructorOverWasmArray(irVararg: IrVararg): IrConstructor? =
+        irVararg.type.getClass()!!.constructors.firstOrNull { ctor ->
+            ctor.valueParameters.singleOrNull()?.type?.getClass()?.getWasmArrayAnnotation() != null
+        }
+
+    private fun tryVisitWithNoSpreadPrimitives(irVararg: IrVararg): IrExpression? {
+        check(irVararg.elements.isNotEmpty())
+
+        val constructorOverWasmArray = tryGetConstructorOverWasmArray(irVararg) ?: return null
+        val wasmArrayType = constructorOverWasmArray.valueParameters[0].type
+
+        val kind = (irVararg.elements[0] as? IrConst<*>)?.kind ?: return null
+        if (kind == IrConstKind.String || kind == IrConstKind.Null) return null
+        if (irVararg.elements.any { it !is IrConst<*> || it.kind != kind }) return null
+
+        val elementConstValues = irVararg.elements.map { (it as IrConst<*>).value!! }
+
+        val resource = when (irVararg.varargElementType) {
+            context.irBuiltIns.byteType -> elementConstValues.map { (it as Byte).toLong() }
+            context.irBuiltIns.booleanType -> elementConstValues.map { if (it as Boolean) 1L else 0L }
+            context.irBuiltIns.intType -> elementConstValues.map { (it as Int).toLong() }
+            context.irBuiltIns.shortType -> elementConstValues.map { (it as Short).toLong() }
+            context.irBuiltIns.longType -> elementConstValues.map { it as Long }
+            else -> return null
+        }
+
+        val resourceId = context.registerResource(resource)
+
+        val builder = context.createIrBuilder(currentScope!!.scope.scopeOwnerSymbol)
+
+        val wasmArray = builder.irCall(context.wasmSymbols.wasmLoadResource).also {
+            it.putTypeArgument(0, wasmArrayType)
+            it.putTypeArgument(1, irVararg.varargElementType)
+            it.putValueArgument(0, resourceId.toIrConst(context.irBuiltIns.intType))
+        }
+
+        return builder.irCall(constructorOverWasmArray).also {
+            it.putValueArgument(0, wasmArray)
+        }
+    }
+
+    private fun tryVisitWithNoSpread(irVararg: IrVararg): IrExpression? {
+        if (irVararg.elements.any { it is IrSpreadElement }) return null
+        val constructorOverWasmArray = tryGetConstructorOverWasmArray(irVararg) ?: return null
+        val builder = context.createIrBuilder(currentScope!!.scope.scopeOwnerSymbol)
+        val wasmArrayType = constructorOverWasmArray.valueParameters[0].type
+        val stackPutFunction = context.wasmSymbols.stackPutPrimitives[irVararg.varargElementType] ?: context.wasmSymbols.stackPutAny
+        val wasmArrayExpression = builder.irComposite(resultType = wasmArrayType) {
+            irVararg.elements.forEach { element ->
+                +irCall(stackPutFunction).also {
+                    it.putValueArgument(0, element as IrExpression)
+                }
+            }
+            +irCall(this@WasmVarargExpressionLowering.context.wasmSymbols.arrayNewFixed, wasmArrayType).also { call ->
+                call.putTypeArgument(0, wasmArrayType)
+                call.putValueArgument(0, irVararg.elements.size.toIrConst(context.irBuiltIns.intType))
+            }
+        }
+
+        return builder.irCall(constructorOverWasmArray).also {
+            it.putValueArgument(0, wasmArrayExpression)
+        }
+    }
+
     override fun visitVararg(expression: IrVararg): IrExpression {
         // Optimization in case if we have a single spread element
-        if (expression.elements.size == 1 && expression.elements.first() is IrSpreadElement) {
-            val spreadExpr = (expression.elements.first() as IrSpreadElement).expression
+        val singleSpreadElement = expression.elements.singleOrNull() as? IrSpreadElement
+        if (singleSpreadElement != null) {
+            val spreadExpr = singleSpreadElement.expression
             if (isImmediatelyCreatedArray(spreadExpr))
                 return spreadExpr.transform(this, null)
         }
@@ -175,6 +240,14 @@ internal class WasmVarargExpressionLowering(
         // Lower nested varargs
         val irVararg = super.visitVararg(expression) as IrVararg
 
+        if (irVararg.elements.none { it is IrSpreadElement }) {
+            if (irVararg.elements.isNotEmpty()) {
+                tryVisitWithNoSpreadPrimitives(irVararg)?.let { return it }
+            }
+            tryVisitWithNoSpread(irVararg)?.let { return it }
+        }
+
+        val builder = context.createIrBuilder(currentScope!!.scope.scopeOwnerSymbol)
         // Create temporary variable for each element and emit them all at once to preserve
         // argument evaluation order as per kotlin language spec.
         val elementVars = irVararg.elements
@@ -202,9 +275,7 @@ internal class WasmVarargExpressionLowering(
                 yield(VarargSegmentBuilder.Plain(currentElements.toList(), context))
         }.toList()
 
-        val builder = context.createIrBuilder(currentScope!!.scope.scopeOwnerSymbol)
         val destArrayDescr = ArrayDescr(irVararg.type, context)
-
         return builder.irComposite(irVararg) {
             // Emit all of the variables first so that all vararg expressions
             // are evaluated only once and in order of their appearance.

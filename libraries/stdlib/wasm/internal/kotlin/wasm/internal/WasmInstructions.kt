@@ -31,6 +31,31 @@ internal fun <T> wasm_array_copy(destination: T, destinationIndex: Int, source: 
 internal fun <T> array_new_data0(address: Int, length: Int): WasmCharArray =
     implementedAsIntrinsic
 
+internal fun stack_put_any(value: Any?): Unit =
+    implementedAsIntrinsic
+internal fun stack_put_byte(value: Byte): Unit =
+    implementedAsIntrinsic
+internal fun stack_put_char(value: Char): Unit =
+    implementedAsIntrinsic
+internal fun stack_put_short(value: Short): Unit =
+    implementedAsIntrinsic
+internal fun stack_put_int(value: Int): Unit =
+    implementedAsIntrinsic
+internal fun stack_put_long(value: Long): Unit =
+    implementedAsIntrinsic
+internal fun stack_put_float(value: Float): Unit =
+    implementedAsIntrinsic
+internal fun stack_put_double(value: Double): Unit =
+    implementedAsIntrinsic
+internal fun stack_put_boolean(value: Boolean): Unit =
+    implementedAsIntrinsic
+
+internal fun <T> array_new_fixed(length: Int): T =
+    implementedAsIntrinsic
+
+internal fun <T, E> wasm_load_resource(id: Int): T =
+    implementedAsIntrinsic
+
 @WasmOp(WasmOp.I32_EQ)
 public external fun wasm_i32_eq(a: Int, b: Int): Boolean
 

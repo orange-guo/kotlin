@@ -183,6 +183,20 @@ class WasmSymbols(
     val refCast = getInternalFunction("wasm_ref_cast")
     val wasmArrayCopy = getInternalFunction("wasm_array_copy")
     val wasmArrayNewData0 = getInternalFunction("array_new_data0")
+    val arrayNewFixed = getInternalFunction("array_new_fixed")
+    val wasmLoadResource = getInternalFunction("wasm_load_resource")
+
+    val stackPutPrimitives = mapOf(
+        irBuiltIns.byteType to getInternalFunction("stack_put_byte"),
+        irBuiltIns.charType to getInternalFunction("stack_put_char"),
+        irBuiltIns.shortType to getInternalFunction("stack_put_short"),
+        irBuiltIns.intType to getInternalFunction("stack_put_int"),
+        irBuiltIns.longType to getInternalFunction("stack_put_long"),
+        irBuiltIns.floatType to getInternalFunction("stack_put_float"),
+        irBuiltIns.doubleType to getInternalFunction("stack_put_double"),
+        irBuiltIns.booleanType to getInternalFunction("stack_put_boolean"),
+    )
+    val stackPutAny = getInternalFunction("stack_put_any")
 
     val intToLong = getInternalFunction("wasm_i64_extend_i32_s")
 

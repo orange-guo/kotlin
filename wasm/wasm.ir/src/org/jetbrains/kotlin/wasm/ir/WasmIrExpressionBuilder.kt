@@ -46,6 +46,28 @@ class WasmIrExpressionBuilder(
         return eatLevel
     }
 
+//    private fun tryOptimizeNewArrayFixed(fixCount: Int): Boolean {
+//        if (fixCount < 10) return false
+//        val arguments = expression.subList(expression.lastIndex - fixCount, expression.lastIndex)
+//
+//        val firstArgument = arguments[0]
+//        if (firstArgument.operator != WasmOp.I32_CONST) return false
+//        if (arguments.any { it.operator != WasmOp.I32_CONST }) return false
+//
+//        val byteList = mutableListOf<Byte>()
+//        fun intToByteArray(data: Int, size: Int) {
+//            for (k in 0 until size) {
+//                byteList.add((data shr (k * 8)).toByte())
+//            }
+//        }
+//
+//        for (i in 0 until fixCount) {
+//            intToByteArray((arguments[i].immediates[0] as WasmImmediate.ConstI32).value, 4)
+//        }
+//
+//        return false
+//    }
+
     override fun buildInstr(op: WasmOp, vararg immediates: WasmImmediate) {
         val currentEatUntil = getCurrentEatLevel(op)
         if (currentEatUntil != null) {

@@ -395,6 +395,8 @@ class BodyGenerator(
             return true
         }
 
+        if (wasmSymbols.stackPutPrimitives.containsValue(function.symbol)) return true
+
         when (function.symbol) {
             wasmSymbols.wasmClassId -> {
                 val klass = call.getTypeArgument(0)!!.getClass()
@@ -496,6 +498,45 @@ class BodyGenerator(
                     context.referenceGcType(call.getTypeArgument(0)!!.getRuntimeClass(irBuiltIns).symbol)
                 )
                 body.buildInstr(WasmOp.ARRAY_NEW_DATA, immediate, WasmImmediate.DataIdx(0))
+            }
+
+            wasmSymbols.stackPutAny -> {}
+
+            wasmSymbols.arrayNewFixed -> {
+                val arrayType = WasmImmediate.GcType(
+                    context.referenceGcType(call.getTypeArgument(0)!!.getRuntimeClass(irBuiltIns).symbol)
+                )
+                val length = WasmImmediate.ConstI32(
+                    (call.getValueArgument(0) as IrConst<*>).value as Int
+                )
+                body.buildDrop()
+                body.buildInstr(WasmOp.ARRAY_NEW_DATA_FIXED, arrayType, length)
+            }
+
+            wasmSymbols.wasmLoadResource -> {
+                val arrayType = call.getTypeArgument(0)!!
+                val elementType = call.getTypeArgument(1)!!
+                val arrayGcType = WasmImmediate.GcType(
+                    context.referenceGcType(arrayType.getRuntimeClass(irBuiltIns).symbol)
+                )
+
+                val resourceId = (call.getValueArgument(0) as IrConst<*>).value as Int
+                val resource = context.backendContext.resources[resourceId]
+
+                val wasmType = when (elementType) {
+                    irBuiltIns.byteType, irBuiltIns.booleanType -> WasmI8
+                    irBuiltIns.shortType -> WasmI16
+                    irBuiltIns.intType -> WasmI32
+                    irBuiltIns.longType -> WasmI64
+                    else -> TODO()
+                }
+
+                val resourceIndex = context.referenceResource(resource to wasmType)
+
+                body.buildDrop()
+                body.buildConstI32(0)
+                body.buildConstI32(resource.size)
+                body.buildInstr(WasmOp.ARRAY_NEW_DATA, arrayGcType, WasmImmediate.DataIdx(resourceIndex))
             }
 
             wasmSymbols.stringGetPoolSize -> {
