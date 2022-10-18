@@ -20,10 +20,7 @@ import org.jetbrains.kotlin.fir.resolve.calls.ConeCallConflictResolverFactory
 import org.jetbrains.kotlin.fir.resolve.providers.FirDependenciesSymbolProvider
 import org.jetbrains.kotlin.fir.resolve.providers.FirProvider
 import org.jetbrains.kotlin.fir.resolve.providers.FirSymbolProvider
-import org.jetbrains.kotlin.fir.resolve.providers.impl.FirCompositeSymbolProvider
-import org.jetbrains.kotlin.fir.resolve.providers.impl.FirDependenciesSymbolProviderImpl
-import org.jetbrains.kotlin.fir.resolve.providers.impl.FirLibrarySessionProvider
-import org.jetbrains.kotlin.fir.resolve.providers.impl.FirProviderImpl
+import org.jetbrains.kotlin.fir.resolve.providers.impl.*
 import org.jetbrains.kotlin.fir.scopes.FirKotlinScopeProvider
 import org.jetbrains.kotlin.fir.scopes.FirPlatformClassMapper
 import org.jetbrains.kotlin.incremental.components.EnumWhenTracker
@@ -63,7 +60,7 @@ abstract class FirAbstractSessionFactory {
 
             val providers = createProviders(this, builtinsModuleData, kotlinScopeProvider)
 
-            val symbolProvider = FirCompositeSymbolProvider(this, providers)
+            val symbolProvider = FirCachingSymbolProvider(this, providers)
             register(FirSymbolProvider::class, symbolProvider)
             register(FirProvider::class, FirLibrarySessionProvider(symbolProvider))
         }
@@ -83,7 +80,7 @@ abstract class FirAbstractSessionFactory {
         createProviders: (
             FirSession, FirKotlinScopeProvider, FirSymbolProvider,
             FirSwitchableExtensionDeclarationsSymbolProvider?,
-            FirDependenciesSymbolProvider
+            FirSymbolProvider
         ) -> List<FirSymbolProvider>
     ): FirSession {
         return FirCliSession(sessionProvider, FirSession.Kind.Source).apply session@{
@@ -118,7 +115,7 @@ abstract class FirAbstractSessionFactory {
                 this, kotlinScopeProvider, firProvider.symbolProvider, generatedSymbolsProvider, dependenciesSymbolProvider,
             )
 
-            register(FirSymbolProvider::class, FirCompositeSymbolProvider(this, providers))
+            register(FirSymbolProvider::class, FirCachingSymbolProvider(this, providers))
 
             generatedSymbolsProvider?.let { register(FirSwitchableExtensionDeclarationsSymbolProvider::class, it) }
             register(FirDependenciesSymbolProvider::class, dependenciesSymbolProvider)
