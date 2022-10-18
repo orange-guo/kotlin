@@ -262,7 +262,7 @@ class ConeRawScopeSubstitutor(
                 val newLowerBound = substitutedLowerBound?.lowerBoundIfFlexible() ?: type.lowerBound
                 val newUpperBound = substitutedUpperBound?.upperBoundIfFlexible() ?: type.upperBound
 
-                if (newLowerBound.typeArguments.isNotEmpty() || newUpperBound.typeArguments.isNotEmpty()) {
+                if (substitutedLowerBound is ConeRawType || substitutedUpperBound is ConeRawType) {
                     return ConeRawType.create(newLowerBound, newUpperBound)
                 }
 
