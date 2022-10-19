@@ -6,13 +6,12 @@
 package org.jetbrains.kotlin.fir.java
 
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.caches.createCache
 import org.jetbrains.kotlin.fir.caches.firCachesFactory
+import org.jetbrains.kotlin.fir.caches.getValue
 import org.jetbrains.kotlin.fir.resolve.providers.FirSymbolProvider
 import org.jetbrains.kotlin.fir.resolve.providers.FirSymbolProviderInternals
-import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
-import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
-import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
-import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.*
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
@@ -25,7 +24,6 @@ class JavaSymbolProvider(
     session: FirSession,
     private val javaFacade: FirJavaFacade,
 ) : FirSymbolProvider(session) {
-
     private val classCache =
         session.firCachesFactory.createCacheWithPostCompute(
             createValue = { classId: ClassId, parentClassSymbol: FirRegularClassSymbol? ->
@@ -39,14 +37,19 @@ class JavaSymbolProvider(
             }
         )
 
-    override fun getPackage(fqName: FqName): FqName? =
-        javaFacade.getPackage(fqName)
+    private val classLikeSymbolCache = session.firCachesFactory.createCache(::computeClass)
 
-    override fun getClassLikeSymbolByClassId(classId: ClassId): FirRegularClassSymbol? =
+    private fun computeClass(classId: ClassId): FirRegularClassSymbol? =
         if (javaFacade.hasTopLevelClassOf(classId)) getFirJavaClass(classId) else null
 
     private fun getFirJavaClass(classId: ClassId): FirRegularClassSymbol? =
         classCache.getValue(classId, classId.outerClassId?.let { getFirJavaClass(it) })
+
+    override fun getPackage(fqName: FqName): FqName? =
+        javaFacade.getPackage(fqName)
+
+    override fun getClassLikeSymbolByClassId(classId: ClassId): FirRegularClassSymbol? =
+        classLikeSymbolCache.getValue(classId)
 
     @OptIn(FirSymbolProviderInternals::class)
     override fun getTopLevelCallableSymbolsTo(destination: MutableList<FirCallableSymbol<*>>, packageFqName: FqName, name: Name) {}
