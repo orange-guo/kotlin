@@ -5,11 +5,17 @@
 
 package org.jetbrains.kotlin.fir.resolve.calls
 
+import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
 import org.jetbrains.kotlin.fir.declarations.FirTypeParameterRefsOwner
+import org.jetbrains.kotlin.fir.types.CompilerConeAttributes
+import org.jetbrains.kotlin.fir.types.ConeTypeIntersector
 import org.jetbrains.kotlin.fir.types.FirTypeProjection
 import org.jetbrains.kotlin.fir.types.builder.buildPlaceholderProjection
+import org.jetbrains.kotlin.fir.types.builder.buildTypeProjectionWithVariance
+import org.jetbrains.kotlin.fir.types.toFirResolvedTypeRef
+import org.jetbrains.kotlin.types.Variance
 
 sealed class TypeArgumentMapping {
     abstract operator fun get(typeParameterIndex: Int): FirTypeProjection
@@ -28,12 +34,27 @@ sealed class TypeArgumentMapping {
 internal object MapTypeArguments : ResolutionStage() {
     override suspend fun check(candidate: Candidate, callInfo: CallInfo, sink: CheckerSink, context: ResolutionContext) {
         val typeArguments = callInfo.typeArguments
+        val owner = candidate.symbol.fir as FirTypeParameterRefsOwner
+
         if (typeArguments.isEmpty()) {
-            candidate.typeArgumentMapping = TypeArgumentMapping.NoExplicitArguments
+            if (owner is FirCallableDeclaration &&
+                owner.dispatchReceiverType?.attributes?.contains(CompilerConeAttributes.RawType) == true
+            ) {
+                val resultArguments = owner.typeParameters.map { typeParameterRef ->
+                    buildTypeProjectionWithVariance {
+                        typeRef =
+                            ConeTypeIntersector.intersectTypes(
+                                context.typeContext, typeParameterRef.symbol.resolvedBounds.map { it.type }
+                            ).toFirResolvedTypeRef()
+                        variance = Variance.INVARIANT
+                    }
+                }
+                candidate.typeArgumentMapping = TypeArgumentMapping.Mapped(resultArguments)
+            } else {
+                candidate.typeArgumentMapping = TypeArgumentMapping.NoExplicitArguments
+            }
             return
         }
-
-        val owner = candidate.symbol.fir as FirTypeParameterRefsOwner
 
         if (
             typeArguments.size == owner.typeParameters.size ||
