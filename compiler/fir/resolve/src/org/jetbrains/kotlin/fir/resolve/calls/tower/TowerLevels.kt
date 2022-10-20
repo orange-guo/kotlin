@@ -105,10 +105,23 @@ class MemberScopeTowerLevel(
         }
 
         if (givenExtensionReceiverOptions.isEmpty()) {
+            val dispatchReceiverType = dispatchReceiverValue.type
+            val useSiteForSyntheticScope: FirTypeScope
+            val typeForSyntheticScope: ConeKotlinType
+            if (dispatchReceiverType is ConeRawType) {
+                typeForSyntheticScope = dispatchReceiverType.asNonRawFlexible()
+                useSiteForSyntheticScope =
+                    typeForSyntheticScope.scope(session, scopeSession, FakeOverrideTypeCalculator.DoNothing)
+                        ?: error("No scope for flexible type scope, while it's not null for $dispatchReceiverType")
+            } else {
+                typeForSyntheticScope = dispatchReceiverType
+                useSiteForSyntheticScope = scope
+            }
+
             val withSynthetic = FirSyntheticPropertiesScope.createIfSyntheticNamesProviderIsDefined(
                 session,
-                dispatchReceiverValue.type,
-                scope
+                typeForSyntheticScope,
+                useSiteForSyntheticScope,
             )
             withSynthetic?.processScopeMembers { symbol ->
                 empty = false

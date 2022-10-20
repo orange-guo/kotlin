@@ -189,6 +189,21 @@ class ConeRawType private constructor(
     lowerBound: ConeSimpleKotlinType,
     upperBound: ConeSimpleKotlinType
 ) : ConeFlexibleType(lowerBound, upperBound), RawTypeMarker {
+
+    fun asNonRawFlexible(): ConeFlexibleType {
+        require(lowerBound is ConeClassLikeType) {
+            "Raw bounds are expected to be class-like types, but $lowerBound was found"
+        }
+
+        val newLowerBound = ConeClassLikeTypeImpl(
+            lowerBound.lookupTag, lowerBound.typeArguments, lowerBound.isNullable, lowerBound.attributes.remove(
+                CompilerConeAttributes.RawType
+            )
+        )
+
+        return ConeFlexibleType(newLowerBound, upperBound)
+    }
+
     companion object {
         fun create(
             lowerBound: ConeSimpleKotlinType,
