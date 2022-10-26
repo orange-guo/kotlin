@@ -14,7 +14,6 @@ import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.synthetic.FirSyntheticPropertyAccessor
 import org.jetbrains.kotlin.fir.declarations.utils.isExpect
 import org.jetbrains.kotlin.fir.declarations.utils.isStatic
-import org.jetbrains.kotlin.fir.java.declarations.FirJavaField
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.resolve.providers.firProvider
 import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
@@ -334,11 +333,7 @@ open class FirJvmMangleComputer(
     }
 
     override fun visitField(field: FirField, data: Boolean) {
-        if (field is FirJavaField) {
-            field.mangleSimpleDeclaration(field.name.asString())
-        } else {
-            visitVariable(field, data)
-        }
+        visitVariable(field, data)
     }
 
     override fun visitEnumEntry(enumEntry: FirEnumEntry, data: Boolean) {
