@@ -313,7 +313,7 @@ class ScopeTowerLevel(
             return null
         }
 
-        val lookupTag = candidate.fir.propertySymbol.dispatchReceiverClassOrNull()
+        val lookupTag = candidate.fir.propertySymbol.dispatchReceiverClassLookupTagOrNull()
         return when {
             lookupTag != null -> {
                 bodyResolveComponents.implicitReceiverStack.lastDispatchReceiver { implicitReceiverValue ->
