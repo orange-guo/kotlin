@@ -1510,9 +1510,16 @@ class Fir2IrDeclarationStorage(
         else -> parentOrigin
     }
 
-    fun getIrFieldSymbol(firFieldSymbol: FirFieldSymbol): IrFieldSymbol {
+    fun getIrFieldSymbol(
+        firFieldSymbol: FirFieldSymbol,
+        dispatchReceiverLookupTag: ConeClassLikeLookupTag? = null
+    ): IrFieldSymbol {
         val fir = firFieldSymbol.fir
         val irField = fieldCache[fir] ?: run {
+            val unmatchedReceiver = dispatchReceiverLookupTag != firFieldSymbol.containingClassLookupTag()
+            if (unmatchedReceiver) {
+                generateLazyFakeOverrides(fir.name, dispatchReceiverLookupTag)
+            }
             // In case of type parameters from the parent as the field's return type, find the parent ahead to cache type parameters.
             val irParent = findIrParent(fir)
             createIrField(fir).apply {

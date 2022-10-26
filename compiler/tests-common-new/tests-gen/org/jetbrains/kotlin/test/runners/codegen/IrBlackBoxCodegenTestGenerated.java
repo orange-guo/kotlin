@@ -18008,6 +18008,12 @@ public class IrBlackBoxCodegenTestGenerated extends AbstractIrBlackBoxCodegenTes
         }
 
         @Test
+        @TestMetadata("assertEqualsFakeOverride.kt")
+        public void testAssertEqualsFakeOverride() throws Exception {
+            runTest("compiler/testData/codegen/box/fir/assertEqualsFakeOverride.kt");
+        }
+
+        @Test
         @TestMetadata("callableReferenceToJavaField.kt")
         public void testCallableReferenceToJavaField() throws Exception {
             runTest("compiler/testData/codegen/box/fir/callableReferenceToJavaField.kt");
@@ -28696,6 +28702,12 @@ public class IrBlackBoxCodegenTestGenerated extends AbstractIrBlackBoxCodegenTes
             @Test
             public void testAllFilesPresentInPackage() throws Exception {
                 KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/javaVisibility/package"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JVM_IR, true);
+            }
+
+            @Test
+            @TestMetadata("inheritedPackageStaticFunction.kt")
+            public void testInheritedPackageStaticFunction() throws Exception {
+                runTest("compiler/testData/codegen/box/javaVisibility/package/inheritedPackageStaticFunction.kt");
             }
 
             @Test
