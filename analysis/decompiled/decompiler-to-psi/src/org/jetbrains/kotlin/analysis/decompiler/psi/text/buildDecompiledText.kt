@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.renderer.DescriptorRendererOptions
 import org.jetbrains.kotlin.renderer.render
 import org.jetbrains.kotlin.resolve.DataClassDescriptorResolver
 import org.jetbrains.kotlin.resolve.DescriptorUtils.isEnumEntry
+import org.jetbrains.kotlin.resolve.MemberComparator
 import org.jetbrains.kotlin.resolve.descriptorUtil.secondaryConstructors
 import org.jetbrains.kotlin.types.isFlexible
 
@@ -121,7 +122,10 @@ fun buildDecompiledText(
                 }
             }
 
-            val allDescriptors = descriptor.secondaryConstructors + descriptor.defaultType.memberScope.getContributedDescriptors()
+            val allDescriptors = descriptor.secondaryConstructors + descriptor.defaultType
+                .memberScope
+                .getContributedDescriptors()
+                .sortedWith(MemberComparator.INSTANCE) // KT-54801
             val (enumEntries, members) = allDescriptors.partition(::isEnumEntry)
 
             for ((index, enumEntry) in enumEntries.withIndex()) {

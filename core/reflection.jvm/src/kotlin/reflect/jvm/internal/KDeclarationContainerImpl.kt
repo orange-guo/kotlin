@@ -24,7 +24,10 @@ import org.jetbrains.kotlin.descriptors.runtime.structure.wrapperByPrimitive
 import org.jetbrains.kotlin.load.java.JvmAbi
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
+import org.jetbrains.kotlin.resolve.MemberComparator
 import org.jetbrains.kotlin.resolve.scopes.MemberScope
+import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedMemberScope
+import org.jetbrains.kotlin.utils.addToStdlib.partitionIsInstance
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 import kotlin.jvm.internal.ClassBasedDeclarationContainer
@@ -53,7 +56,15 @@ internal abstract class KDeclarationContainerImpl : ClassBasedDeclarationContain
             override fun visitConstructorDescriptor(descriptor: ConstructorDescriptor, data: Unit): KCallableImpl<*> =
                 throw IllegalStateException("No constructors should appear here: $descriptor")
         }
-        return scope.getContributedDescriptors().mapNotNull { descriptor ->
+
+        val descriptorsInProperOrder = if (scope is DeserializedMemberScope) {
+            // KT-54800
+            val (properties, otherDescriptors) = scope.getContributedDescriptors().partitionIsInstance<_, PropertyDescriptor>()
+            properties.sortedWith(MemberComparator.INSTANCE) + otherDescriptors
+        } else {
+            scope.getContributedDescriptors()
+        }
+        return descriptorsInProperOrder.mapNotNull { descriptor ->
             if (descriptor is CallableMemberDescriptor &&
                 descriptor.visibility != DescriptorVisibilities.INVISIBLE_FAKE &&
                 belonginess.accept(descriptor)
