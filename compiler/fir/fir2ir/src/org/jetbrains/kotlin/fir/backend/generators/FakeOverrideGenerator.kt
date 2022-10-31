@@ -50,7 +50,9 @@ class FakeOverrideGenerator(
     }
 
     private fun FirCallableDeclaration.allowsToHaveFakeOverrideIn(klass: FirClass): Boolean {
+        // TODO: replace just by 'return allowsToHaveFakeOverride'?
         if (!allowsToHaveFakeOverride) return false
+        // NB: this condition is always true
         if (this.visibility != JavaDescriptorVisibilities.PACKAGE_VISIBILITY) return true
         return this.symbol.callableId.packageName == klass.symbol.classId.packageFqName
     }
