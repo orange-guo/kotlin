@@ -1539,13 +1539,11 @@ class Fir2IrDeclarationStorage(
         getCachedIrField(fir, dispatchReceiverLookupTag.takeIf { fir.isStatic && it !is ConeClassLookupTagWithFixedSymbol }) {
             signatureComposer.composeSignature(fir, dispatchReceiverLookupTag, forceTopLevelPrivate = false)
         }?.let { return it.symbol }
-        val parentOrigin = (irParent as? IrDeclaration)?.origin ?: IrDeclarationOrigin.DEFINED
-        val declarationOrigin = computeDeclarationOrigin(firFieldSymbol, parentOrigin)
         val unwrapped = fir.unwrapFakeOverrides()
         if (unwrapped !== fir) {
             return getIrFieldSymbol(unwrapped.symbol)
         }
-        return createIrField(fir, irParent, origin = declarationOrigin).symbol
+        return createIrField(fir, irParent).symbol
     }
 
     fun getIrBackingFieldSymbol(firBackingFieldSymbol: FirBackingFieldSymbol): IrSymbol {

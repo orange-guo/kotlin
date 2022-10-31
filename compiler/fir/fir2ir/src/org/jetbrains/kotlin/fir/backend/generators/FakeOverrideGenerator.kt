@@ -174,13 +174,13 @@ class FakeOverrideGenerator(
                     createFakeOverriddenIfNeeded(
                         firClass, irClass, isLocal, propertyOrFieldSymbol,
                         declarationStorage::getCachedIrField,
-                        { field, irParent, _, origin, _ -> declarationStorage.createIrField(field, irParent, origin = origin) },
+                        { field, irParent, _, _, _ -> declarationStorage.createIrField(field, irParent) },
                         createFakeOverrideSymbol = { firField, callableSymbol ->
                             FirFakeOverrideGenerator.createSubstitutionOverrideField(
                                 session, firField, callableSymbol,
                                 newDispatchReceiverType = firClass.defaultType(),
                                 newReturnType = firField.returnTypeRef.coneType,
-                                firClass.symbol.classId
+                                firClass.symbol.classId, withInitializer = true
                             )
                         },
                         baseFieldSymbols,
