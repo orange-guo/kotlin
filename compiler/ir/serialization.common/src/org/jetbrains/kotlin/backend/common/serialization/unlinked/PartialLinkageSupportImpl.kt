@@ -40,6 +40,10 @@ internal class PartialLinkageSupportImpl(builtIns: IrBuiltIns, messageLogger: Ir
     }
 
     override fun generateStubsAndPatchUsages(symbolTable: SymbolTable, roots: () -> Collection<IrElement>) {
+        val allUnboundEx = symbolTable.allUnboundEx
+        if (allUnboundEx.isNotEmpty())
+            error(allUnboundEx.joinToString { it.signature?.render().orEmpty() })
+
         // Generate stubs.
         for (symbol in symbolTable.allUnbound) {
             stubGenerator.getDeclaration(symbol)
