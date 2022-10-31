@@ -105,6 +105,8 @@ class Fir2IrDeclarationStorage(
 
     private val fieldCache = ConcurrentHashMap<FirField, IrField>()
 
+    private val fieldOverrideCache = ConcurrentHashMap<Pair<FirField, ConeClassLikeLookupTag>, IrField>()
+
     private val localStorage by threadLocal { Fir2IrLocalStorage() }
 
     private fun areCompatible(firFunction: FirFunction, irFunction: IrFunction): Boolean {
@@ -1015,11 +1017,8 @@ class Fir2IrDeclarationStorage(
     fun getCachedIrField(
         field: FirField,
         dispatchReceiverLookupTag: ConeClassLikeLookupTag?,
-        signatureCalculator: () -> IdSignature?
     ): IrField? {
-        return getCachedIrCallable(field, dispatchReceiverLookupTag, fieldCache, signatureCalculator) { signature ->
-            symbolTable.referenceFieldIfAny(signature)?.owner
-        }
+        return if (dispatchReceiverLookupTag == null) fieldCache[field] else fieldOverrideCache[field to dispatchReceiverLookupTag]
     }
 
     fun createIrFieldAndDelegatedMembers(field: FirField, owner: FirClass, irClass: IrClass): IrField? {
@@ -1536,9 +1535,16 @@ class Fir2IrDeclarationStorage(
         // In case of type parameters from the parent as the field's return type, find the parent ahead to cache type parameters.
         val irParent = findIrParent(fir)
 
-        getCachedIrField(fir, dispatchReceiverLookupTag.takeIf { fir.isStatic && it !is ConeClassLookupTagWithFixedSymbol }) {
-            signatureComposer.composeSignature(fir, dispatchReceiverLookupTag, forceTopLevelPrivate = false)
-        }?.let { return it.symbol }
+        getCachedIrField(fir, dispatchReceiverLookupTag.takeIf { fir.isStatic && it !is ConeClassLookupTagWithFixedSymbol })?.let {
+            return it.symbol
+        }
+        signatureComposer.composeSignature(fir, dispatchReceiverLookupTag)?.let { signature ->
+            symbolTable.referenceFieldIfAny(signature)?.let {
+                if (it.isBound) {
+                    return it
+                }
+            }
+        }
         val unwrapped = fir.unwrapFakeOverrides()
         if (unwrapped !== fir) {
             return getIrFieldSymbol(unwrapped.symbol)
