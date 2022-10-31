@@ -178,8 +178,8 @@ context(Fir2IrComponents)
 fun FirReference.toSymbolForCall(
     dispatchReceiver: FirExpression,
     conversionScope: Fir2IrConversionScope,
+    explicitReceiver: FirExpression?,
     preferGetter: Boolean = true,
-    explicitReceiver: FirExpression? = null,
     isDelegate: Boolean = false,
     isReference: Boolean = false
 ): IrSymbol? {

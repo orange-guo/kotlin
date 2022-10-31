@@ -1527,26 +1527,25 @@ class Fir2IrDeclarationStorage(
         dispatchReceiverLookupTag: ConeClassLikeLookupTag? = null
     ): IrFieldSymbol {
         val fir = firFieldSymbol.fir
-        val irField = fieldCache[fir] ?: run {
-            val unmatchedReceiver = dispatchReceiverLookupTag != firFieldSymbol.containingClassLookupTag()
-            if (unmatchedReceiver) {
-                generateLazyFakeOverrides(fir.name, dispatchReceiverLookupTag)
-            }
-            // In case of type parameters from the parent as the field's return type, find the parent ahead to cache type parameters.
-            val irParent = findIrParent(fir)
-
-            getCachedIrField(fir, dispatchReceiverLookupTag.takeIf { it !is ConeClassLookupTagWithFixedSymbol }) {
-                signatureComposer.composeSignature(fir, dispatchReceiverLookupTag, forceTopLevelPrivate = false)
-            }?.let { return it.symbol }
-            val parentOrigin = (irParent as? IrDeclaration)?.origin ?: IrDeclarationOrigin.DEFINED
-            val declarationOrigin = computeDeclarationOrigin(firFieldSymbol, parentOrigin)
-            val unwrapped = fir.unwrapFakeOverrides()
-            if (unwrapped !== fir) {
-                return getIrFieldSymbol(unwrapped.symbol)
-            }
-            createIrField(fir, irParent, origin = declarationOrigin)
+        val unmatchedReceiver = dispatchReceiverLookupTag != null && dispatchReceiverLookupTag != firFieldSymbol.containingClassLookupTag()
+        if (!fir.isStatic && !unmatchedReceiver) {
+            fieldCache[fir]?.let { return it.symbol }
+        } else {
+            generateLazyFakeOverrides(fir.name, dispatchReceiverLookupTag)
         }
-        return irField.symbol
+        // In case of type parameters from the parent as the field's return type, find the parent ahead to cache type parameters.
+        val irParent = findIrParent(fir)
+
+        getCachedIrField(fir, dispatchReceiverLookupTag.takeIf { fir.isStatic && it !is ConeClassLookupTagWithFixedSymbol }) {
+            signatureComposer.composeSignature(fir, dispatchReceiverLookupTag, forceTopLevelPrivate = false)
+        }?.let { return it.symbol }
+        val parentOrigin = (irParent as? IrDeclaration)?.origin ?: IrDeclarationOrigin.DEFINED
+        val declarationOrigin = computeDeclarationOrigin(firFieldSymbol, parentOrigin)
+        val unwrapped = fir.unwrapFakeOverrides()
+        if (unwrapped !== fir) {
+            return getIrFieldSymbol(unwrapped.symbol)
+        }
+        return createIrField(fir, irParent, origin = declarationOrigin).symbol
     }
 
     fun getIrBackingFieldSymbol(firBackingFieldSymbol: FirBackingFieldSymbol): IrSymbol {
