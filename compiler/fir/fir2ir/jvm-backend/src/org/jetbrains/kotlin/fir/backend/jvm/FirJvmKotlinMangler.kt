@@ -31,6 +31,6 @@ class FirJvmKotlinMangler(private val session: FirSession) : AbstractKotlinMangl
     }
 
     override fun getMangleComputer(mode: MangleMode, compatibleMode: Boolean): KotlinMangleComputer<FirDeclaration> {
-        return FirJvmMangleComputer(StringBuilder(256), mode, session)
+        return FirJvmMangleComputer(StringBuilder(256), mode, session, compatibleMode)
     }
 }

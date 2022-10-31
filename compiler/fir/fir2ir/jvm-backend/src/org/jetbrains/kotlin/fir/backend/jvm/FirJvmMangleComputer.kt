@@ -31,7 +31,8 @@ import org.jetbrains.kotlin.utils.addToStdlib.ifNotEmpty
 open class FirJvmMangleComputer(
     private val builder: StringBuilder,
     private val mode: MangleMode,
-    private val session: FirSession
+    private val session: FirSession,
+    private val compatibleMode: Boolean
 ) : FirVisitor<Unit, Boolean>(), KotlinMangleComputer<FirDeclaration> {
 
     private val typeParameterContainer = ArrayList<FirMemberDeclaration>(4)
@@ -50,7 +51,7 @@ open class FirJvmMangleComputer(
     private fun addReturnType(): Boolean = true
 
     override fun copy(newMode: MangleMode): FirJvmMangleComputer =
-        FirJvmMangleComputer(builder, newMode, session)
+        FirJvmMangleComputer(builder, newMode, session, compatibleMode)
 
     private fun StringBuilder.appendName(s: String) {
         if (mode.fqn) {
@@ -333,7 +334,12 @@ open class FirJvmMangleComputer(
     }
 
     override fun visitField(field: FirField, data: Boolean) {
-        visitVariable(field, data)
+        val property = field.propertyIfBackingField as? FirProperty
+        if (compatibleMode || property == null) {
+            field.mangleSimpleDeclaration(field.name.asString())
+        } else {
+            visitProperty(property, data)
+        }
     }
 
     override fun visitEnumEntry(enumEntry: FirEnumEntry, data: Boolean) {
