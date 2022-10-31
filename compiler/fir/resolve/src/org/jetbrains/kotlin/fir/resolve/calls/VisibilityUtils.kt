@@ -29,6 +29,9 @@ fun FirVisibilityChecker.isVisible(
     callInfo: CallInfo,
     dispatchReceiverValue: ReceiverValue?
 ): Boolean {
+    if (declaration is FirCallableDeclaration && (declaration.isIntersectionOverride || declaration.isSubstitutionOverride)) {
+        return isVisible(declaration.originalIfFakeOverride() as FirMemberDeclaration, callInfo, dispatchReceiverValue)
+    }
     val staticQualifierForCallable = runIf(declaration is FirCallableDeclaration && declaration.isStatic) {
         val explicitReceiver = callInfo.explicitReceiver ?: (dispatchReceiverValue as? ExpressionReceiverValue)?.explicitReceiver
         (explicitReceiver as? FirResolvedQualifier)?.symbol?.fir as? FirRegularClass
