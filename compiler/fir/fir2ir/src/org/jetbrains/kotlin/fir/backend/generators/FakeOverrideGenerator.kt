@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.fir.backend.generators
 
+import org.jetbrains.kotlin.descriptors.java.JavaVisibilities
 import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.backend.Fir2IrComponents
 import org.jetbrains.kotlin.fir.backend.Fir2IrConversionScope
@@ -54,7 +55,7 @@ class FakeOverrideGenerator(
 
     private fun FirCallableDeclaration.allowsToHaveFakeOverrideIn(klass: FirClass): Boolean {
         if (!allowsToHaveFakeOverride) return false
-        if (this.visibility != JavaDescriptorVisibilities.PACKAGE_VISIBILITY) return true
+        if (this.visibility != JavaVisibilities.PackageVisibility) return true
         return this.symbol.callableId.packageName == klass.symbol.classId.packageFqName
     }
 
