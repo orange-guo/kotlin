@@ -21,8 +21,17 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.idea.KotlinLanguage;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class KtToken extends IElementType {
+    private static final AtomicInteger notReservedTokenId = new AtomicInteger(256);
+
     public final int tokenId;
+
+    @Deprecated
+    public KtToken(@NotNull @NonNls String debugName) {
+        this(debugName, notReservedTokenId.getAndIncrement());
+    }
 
     public KtToken(@NotNull @NonNls String debugName, int tokenId) {
         super(debugName, KotlinLanguage.INSTANCE);
