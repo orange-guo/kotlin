@@ -171,6 +171,7 @@ class FakeOverrideGenerator(
                 }
 
                 is FirFieldSymbol -> {
+                    if (!propertyOrFieldSymbol.isStatic) return@processPropertiesByName
                     createFakeOverriddenIfNeeded(
                         firClass, irClass, isLocal, propertyOrFieldSymbol,
                         declarationStorage::getCachedIrField,
