@@ -11,7 +11,10 @@ import org.jetbrains.kotlin.resolve.calls.components.PostponedArgumentsAnalyzerC
 import org.jetbrains.kotlin.resolve.calls.inference.*
 import org.jetbrains.kotlin.resolve.calls.inference.components.*
 import org.jetbrains.kotlin.resolve.checkers.EmptyIntersectionTypeInfo
-import org.jetbrains.kotlin.types.*
+import org.jetbrains.kotlin.types.AbstractTypeApproximator
+import org.jetbrains.kotlin.types.AbstractTypeChecker
+import org.jetbrains.kotlin.types.TypeApproximatorConfiguration
+import org.jetbrains.kotlin.types.isDefinitelyEmpty
 import org.jetbrains.kotlin.types.model.*
 import org.jetbrains.kotlin.utils.SmartList
 import org.jetbrains.kotlin.utils.SmartSet
@@ -273,6 +276,7 @@ class NewConstraintSystemImpl(
         storage.errors.addAll(otherSystem.errors)
         storage.fixedTypeVariables.putAll(otherSystem.fixedTypeVariables)
         storage.postponedTypeVariables.addAll(otherSystem.postponedTypeVariables)
+        // TODO: constraints from forks?
     }
 
     // ResultTypeResolver.Context, ConstraintSystemBuilder
@@ -370,6 +374,29 @@ class NewConstraintSystemImpl(
                 addError(NoSuccessfulFork(position))
             }
         }
+    }
+
+    fun checkCandidateApplicabilityForCurrentCandidate(): ConstraintSystemError? {
+        if (constraintsFromAllForkPoints.isEmpty()) return null
+
+        val allForkPointsData = constraintsFromAllForkPoints.toList()
+        constraintsFromAllForkPoints.clear()
+
+        var result: ConstraintSystemError? = null
+        runTransaction {
+            for ((position, forkPointData) in allForkPointsData) {
+                if (!processForkPointData(forkPointData, position)) {
+                    result = NoSuccessfulFork(position)
+                    break
+                }
+            }
+
+            false
+        }
+
+        constraintsFromAllForkPoints.addAll(allForkPointsData)
+
+        return result
     }
 
     /**
