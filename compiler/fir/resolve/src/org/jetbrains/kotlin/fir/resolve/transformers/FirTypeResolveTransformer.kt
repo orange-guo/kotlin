@@ -26,7 +26,7 @@ import org.jetbrains.kotlin.fir.whileAnalysing
 class FirTypeResolveProcessor(
     session: FirSession,
     scopeSession: ScopeSession
-) : FirTransformerBasedResolveProcessor(session, scopeSession) {
+) : FirTransformerBasedResolveProcessor(session, scopeSession, FirResolvePhase.TYPES) {
     override val transformer = FirTypeResolveTransformer(session, scopeSession)
 }
 

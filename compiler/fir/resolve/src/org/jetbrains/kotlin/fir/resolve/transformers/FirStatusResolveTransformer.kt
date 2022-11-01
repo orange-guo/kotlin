@@ -35,7 +35,7 @@ import org.jetbrains.kotlin.fir.whileAnalysing
 class FirStatusResolveProcessor(
     session: FirSession,
     scopeSession: ScopeSession
-) : FirTransformerBasedResolveProcessor(session, scopeSession) {
+) : FirTransformerBasedResolveProcessor(session, scopeSession, FirResolvePhase.STATUS) {
     override val transformer = run {
         val statusComputationSession = StatusComputationSession.Regular()
         FirStatusResolveTransformer(
