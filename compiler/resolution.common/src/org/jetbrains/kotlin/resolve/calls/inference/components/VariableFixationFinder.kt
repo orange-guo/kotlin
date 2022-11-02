@@ -7,11 +7,13 @@ package org.jetbrains.kotlin.resolve.calls.inference.components
 
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.config.LanguageVersionSettings
+import org.jetbrains.kotlin.resolve.calls.inference.ForkPointData
 import org.jetbrains.kotlin.resolve.calls.inference.components.ConstraintSystemCompletionMode.PARTIAL
 import org.jetbrains.kotlin.resolve.calls.inference.hasRecursiveTypeParametersWithGivenSelfType
 import org.jetbrains.kotlin.resolve.calls.inference.isRecursiveTypeParameter
 import org.jetbrains.kotlin.resolve.calls.inference.model.Constraint
 import org.jetbrains.kotlin.resolve.calls.inference.model.DeclaredUpperBoundConstraintPosition
+import org.jetbrains.kotlin.resolve.calls.inference.model.IncorporationConstraintPosition
 import org.jetbrains.kotlin.resolve.calls.inference.model.VariableWithConstraints
 import org.jetbrains.kotlin.resolve.calls.model.PostponedResolvedAtomMarker
 import org.jetbrains.kotlin.types.model.*
@@ -24,6 +26,9 @@ class VariableFixationFinder(
         val notFixedTypeVariables: Map<TypeConstructorMarker, VariableWithConstraints>
         val fixedTypeVariables: Map<TypeConstructorMarker, KotlinTypeMarker>
         val postponedTypeVariables: List<TypeVariableMarker>
+
+        val constraintsFromAllForkPoints: MutableList<Pair<IncorporationConstraintPosition, ForkPointData>>
+
         fun isReified(variable: TypeVariableMarker): Boolean
     }
 
@@ -43,6 +48,7 @@ class VariableFixationFinder(
 
     enum class TypeVariableFixationReadiness {
         FORBIDDEN,
+        HAS_UNPROCESSED_CONSTRAINTS_IN_FORKS, // TODO
         WITHOUT_PROPER_ARGUMENT_CONSTRAINT, // proper constraint from arguments -- not from upper bound for type parameters
         READY_FOR_FIXATION_DECLARED_UPPER_BOUND_WITH_SELF_TYPES,
         WITH_COMPLEX_DEPENDENCY, // if type variable T has constraint with non fixed type variable inside (non-top-level): T <: Foo<S>
@@ -67,6 +73,8 @@ class VariableFixationFinder(
     ): TypeVariableFixationReadiness = when {
         !notFixedTypeVariables.contains(variable) ||
                 dependencyProvider.isVariableRelatedToTopLevelType(variable) -> TypeVariableFixationReadiness.FORBIDDEN
+        variableHasUnprocessedConstraintsInForks(variable) -> TypeVariableFixationReadiness.HAS_UNPROCESSED_CONSTRAINTS_IN_FORKS
+
         isTypeInferenceForSelfTypesSupported && areAllProperConstraintsSelfTypeBased(variable) ->
             TypeVariableFixationReadiness.READY_FOR_FIXATION_DECLARED_UPPER_BOUND_WITH_SELF_TYPES
         !variableHasProperArgumentConstraints(variable) -> TypeVariableFixationReadiness.WITHOUT_PROPER_ARGUMENT_CONSTRAINT
@@ -83,6 +91,20 @@ class VariableFixationFinder(
             }
         }
         else -> TypeVariableFixationReadiness.READY_FOR_FIXATION
+    }
+
+    private fun Context.variableHasUnprocessedConstraintsInForks(variable: TypeConstructorMarker): Boolean {
+        if (constraintsFromAllForkPoints.isEmpty()) return false
+
+        for ((_, forkPointData) in constraintsFromAllForkPoints) {
+            for (constraints in forkPointData) {
+                for ((typeVariableFromConstraint, _) in constraints) {
+                    if (typeVariableFromConstraint.freshTypeConstructor() == variable) return true
+                }
+            }
+        }
+
+        return false
     }
 
     fun isTypeVariableHasProperConstraint(
@@ -129,7 +151,7 @@ class VariableFixationFinder(
             allTypeVariables.maxByOrNull { getTypeVariableReadiness(it, dependencyProvider) } ?: return null
 
         return when (getTypeVariableReadiness(candidate, dependencyProvider)) {
-            TypeVariableFixationReadiness.FORBIDDEN -> null
+            TypeVariableFixationReadiness.FORBIDDEN, TypeVariableFixationReadiness.HAS_UNPROCESSED_CONSTRAINTS_IN_FORKS -> null
             TypeVariableFixationReadiness.WITHOUT_PROPER_ARGUMENT_CONSTRAINT -> VariableForFixation(candidate, false)
             TypeVariableFixationReadiness.WITH_TRIVIAL_OR_NON_PROPER_CONSTRAINTS ->
                 VariableForFixation(candidate, hasProperConstraint = true, hasOnlyTrivialProperConstraint = true)
