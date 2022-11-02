@@ -292,3 +292,5 @@
 
 # This class is needed for test framework
 -keep class com.intellij.openapi.util.text.StringUtil { *; }
+
+-keep class org.jetbrains.kotlinx.serialization.compiler.extensions.SerializationPluginMetadataExtensions { *; }
