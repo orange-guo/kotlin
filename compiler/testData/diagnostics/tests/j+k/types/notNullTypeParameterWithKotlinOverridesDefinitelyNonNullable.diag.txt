@@ -10,3 +10,4 @@
 /main.kt:27:5: warning: type parameter 'E2' has nullable upper bound, so override has incorrect signature comparing with a base member with NotNull annotation. Please add a non-nullable upper bound (e.g. Any) to the type parameter. See https://kotlinlang.org/docs/generics.html#upper-bounds and https://youtrack.jetbrains.com/issue/KT-36770 for more details. This warning will become an error soon.
     override fun <E2> takeEList(l2: List<E2>)
     ^
+
