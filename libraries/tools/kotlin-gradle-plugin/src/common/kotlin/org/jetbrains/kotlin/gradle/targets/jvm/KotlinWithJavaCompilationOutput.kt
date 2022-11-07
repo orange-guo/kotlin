@@ -28,8 +28,10 @@ class KotlinWithJavaCompilationOutput(
             javaSourceSetOutput.setResourcesDir(value)
         }
 
-    override val classesDirs: ConfigurableFileCollection =
-        javaSourceSetOutput.classesDirs as ConfigurableFileCollection
+    override val classesDirs: ConfigurableFileCollection = compilation.project.files()
+        .from(
+            javaSourceSetOutput.classesDirs
+        )
 
     override val allOutputs: FileCollection
         get() = javaSourceSetOutput

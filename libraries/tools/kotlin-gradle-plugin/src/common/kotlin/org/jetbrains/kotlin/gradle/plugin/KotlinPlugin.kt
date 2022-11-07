@@ -224,10 +224,6 @@ internal class Kotlin2JvmSourceSetProcessor(
     }
 }
 
-internal fun KotlinCompilationOutput.addClassesDir(classesDirProvider: () -> FileCollection) {
-    classesDirs.from(Callable { classesDirProvider() })
-}
-
 internal class Kotlin2JsSourceSetProcessor(
     tasksProvider: KotlinTasksProvider,
     kotlinCompilation: KotlinCompilationData<*>
