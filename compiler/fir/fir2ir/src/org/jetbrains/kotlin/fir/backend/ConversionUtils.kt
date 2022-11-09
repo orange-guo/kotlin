@@ -246,10 +246,7 @@ private fun FirCallableSymbol<*>.toSymbolForCall(
         }
         // Unbound callable reference to member (non-extension)
         isReference && fir.receiverTypeRef == null -> {
-            // TODO: remove runIf with StandardClassIds.Any comparison after fixing ValueClass::equals case (KT-54887)
-            runIf(containingClassLookupTag()?.classId != StandardClassIds.Any) {
-                (explicitReceiver as? FirResolvedQualifier)?.toLookupTag()
-            }
+            (explicitReceiver as? FirResolvedQualifier)?.toLookupTag()
         }
         else -> null
     }

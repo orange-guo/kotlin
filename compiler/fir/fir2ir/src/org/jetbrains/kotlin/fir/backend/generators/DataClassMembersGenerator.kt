@@ -157,7 +157,7 @@ class DataClassMembersGenerator(val components: Fir2IrComponents) : Fir2IrCompon
         fun generateDispatchReceiverParameter(irFunction: IrFunction) =
             irFunction.declareThisReceiverParameter(
                 irClass.defaultType,
-                origin,
+                IrDeclarationOrigin.DEFINED,
                 UNDEFINED_OFFSET,
                 UNDEFINED_OFFSET
             )
@@ -218,7 +218,8 @@ class DataClassMembersGenerator(val components: Fir2IrComponents) : Fir2IrCompon
                 val equalsFunction = createSyntheticIrFunction(
                     EQUALS,
                     components.irBuiltIns.booleanType,
-                    otherParameterNeeded = true
+                    otherParameterNeeded = true,
+                    isOperator = true
                 )
                 irDataClassMembersGenerator.generateEqualsMethod(equalsFunction, properties)
                 irClass.declarations.add(equalsFunction)
@@ -262,7 +263,8 @@ class DataClassMembersGenerator(val components: Fir2IrComponents) : Fir2IrCompon
         private fun createSyntheticIrFunction(
             name: Name,
             returnType: IrType,
-            otherParameterNeeded: Boolean = false
+            otherParameterNeeded: Boolean = false,
+            isOperator: Boolean = false,
         ): IrFunction {
             val firFunction = buildSimpleFunction {
                 origin = FirDeclarationOrigin.Synthetic
@@ -298,7 +300,7 @@ class DataClassMembersGenerator(val components: Fir2IrComponents) : Fir2IrCompon
             return components.declarationStorage.declareIrSimpleFunction(signature, null) { symbol ->
                 components.irFactory.createFunction(
                     UNDEFINED_OFFSET, UNDEFINED_OFFSET, origin, symbol, name, DescriptorVisibilities.PUBLIC, Modality.OPEN, returnType,
-                    isInline = false, isExternal = false, isTailrec = false, isSuspend = false, isOperator = false,
+                    isInline = false, isExternal = false, isTailrec = false, isSuspend = false, isOperator = isOperator,
                     isInfix = false, isExpect = false, isFakeOverride = false,
                 ).apply {
                     if (otherParameterNeeded) {
@@ -325,7 +327,7 @@ class DataClassMembersGenerator(val components: Fir2IrComponents) : Fir2IrCompon
 
         private fun createSyntheticIrParameter(irFunction: IrFunction, name: Name, type: IrType, index: Int = 0): IrValueParameter =
             components.irFactory.createValueParameter(
-                UNDEFINED_OFFSET, UNDEFINED_OFFSET, origin, IrValueParameterSymbolImpl(), name, index, type, null,
+                UNDEFINED_OFFSET, UNDEFINED_OFFSET, IrDeclarationOrigin.DEFINED, IrValueParameterSymbolImpl(), name, index, type, null,
                 isCrossinline = false, isNoinline = false, isHidden = false, isAssignable = false
             ).apply {
                 parent = irFunction
