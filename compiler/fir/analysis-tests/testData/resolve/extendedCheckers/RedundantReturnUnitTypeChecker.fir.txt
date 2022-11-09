@@ -11,6 +11,12 @@ FILE: RedundantReturnUnitTypeChecker.kt
 
         public final fun copy(x: R|kotlin/Unit| = this@R|/My|.R|/My.x|): R|My|
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     public abstract interface I : R|kotlin/Any| {
         public abstract val x: R|kotlin/Unit|

@@ -16,6 +16,12 @@ FILE: components.kt
 
         public final fun copy(x: R|kotlin/Int| = this@R|/D|.R|/D.x|, y: R|kotlin/String| = this@R|/D|.R|/D.y|): R|D|
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     public final fun foo(list: R|kotlin/collections/List<D>|): R|kotlin/Unit| {
          {

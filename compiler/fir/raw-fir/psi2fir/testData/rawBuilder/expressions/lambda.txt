@@ -16,6 +16,12 @@ FILE: lambda.kt
 
         public final fun copy(x: Int = this@R|/Tuple|.R|/Tuple.x|, y: Int = this@R|/Tuple|.R|/Tuple.y|): R|Tuple|
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     public? final? inline fun use(f: ( (Tuple) -> Int )): <implicit> {
         ^use f#(Tuple#(IntegerLiteral(1), IntegerLiteral(2)))

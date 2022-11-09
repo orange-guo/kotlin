@@ -33,4 +33,10 @@ FILE: withSuppression.kt
 
         public final fun copy(x: R|kotlin/String| = this@R|/D|.R|/D.x|): R|D|
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
