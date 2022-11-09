@@ -93,15 +93,17 @@ object FirInlineClassDeclarationChecker : FirRegularClassChecker() {
                 }
 
                 is FirSimpleFunction -> {
-                    val functionName = innerDeclaration.name.asString()
+                    if (!innerDeclaration.isSynthetic) {
+                        val functionName = innerDeclaration.name.asString()
 
-                    if (functionName in boxAndUnboxNames
-                        || (functionName in equalsAndHashCodeNames
-                                && !context.languageVersionSettings.supportsFeature(LanguageFeature.CustomEqualsInInlineClasses))
-                    ) {
-                        reporter.reportOn(
-                            innerDeclaration.source, FirErrors.RESERVED_MEMBER_INSIDE_VALUE_CLASS, functionName, context
-                        )
+                        if (functionName in boxAndUnboxNames
+                            || (functionName in equalsAndHashCodeNames
+                                    && !context.languageVersionSettings.supportsFeature(LanguageFeature.CustomEqualsInInlineClasses))
+                        ) {
+                            reporter.reportOn(
+                                innerDeclaration.source, FirErrors.RESERVED_MEMBER_INSIDE_VALUE_CLASS, functionName, context
+                            )
+                        }
                     }
                 }
 

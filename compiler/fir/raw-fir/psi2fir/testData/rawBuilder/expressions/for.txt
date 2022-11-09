@@ -66,6 +66,12 @@ FILE: for.kt
 
         public final fun copy(x: Int = this@R|/Some|.R|/Some.x|, y: Int = this@R|/Some|.R|/Some.y|): R|Some|
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     public? final? fun baz(set: Set<Some>): R|kotlin/Unit| {
          {

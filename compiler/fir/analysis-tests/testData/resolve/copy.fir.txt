@@ -16,6 +16,12 @@ FILE: copy.kt
 
         public final fun copy(x: R|kotlin/Int| = this@R|/Some|.R|/Some.x|, y: R|kotlin/String| = this@R|/Some|.R|/Some.y|): R|Some|
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     public final fun test(some: R|Some|): R|kotlin/Unit| {
         lval other: R|Some| = R|<local>/some|.R|/Some.copy|(y = String(123))

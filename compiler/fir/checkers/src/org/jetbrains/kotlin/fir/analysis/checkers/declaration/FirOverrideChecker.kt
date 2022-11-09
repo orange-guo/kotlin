@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.fir.analysis.checkers.declaration
 
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.KtRealSourceElementKind
+import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
@@ -20,10 +21,7 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors
 import org.jetbrains.kotlin.fir.analysis.overridesBackwardCompatibilityHelper
 import org.jetbrains.kotlin.fir.containingClassLookupTag
 import org.jetbrains.kotlin.fir.declarations.*
-import org.jetbrains.kotlin.fir.declarations.utils.isFinal
-import org.jetbrains.kotlin.fir.declarations.utils.isOverride
-import org.jetbrains.kotlin.fir.declarations.utils.modality
-import org.jetbrains.kotlin.fir.declarations.utils.visibility
+import org.jetbrains.kotlin.fir.declarations.utils.*
 import org.jetbrains.kotlin.fir.languageVersionSettings
 import org.jetbrains.kotlin.fir.originalOrSelf
 import org.jetbrains.kotlin.fir.resolve.substitution.substitutorByMap
@@ -39,8 +37,16 @@ import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.visibilityChecker
 import org.jetbrains.kotlin.types.AbstractTypeChecker
 import org.jetbrains.kotlin.types.TypeCheckerState
+import org.jetbrains.kotlin.util.OperatorNameConventions
 
 object FirOverrideChecker : FirClassChecker() {
+
+    private val ANY_MEMBER_NAMES = setOf(
+        OperatorNameConventions.EQUALS,
+        StandardNames.HASHCODE_NAME,
+        OperatorNameConventions.TO_STRING
+    )
+
     override fun check(declaration: FirClass, context: CheckerContext, reporter: DiagnosticReporter) {
         val typeCheckerState = context.session.typeContext.newTypeCheckerState(
             errorTypesEqualToAnything = false,
@@ -254,7 +260,7 @@ object FirOverrideChecker : FirClassChecker() {
             val kind = member.source?.kind
             // Only report if the current member has real source or it's a member property declared inside the primary constructor.
 
-            if (kind is KtFakeSourceElementKind.DataClassGeneratedMembers) {
+            if (kind is KtFakeSourceElementKind.DataClassGeneratedMembers && member.name !in ANY_MEMBER_NAMES) {
                 overriddenMemberSymbols.find { it.isFinal }?.let { base ->
                     reporter.reportOn(
                         containingClass.source,
@@ -304,7 +310,9 @@ object FirOverrideChecker : FirClassChecker() {
         checkOverriddenExperimentalities(member, overriddenMemberSymbols, context, reporter)
 
         checkModality(overriddenMemberSymbols)?.let {
-            reporter.reportOverridingFinalMember(member, it, context)
+            if (member.origin != FirDeclarationOrigin.Synthetic) {
+                reporter.reportOverridingFinalMember(member, it, context)
+            }
         }
 
         if (member is FirPropertySymbol) {

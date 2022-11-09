@@ -17,6 +17,12 @@ FILE: test.kt
 
         public final fun copy(message: R|kotlin/String| = this@R|/KotlinResult|.R|/KotlinResult.message|): R|KotlinResult|
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     public open class Some : R|kotlin/Any| {
         public constructor(): R|Some| {

@@ -16,6 +16,12 @@ FILE: buildListLazy.kt
 
         public final fun copy(name: R|kotlin/String| = this@R|/NameAndSafeValue|.R|/NameAndSafeValue.name|, value: R|kotlin/Int| = this@R|/NameAndSafeValue|.R|/NameAndSafeValue.value|): R|NameAndSafeValue|
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     public final fun getEnv(): R|kotlin/collections/List<NameAndSafeValue>| {
         ^getEnv R|kotlin/collections/listOf|<R|NameAndSafeValue|>()

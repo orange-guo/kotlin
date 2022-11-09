@@ -6,6 +6,12 @@ FILE: primaryConstructorRequiredForDataClass.kt
 
         public final fun copy(): R|A|
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     public final data class B : R|kotlin/Any| {
         public constructor(): R|B| {

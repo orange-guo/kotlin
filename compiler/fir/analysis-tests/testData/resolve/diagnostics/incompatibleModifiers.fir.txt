@@ -49,6 +49,12 @@ FILE: incompatibleModifiers.kt
 
         public final fun copy(i: R|kotlin/Int| = this@R|/H|.R|/H.i|): R|H|
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     public sealed data class I : R|kotlin/Any| {
         protected constructor(i: R|kotlin/Int|): R|I| {
@@ -62,6 +68,12 @@ FILE: incompatibleModifiers.kt
 
         public final fun copy(i: R|kotlin/Int| = this@R|/I|.R|/I.i|): R|I|
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     public final data inline class J : R|kotlin/Any| {
         public constructor(i: R|kotlin/Int|): R|J| {
@@ -74,6 +86,12 @@ FILE: incompatibleModifiers.kt
         public final operator fun component1(): R|kotlin/Int|
 
         public final fun copy(i: R|kotlin/Int| = this@R|/J|.R|/J.i|): R|J|
+
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
 
     }
     public abstract class K : R|kotlin/Any| {
@@ -116,6 +134,12 @@ FILE: incompatibleModifiers.kt
             public final operator fun component1(): R|kotlin/Int|
 
             public final fun copy(i: R|kotlin/Int| = this@R|/X.Y|.R|/X.Y.i|): R|X.Y|
+
+            public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+            public final fun hashCode(): R|kotlin/Int|
+
+            public final fun toString(): R|kotlin/String|
 
         }
 

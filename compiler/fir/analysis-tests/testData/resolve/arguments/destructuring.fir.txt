@@ -16,6 +16,12 @@ FILE: destructuring.kt
 
         public final fun copy(x: R|kotlin/Int| = this@R|/C|.R|/C.x|, y: R|kotlin/String| = this@R|/C|.R|/C.y|): R|C|
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     public final fun foo1(block: R|(C) -> kotlin/Unit|): R|kotlin/Unit| {
         ^foo1 R|<local>/block|.R|SubstitutionOverride<kotlin/Function1.invoke: R|kotlin/Unit|>|(R|/C.C|(Int(0), String()))

@@ -17,6 +17,12 @@ FILE: lambdaInWhenBranch.kt
 
         public final fun copy(t: R|kotlin/String| = this@R|/SubClass1|.R|/SubClass1.t|): R|SubClass1|
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     private final data class SubClass2 : R|Sealed| {
         public constructor(): R|SubClass2| {
@@ -24,6 +30,12 @@ FILE: lambdaInWhenBranch.kt
         }
 
         public final fun copy(): R|SubClass2|
+
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
 
     }
     private final fun foo(p: R|Sealed|): R|kotlin/Unit| {
