@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.cli.AbstractCliTest
 import org.jetbrains.kotlin.cli.common.CLICompiler
 import org.jetbrains.kotlin.cli.common.ExitCode
 import org.jetbrains.kotlin.cli.js.K2JSCompiler
+import org.jetbrains.kotlin.cli.js.K2JsIrCompiler
 import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
 import org.jetbrains.kotlin.cli.metadata.K2MetadataCompiler
 import org.jetbrains.kotlin.test.KotlinTestUtils
@@ -106,10 +107,36 @@ abstract class AbstractKotlinCompilerIntegrationTest : TestCaseWithTmpdir() {
     ): File {
         val destination = File(tmpdir, "$libraryName.js")
         val output = compileKotlin(
-            libraryName, destination, compiler = K2JSCompiler(), additionalOptions = additionalOptions, expectedFileName = null
+            libraryName,
+            destination,
+            compiler = K2JSCompiler(),
+            additionalOptions = additionalOptions,
+            expectedFileName = null
         )
         checkKotlinOutput(normalizeOutput(output))
         return File(tmpdir, "$libraryName.meta.js")
+    }
+
+    protected fun compileJsKlib(
+        libraryName: String,
+        additionalOptions: List<String> = emptyList(),
+        checkKotlinOutput: (String) -> Unit = { actual -> assertEquals(normalizeOutput("" to ExitCode.OK), actual) }
+    ): File {
+        val destination = File(tmpdir, "$libraryName.klib")
+        val output = compileKotlin(
+            libraryName,
+            destination,
+            compiler = K2JSCompiler(),
+            additionalOptions = additionalOptions + listOf(
+                "-Xir-produce-klib-file",
+                "-ir-output-name", libraryName,
+                "-ir-output-dir", tmpdir.absolutePath,
+            ),
+            expectedFileName = null
+        )
+        checkKotlinOutput(normalizeOutput(output))
+        return destination
+
     }
 
     /**
@@ -158,15 +185,25 @@ abstract class AbstractKotlinCompilerIntegrationTest : TestCaseWithTmpdir() {
         additionalSources.mapTo(args) { File(testDataDirectory, it).path }
 
         if (compiler is K2JSCompiler) {
-            if (classpath.isNotEmpty()) {
-                args.add("-libraries")
-                args.add(classpath.joinToString(File.pathSeparator))
+            val jsirStdlib = File(System.getProperty("kotlin.js.full.stdlib.path")!!)
+            val libraries = classpath + jsirStdlib
+
+            args.add("-libraries")
+            args.add(libraries.joinToString(File.pathSeparator))
+
+            if (!additionalOptions.contains("-ir-output-name")) {
+                args.add("-ir-output-name")
+                args.add(fileName)
             }
-            args.add("-Xlegacy-deprecated-no-warn")
-            args.add("-Xuse-deprecated-legacy-compiler")
-            args.add("-output")
-            args.add(output.path)
-            args.add("-meta-info")
+
+            if (!additionalOptions.contains("-ir-output-dir")) {
+                args.add("-ir-output-dir")
+                args.add(output.parent)
+            }
+
+            if (!additionalOptions.contains("-Xir-produce-klib-file")) {
+                args.add("-Xir-produce-js")
+            }
         } else if (compiler is K2JVMCompiler || compiler is K2MetadataCompiler) {
             if (classpath.isNotEmpty()) {
                 args.add("-classpath")
