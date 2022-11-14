@@ -20,6 +20,8 @@ import org.jetbrains.kotlin.fir.declarations.builder.buildValueParameter
 import org.jetbrains.kotlin.fir.declarations.impl.FirDeclarationStatusImpl
 import org.jetbrains.kotlin.fir.declarations.utils.modality
 import org.jetbrains.kotlin.fir.moduleData
+import org.jetbrains.kotlin.fir.scopes.ProcessorAction
+import org.jetbrains.kotlin.fir.scopes.processDirectlyOverriddenFunctions
 import org.jetbrains.kotlin.fir.scopes.unsubstitutedScope
 import org.jetbrains.kotlin.fir.symbols.ConeClassLikeLookupTag
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
@@ -187,11 +189,12 @@ class DataClassMembersGenerator(val components: Fir2IrComponents) : Fir2IrCompon
 
             val result = mutableListOf<FirDeclaration>()
 
-            val contributedFunctionsInThisType = klass.declarations.mapNotNull {
-                if (it is FirSimpleFunction && it.origin != FirDeclarationOrigin.Synthetic && it.matchesDataClassSyntheticMemberSignatures) {
-                    it.name
-                } else
-                    null
+            val contributedFunctionsInThisType = mutableMapOf<Name, FirSimpleFunction>()
+
+            klass.declarations.forEach {
+                if (it is FirSimpleFunction && it.matchesDataClassSyntheticMemberSignatures) {
+                    contributedFunctionsInThisType[it.name] = it
+                }
             }
             val scope = klass.unsubstitutedScope(
                 components.session,
@@ -201,13 +204,16 @@ class DataClassMembersGenerator(val components: Fir2IrComponents) : Fir2IrCompon
             val contributedFunctionsInSupertypes =
                 buildMap<Name, FirSimpleFunction> {
                     for (name in listOf(EQUALS, HASHCODE_NAME, TO_STRING)) {
-                        // We won't synthesize a function if there is a user-contributed one.
-                        if (contributedFunctionsInThisType.contains(name)) continue
-                        scope.processFunctionsByName(name) {
+                        // We won't synthesize a function if there is a user-contributed (non-synthetic) one.
+                        val contributedFunctionInThisType = contributedFunctionsInThisType[name] ?: continue
+                        if (contributedFunctionInThisType.origin != FirDeclarationOrigin.Synthetic) continue
+
+                        scope.processDirectlyOverriddenFunctions(contributedFunctionInThisType.symbol) {
                             val declaration = it.fir
                             if (declaration.matchesDataClassSyntheticMemberSignatures && declaration.modality != Modality.FINAL) {
                                 putIfAbsent(declaration.name, declaration)
                             }
+                            ProcessorAction.STOP
                         }
                     }
                 }

@@ -17,6 +17,12 @@ FILE: inlineClassMembers.kt
             public set(value: R|kotlin/String|): R|kotlin/Unit| {
             }
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     public final class Val : R|kotlin/Any| {
         public constructor(): R|Val| {
@@ -41,6 +47,12 @@ FILE: inlineClassMembers.kt
                 ^ this@R|/DelegatedProp|.D|/DelegatedProp.testVal|.R|/Val.getValue|(this@R|/DelegatedProp|, ::R|/DelegatedProp.testVal|)
             }
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     public final inline class ReversedMembers : R|kotlin/Any| {
         public constructor(x: R|kotlin/Int|): R|ReversedMembers| {
@@ -64,6 +76,12 @@ FILE: inlineClassMembers.kt
             ^hashCode Int(1)
         }
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     public final inline class SecondaryConstructors : R|kotlin/Any| {
         public constructor(x: R|kotlin/Int|): R|SecondaryConstructors| {
@@ -81,6 +99,12 @@ FILE: inlineClassMembers.kt
             this<R|SecondaryConstructors|>(R|<local>/x|)
         }
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     public final inline class WithInner : R|kotlin/Any| {
         public constructor(x: R|kotlin/String|): R|WithInner| {
@@ -96,5 +120,11 @@ FILE: inlineClassMembers.kt
             }
 
         }
+
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
 
     }

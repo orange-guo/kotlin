@@ -23,6 +23,12 @@ FILE: withSuppression2.kt
         @R|kotlin/Suppress|(names = vararg(String(ABSTRACT_PROPERTY_IN_NON_ABSTRACT_CLASS))) public abstract val y: R|kotlin/Int|
             public get(): R|kotlin/Int|
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }
     public abstract interface C : R|kotlin/Any| {
         @R|kotlin/Suppress|(names = vararg(String(PRIVATE_PROPERTY_IN_INTERFACE))) private final val x: R|kotlin/Int|

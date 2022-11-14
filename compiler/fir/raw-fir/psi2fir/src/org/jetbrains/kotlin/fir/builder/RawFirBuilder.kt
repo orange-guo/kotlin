@@ -1174,7 +1174,9 @@ open class RawFirBuilder(
                             )
                         }
 
-                        if (classOrObject.hasModifier(DATA_KEYWORD) && firPrimaryConstructor != null) {
+                        if ((classOrObject.hasModifier(DATA_KEYWORD) || classOrObject.hasModifier(VALUE_KEYWORD) || classOrObject.hasModifier(
+                                INLINE_KEYWORD)) && firPrimaryConstructor != null
+                        ) {
                             val zippedParameters =
                                 classOrObject.primaryConstructorParameters.filter { it.hasValOrVar() } zip declarations.filterIsInstance<FirProperty>()
                             DataClassMembersGenerator(

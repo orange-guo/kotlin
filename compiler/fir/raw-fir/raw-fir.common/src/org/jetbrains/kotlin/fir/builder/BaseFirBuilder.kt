@@ -1082,8 +1082,10 @@ abstract class BaseFirBuilder<T>(val baseSession: FirSession, val context: Conte
     ) {
         fun generate() {
             if (classBuilder.classKind != ClassKind.OBJECT) {
-                generateComponentFunctions()
-                generateCopyFunction()
+                if (classBuilder.status.isData) {
+                    generateComponentFunctions()
+                    generateCopyFunction()
+                }
                 generateEqualsFunction()
                 generateHashCodeFunction()
                 generateToStringFunction()

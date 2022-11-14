@@ -580,7 +580,7 @@ class DeclarationsConverter(
                     }
 
                     //parse data class
-                    if (modifiers.isDataClass() && firPrimaryConstructor != null) {
+                    if ((modifiers.isDataClass() || modifiers.isInlineClass()) && firPrimaryConstructor != null) {
                         val zippedParameters = properties.map { it.source!!.lighterASTNode to it }
                         DataClassMembersGenerator(
                             classNode,
