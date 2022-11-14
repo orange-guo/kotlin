@@ -189,3 +189,8 @@ internal annotation class InternalForKotlinNativeTests
 @InternalForKotlinNativeTests
 @Target(AnnotationTarget.FILE)
 public annotation class ReflectionPackageName(val name: String)
+
+
+@Target(AnnotationTarget.FIELD)
+@Retention(AnnotationRetention.SOURCE)
+public annotation class Volatile
