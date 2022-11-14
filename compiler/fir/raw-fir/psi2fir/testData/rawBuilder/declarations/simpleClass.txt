@@ -35,4 +35,10 @@ FILE: simpleClass.kt
             super<R|kotlin/Any|>()
         }
 
+        public final operator fun equals(other: R|kotlin/Any?|): R|kotlin/Boolean|
+
+        public final fun hashCode(): R|kotlin/Int|
+
+        public final fun toString(): R|kotlin/String|
+
     }

@@ -210,7 +210,7 @@ object FirInlineClassDeclarationChecker : FirRegularClassChecker() {
             var equalsFromAnyOverriding: FirSimpleFunction? = null
             var typedEquals: FirSimpleFunction? = null
             declaration.declarations.forEach {
-                if (it !is FirSimpleFunction) {
+                if (it !is FirSimpleFunction || it.origin == FirDeclarationOrigin.Synthetic) {
                     return@forEach
                 }
                 if (it.isEquals()) equalsFromAnyOverriding = it
