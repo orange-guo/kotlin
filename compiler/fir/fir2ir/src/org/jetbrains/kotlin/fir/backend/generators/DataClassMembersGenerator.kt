@@ -188,7 +188,7 @@ class DataClassMembersGenerator(val components: Fir2IrComponents) : Fir2IrCompon
             val result = mutableListOf<FirDeclaration>()
 
             val contributedFunctionsInThisType = klass.declarations.mapNotNull {
-                if (it is FirSimpleFunction && it.matchesDataClassSyntheticMemberSignatures) {
+                if (it is FirSimpleFunction && it.origin != FirDeclarationOrigin.Synthetic && it.matchesDataClassSyntheticMemberSignatures) {
                     it.name
                 } else
                     null
