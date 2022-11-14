@@ -276,6 +276,7 @@ internal val allLoweringsPhase = SameTypeNamedCompilerPhase(
                         enumConstructorsPhase,
                         initializersPhase,
                         localFunctionsPhase,
+                        volatilePhase,
                         tailrecPhase,
                         defaultParameterExtentPhase,
                         innerClassPhase,
