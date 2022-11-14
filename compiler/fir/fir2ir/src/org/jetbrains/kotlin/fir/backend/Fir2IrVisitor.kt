@@ -19,6 +19,7 @@ import org.jetbrains.kotlin.fir.backend.generators.ClassMemberGenerator
 import org.jetbrains.kotlin.fir.backend.generators.OperatorExpressionGenerator
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.builder.buildProperty
+import org.jetbrains.kotlin.fir.declarations.builder.buildSimpleFunction
 import org.jetbrains.kotlin.fir.declarations.impl.FirDeclarationStatusImpl
 import org.jetbrains.kotlin.fir.declarations.utils.expandedConeType
 import org.jetbrains.kotlin.fir.declarations.utils.isSealed
@@ -50,6 +51,8 @@ import org.jetbrains.kotlin.ir.util.constructors
 import org.jetbrains.kotlin.ir.util.defaultConstructor
 import org.jetbrains.kotlin.ir.util.defaultType
 import org.jetbrains.kotlin.ir.util.parentClassOrNull
+import org.jetbrains.kotlin.ir.visitors.IrElementTransformer
+import org.jetbrains.kotlin.ir.visitors.IrElementVisitor
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
@@ -250,7 +253,24 @@ class Fir2IrVisitor(
                 simpleFunction, irParent = conversionScope.parent(), predefinedOrigin = IrDeclarationOrigin.LOCAL_FUNCTION, isLocal = true
             )
         } else {
-            declarationStorage.getCachedIrFunction(simpleFunction)!!
+            declarationStorage.getCachedIrFunction(simpleFunction) ?: return object : IrElement {
+                override val startOffset: Int
+                    get() = 0
+                override val endOffset: Int
+                    get() = 0
+
+                override fun <R, D> accept(visitor: IrElementVisitor<R, D>, data: D): R {
+                    TODO("Not yet implemented")
+                }
+
+                override fun <D> transform(transformer: IrElementTransformer<D>, data: D): IrElement {
+                    return this
+                }
+
+                override fun <D> acceptChildren(visitor: IrElementVisitor<Unit, D>, data: D) {}
+
+                override fun <D> transformChildren(transformer: IrElementTransformer<D>, data: D) {}
+            }
         }
         return conversionScope.withFunction(irFunction) {
             memberGenerator.convertFunctionContent(
