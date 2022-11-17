@@ -48,15 +48,25 @@ class ConstraintSystemCompleter(components: BodyResolveComponents, private val c
         completionMode: ConstraintSystemCompletionMode,
         topLevelAtoms: List<FirStatement>,
         candidateReturnType: ConeKotlinType,
+        explicitTypeArguments: Map<FirTypeParameterSymbol, ConeKotlinType>,
         context: ResolutionContext,
         collectVariablesFromContext: Boolean = false,
         analyze: (PostponedResolvedAtom) -> Unit
-    ) = c.runCompletion(completionMode, topLevelAtoms, candidateReturnType, context, collectVariablesFromContext, analyze)
+    ) = c.runCompletion(
+        completionMode,
+        topLevelAtoms,
+        candidateReturnType,
+        explicitTypeArguments,
+        context,
+        collectVariablesFromContext,
+        analyze
+    )
 
     private fun ConstraintSystemCompletionContext.runCompletion(
         completionMode: ConstraintSystemCompletionMode,
         topLevelAtoms: List<FirStatement>,
         topLevelType: ConeKotlinType,
+        explicitTypeArguments: Map<FirTypeParameterSymbol, ConeKotlinType>,
         context: ResolutionContext,
         collectVariablesFromContext: Boolean = false,
         analyze: (PostponedResolvedAtom) -> Unit
@@ -147,7 +157,16 @@ class ConstraintSystemCompleter(components: BodyResolveComponents, private val c
                 continue
 
             // Stage 6: fix next ready type variable with proper constraints
-            if (fixNextReadyVariable(completionMode, topLevelAtoms, topLevelType, collectVariablesFromContext, postponedArguments))
+            val hasFixedNextReadyVariable = fixNextReadyVariable(
+                completionMode,
+                topLevelAtoms,
+                topLevelType,
+                explicitTypeArguments,
+                collectVariablesFromContext,
+                postponedArguments
+            )
+
+            if (hasFixedNextReadyVariable)
                 continue
 
             // Stage 7: try to complete call with the builder inference if there are uninferred type variables
@@ -238,6 +257,7 @@ class ConstraintSystemCompleter(components: BodyResolveComponents, private val c
         completionMode: ConstraintSystemCompletionMode,
         topLevelAtoms: List<FirStatement>,
         topLevelType: ConeKotlinType,
+        explicitTypeArguments: Map<FirTypeParameterSymbol, ConeKotlinType>,
         collectVariablesFromContext: Boolean,
         postponedArguments: List<PostponedResolvedAtom>,
     ): Boolean {
@@ -248,22 +268,41 @@ class ConstraintSystemCompleter(components: BodyResolveComponents, private val c
             completionMode,
             topLevelType
         ) ?: return false
-
         val variableWithConstraints = notFixedTypeVariables.getValue(variableForFixation.variable)
-        if (!variableForFixation.hasProperConstraint) {
-            if (context.inferenceSession.isSyntheticTypeVariable(variableWithConstraints.typeVariable)) {
-                context.inferenceSession.fixSyntheticTypeVariableWithNotEnoughInformation(
-                    variableWithConstraints.typeVariable as ConeTypeVariable,
-                    this
-                )
-                return true
-            }
 
-            return false
+        return if (variableForFixation.hasProperConstraint) {
+            fixVariable(this, topLevelType, variableWithConstraints, postponedArguments)
+            true
+        } else {
+            fixVariableWithoutProperConstraints(variableWithConstraints, explicitTypeArguments)
+        }
+    }
+
+    private fun ConstraintSystemCompletionContext.fixVariableWithoutProperConstraints(
+        variableWithConstraints: VariableWithConstraints,
+        explicitTypeArguments: Map<FirTypeParameterSymbol, ConeKotlinType>,
+    ): Boolean {
+        if (context.inferenceSession.isSyntheticTypeVariable(variableWithConstraints.typeVariable)) {
+            context.inferenceSession.fixSyntheticTypeVariableWithNotEnoughInformation(
+                variableWithConstraints.typeVariable as ConeTypeVariable,
+                this
+            )
+            return true
         }
 
-        fixVariable(this, topLevelType, variableWithConstraints, postponedArguments)
+        // If no proper constraints are available for the type variable, it can still be trivially inferred if an explicit type argument
+        // has been provided.
+        return fixVariableToExplicitTypeArgument(variableWithConstraints, explicitTypeArguments)
+    }
 
+    private fun ConstraintSystemCompletionContext.fixVariableToExplicitTypeArgument(
+        variableWithConstraints: VariableWithConstraints,
+        explicitTypeArguments: Map<FirTypeParameterSymbol, ConeKotlinType>,
+    ): Boolean {
+        val typeVariable = variableWithConstraints.typeVariable
+        val typeParameterSymbol = (typeVariable as? ConeTypeParameterBasedTypeVariable)?.typeParameterSymbol ?: return false
+        val explicitTypeArgument = explicitTypeArguments[typeParameterSymbol] ?: return false
+        fixVariable(typeVariable, explicitTypeArgument, ConeFixVariableConstraintPosition(typeVariable))
         return true
     }
 

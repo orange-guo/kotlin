@@ -30,6 +30,8 @@ import org.jetbrains.kotlin.fir.resolve.transformers.body.resolve.FirAbstractBod
 import org.jetbrains.kotlin.fir.resolve.transformers.body.resolve.FirBodyResolveTransformer
 import org.jetbrains.kotlin.fir.resolve.transformers.body.resolve.resultType
 import org.jetbrains.kotlin.fir.resolve.typeFromCallee
+import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirTypeParameterSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.types.builder.buildResolvedTypeRef
@@ -206,15 +208,32 @@ class FirCallCompleter(
     ) where T : FirResolvable, T : FirStatement {
         @Suppress("NAME_SHADOWING")
         val analyzer = analyzer ?: createPostponedArgumentsAnalyzer(transformer.resolutionContext)
+        val explicitTypeArguments = when (call) {
+            is FirQualifiedAccessExpression -> call.getExplicitTypeArgumentMap()
+            else -> mapOf()
+        }
         completer.complete(
             candidate.system.asConstraintSystemCompleterContext(),
             completionMode,
             listOf(call),
             initialType,
+            explicitTypeArguments,
             transformer.resolutionContext
         ) {
             analyzer.analyze(candidate.system, it, candidate, completionMode)
         }
+    }
+
+    private fun FirQualifiedAccessExpression.getExplicitTypeArgumentMap(): Map<FirTypeParameterSymbol, ConeKotlinType> {
+        // Type parameters must be fetched even from an unresolved/failed call candidate.
+        val callableSymbol = toResolvedCallableSymbol() ?: candidate()?.symbol as? FirCallableSymbol ?: return mapOf()
+        return callableSymbol.typeParameterSymbols
+            .zip(typeArguments)
+            .mapNotNull { (typeParameter, typeArgument) ->
+                val coneType = (typeArgument as? FirTypeProjectionWithVariance)?.typeRef?.coneType ?: return@mapNotNull null
+                typeParameter to coneType
+            }
+            .toMap()
     }
 
     fun prepareLambdaAtomForFactoryPattern(

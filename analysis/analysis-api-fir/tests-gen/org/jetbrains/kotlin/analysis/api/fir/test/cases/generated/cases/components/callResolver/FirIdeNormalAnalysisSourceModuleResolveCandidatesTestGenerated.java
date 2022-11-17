@@ -286,6 +286,18 @@ public class FirIdeNormalAnalysisSourceModuleResolveCandidatesTestGenerated exte
         }
 
         @Test
+        @TestMetadata("functionCallWithTooFewTypeArguments.kt")
+        public void testFunctionCallWithTooFewTypeArguments() throws Exception {
+            runTest("analysis/analysis-api/testData/components/callResolver/resolveCandidates/singleCandidate/functionCallWithTooFewTypeArguments.kt");
+        }
+
+        @Test
+        @TestMetadata("functionCallWithTooManyTypeArguments.kt")
+        public void testFunctionCallWithTooManyTypeArguments() throws Exception {
+            runTest("analysis/analysis-api/testData/components/callResolver/resolveCandidates/singleCandidate/functionCallWithTooManyTypeArguments.kt");
+        }
+
+        @Test
         @TestMetadata("functionCallWithTypeArgument.kt")
         public void testFunctionCallWithTypeArgument() throws Exception {
             runTest("analysis/analysis-api/testData/components/callResolver/resolveCandidates/singleCandidate/functionCallWithTypeArgument.kt");

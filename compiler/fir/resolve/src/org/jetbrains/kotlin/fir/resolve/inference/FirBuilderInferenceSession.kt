@@ -132,7 +132,9 @@ class FirBuilderInferenceSession(
             context,
             completionMode,
             partiallyResolvedCalls.map { it.first as FirStatement },
-            components.session.builtinTypes.unitType.type, resolutionContext,
+            components.session.builtinTypes.unitType.type,
+            mapOf(),
+            resolutionContext,
             collectVariablesFromContext = true
         ) {
             error("Shouldn't be called in complete constraint system mode")

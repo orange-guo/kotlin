@@ -192,7 +192,9 @@ class FirDelegatedPropertyInferenceSession(
                 commonSystem.asConstraintSystemCompleterContext(),
                 ConstraintSystemCompletionMode.FULL,
                 notCompletedCalls as List<FirStatement>,
-                unitType, resolutionContext
+                unitType,
+                mapOf(),
+                resolutionContext
             ) { lambdaAtom ->
                 // Reversed here bc we want top-most call to avoid exponential visit
                 val containingCandidateForLambda = notCompletedCalls.asReversed().first {
