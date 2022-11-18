@@ -1,4 +1,3 @@
-// FIR_DISABLE_LAZY_RESOLVE_CHECKS
 abstract class A {
     open var attribute = "a"
         protected set

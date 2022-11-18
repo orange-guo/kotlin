@@ -1,4 +1,3 @@
-// FIR_DISABLE_LAZY_RESOLVE_CHECKS
 abstract class Foo {
     abstract var id: Int
         protected set

@@ -1,4 +1,3 @@
-// FIR_DISABLE_LAZY_RESOLVE_CHECKS
 // FILE: JavaClass.java
 
 public class JavaClass extends Derived {

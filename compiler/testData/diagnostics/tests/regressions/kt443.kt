@@ -1,4 +1,3 @@
-// FIR_DISABLE_LAZY_RESOLVE_CHECKS
 // KT-443 Write allowed to super.val
 
 open class M() {

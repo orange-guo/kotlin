@@ -1,4 +1,3 @@
-// FIR_DISABLE_LAZY_RESOLVE_CHECKS
 // FIR_IDENTICAL
 interface Super {
     var v: CharSequence

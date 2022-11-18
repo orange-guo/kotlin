@@ -1,4 +1,3 @@
-// FIR_DISABLE_LAZY_RESOLVE_CHECKS
 // Check that unresolved super type doesn't interfere with unqualified super resolution.
 
 open class Base() {

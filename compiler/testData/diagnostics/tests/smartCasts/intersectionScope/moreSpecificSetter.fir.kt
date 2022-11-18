@@ -1,4 +1,3 @@
-// FIR_DISABLE_LAZY_RESOLVE_CHECKS
 open class A {
     open var value: Int = 4
         protected set

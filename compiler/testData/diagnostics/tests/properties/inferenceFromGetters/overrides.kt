@@ -1,4 +1,3 @@
-// FIR_DISABLE_LAZY_RESOLVE_CHECKS
 // !CHECK_TYPE
 interface A {
     val x: Int

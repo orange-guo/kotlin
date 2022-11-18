@@ -1,4 +1,3 @@
-// FIR_DISABLE_LAZY_RESOLVE_CHECKS
 class IrClassSymbolImpl(descriptor: String? = null) :
     IrBindableSymbolBase<String>(descriptor),
     IrClassSymbol

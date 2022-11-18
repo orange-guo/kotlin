@@ -1,4 +1,3 @@
-// FIR_DISABLE_LAZY_RESOLVE_CHECKS
 // !LANGUAGE: -JvmStaticInInterface
 // !DIAGNOSTICS: -UNUSED_VARIABLE
 open class B {
