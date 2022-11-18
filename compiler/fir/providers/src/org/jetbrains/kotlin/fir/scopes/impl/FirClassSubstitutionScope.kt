@@ -290,7 +290,7 @@ class FirClassSubstitutionScope(
             member.origin != FirDeclarationOrigin.BuiltIns &&
             member.origin !is FirDeclarationOrigin.Java
         ) {
-            member.lazyResolveToPhase(FirResolvePhase.STATUS)
+            member.lazyResolveToPhase(FirResolvePhase.TYPES)
         }
         val returnType = member.returnTypeRef.coneTypeSafe<ConeKotlinType>()
         val fakeOverrideSubstitution = runIf(returnType == null) { FakeOverrideSubstitution(substitutor, member.symbol) }
@@ -310,7 +310,7 @@ class FirClassSubstitutionScope(
         val member = original.fir
         if (skipPrivateMembers && member.visibility == Visibilities.Private) return original
 
-        member.symbol.lazyResolveToPhase(FirResolvePhase.STATUS)
+        member.symbol.lazyResolveToPhase(FirResolvePhase.TYPES)
         val returnType = member.returnTypeRef.coneTypeSafe<ConeKotlinType>()
         // TODO: do we have fields with implicit type?
         val newReturnType = returnType?.substitute() ?: return original
@@ -323,7 +323,7 @@ class FirClassSubstitutionScope(
         val member = original.fir as FirSyntheticProperty
         if (skipPrivateMembers && member.visibility == Visibilities.Private) return original
 
-        member.symbol.lazyResolveToPhase(FirResolvePhase.STATUS)
+        member.symbol.lazyResolveToPhase(FirResolvePhase.TYPES)
         val returnType = member.returnTypeRef.coneTypeSafe<ConeKotlinType>()
         val fakeOverrideSubstitution = runIf(returnType == null) { FakeOverrideSubstitution(substitutor, original) }
         val newReturnType = returnType?.substitute()
