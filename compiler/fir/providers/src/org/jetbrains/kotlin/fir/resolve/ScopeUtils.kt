@@ -48,7 +48,7 @@ fun ConeKotlinType.scope(
     scopeSession: ScopeSession,
     fakeOverrideTypeCalculator: FakeOverrideTypeCalculator
 ): FirTypeScope? {
-    val scope = scope(useSiteSession, scopeSession, FirResolvePhase.DECLARATIONS) ?: return null
+    val scope = scope(useSiteSession, scopeSession, FirResolvePhase.TYPES) ?: return null
     if (fakeOverrideTypeCalculator == FakeOverrideTypeCalculator.DoNothing) return scope
     return FirScopeWithFakeOverrideTypeCalculator(scope, fakeOverrideTypeCalculator)
 }
@@ -101,13 +101,6 @@ private fun ConeKotlinType.scope(useSiteSession: FirSession, scopeSession: Scope
         is ConeIntegerLiteralConstantType -> error("ILT should not be in receiver position")
         else -> null
     }
-}
-
-private fun ConeClassLikeType.obtainFirOfClass(useSiteSession: FirSession, requiredPhase: FirResolvePhase): FirClass? {
-    val fullyExpandedType = fullyExpandedType(useSiteSession)
-    val fir = fullyExpandedType.lookupTag.toSymbol(useSiteSession)?.fir as? FirClass ?: return null
-
-    return fir.also { it.symbol.lazyResolveToPhase(requiredPhase) }
 }
 
 fun FirClassSymbol<*>.defaultType(): ConeClassLikeType = fir.defaultType()
