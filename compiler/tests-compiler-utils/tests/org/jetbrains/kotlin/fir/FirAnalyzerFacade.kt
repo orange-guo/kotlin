@@ -49,6 +49,7 @@ class FirAnalyzerFacade(
     val useLightTree: Boolean = false,
     val enablePluginPhases: Boolean = false,
     val generateSignatures: Boolean = false,
+    val takeDependsOnFilesIntoAccount: Boolean = false
 ) : AbstractFirAnalyzerFacade() {
     private var firFiles: List<FirFile>? = null
     private var _scopeSession: ScopeSession? = null
@@ -108,10 +109,14 @@ class FirAnalyzerFacade(
         val mangler = JvmDescriptorMangler(null)
         val signaturer = JvmIdSignatureDescriptor(mangler)
 
-        val commonFirFiles = session.moduleData.dependsOnDependencies
-            .map { it.session }
-            .filter { it.kind == FirSession.Kind.Source }
-            .flatMap { (it.firProvider as FirProviderImpl).getAllFirFiles() }
+        val commonFirFiles = if (takeDependsOnFilesIntoAccount) {
+            session.moduleData.dependsOnDependencies
+                .map { it.session }
+                .filter { it.kind == FirSession.Kind.Source }
+                .flatMap { (it.firProvider as FirProviderImpl).getAllFirFiles() }
+        } else {
+            emptyList()
+        }
 
         return Fir2IrConverter.createModuleFragmentWithSignaturesIfNeeded(
             session, _scopeSession!!, firFiles!! + commonFirFiles,

@@ -7,7 +7,9 @@ package org.jetbrains.kotlin.test.frontend.fir
 
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.LanguageVersionSettings
-import org.jetbrains.kotlin.fir.*
+import org.jetbrains.kotlin.fir.FirModuleData
+import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.deserialization.ModuleDataProvider
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
 import org.jetbrains.kotlin.fir.java.FirProjectSessionProvider
 import org.jetbrains.kotlin.fir.session.FirJsSessionFactory
@@ -16,15 +18,19 @@ import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.ir.backend.js.jsResolveLibraries
 import org.jetbrains.kotlin.ir.backend.js.resolverLogger
 import org.jetbrains.kotlin.js.config.JSConfigurationKeys
+import org.jetbrains.kotlin.library.resolver.KotlinResolvedLibrary
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.test.model.DependencyRelation
 import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.services.TestServices
+import org.jetbrains.kotlin.test.services.configuration.JsEnvironmentConfigurator
+import java.io.File
 
 object TestFirJsSessionFactory {
     fun createLibrarySession(
         mainModuleName: Name,
         sessionProvider: FirProjectSessionProvider,
-        dependencyListForCliModule: DependencyListForCliModule,
+        moduleDataProvider: ModuleDataProvider,
         module: TestModule,
         testServices: TestServices,
         configuration: CompilerConfiguration,
@@ -36,16 +42,39 @@ object TestFirJsSessionFactory {
         val resolvedLibraries = jsResolveLibraries(libraries, repositories, logger).getFullResolvedList()
 
         return FirJsSessionFactory.createJsLibrarySession(
-            mainModuleName, resolvedLibraries, sessionProvider, dependencyListForCliModule.moduleDataProvider, languageVersionSettings
+            mainModuleName, resolvedLibraries, sessionProvider, moduleDataProvider, languageVersionSettings
         )
     }
 
     fun createModuleBasedSession(
-        mainModuleData: FirModuleDataImpl, sessionProvider: FirProjectSessionProvider, extensionRegistrars: List<FirExtensionRegistrar>,
+        mainModuleData: FirModuleData, sessionProvider: FirProjectSessionProvider, extensionRegistrars: List<FirExtensionRegistrar>,
         languageVersionSettings: LanguageVersionSettings, lookupTracker: LookupTracker?,
         sessionConfigurator: FirSessionConfigurator.() -> Unit
     ): FirSession =
         FirJsSessionFactory.createJsModuleBasedSession(
             mainModuleData, sessionProvider, extensionRegistrars, languageVersionSettings, lookupTracker, sessionConfigurator
         )
+}
+
+fun resolveJsLibraries(
+    module: TestModule,
+    testServices: TestServices,
+    configuration: CompilerConfiguration
+): List<KotlinResolvedLibrary> {
+    val paths = getAllJsDependenciesPaths(module, testServices)
+    val repositories = configuration[JSConfigurationKeys.REPOSITORIES] ?: emptyList()
+    val logger = configuration.resolverLogger
+    return jsResolveLibraries(paths, repositories, logger).getFullResolvedList()
+}
+
+fun getAllJsDependenciesPaths(module: TestModule, testServices: TestServices): List<String> {
+    val (runtimeKlibsPaths, transitiveLibraries, friendLibraries) = getJsDependencies(module, testServices)
+    return runtimeKlibsPaths + transitiveLibraries.map { it.path } + friendLibraries.map { it.path }
+}
+
+fun getJsDependencies(module: TestModule, testServices: TestServices): Triple<List<String>, List<File>, List<File>> {
+    val runtimeKlibsPaths = JsEnvironmentConfigurator.getRuntimePathsForModule(module, testServices)
+    val transitiveLibraries = JsEnvironmentConfigurator.getKlibDependencies(module, testServices, DependencyRelation.RegularDependency)
+    val friendLibraries = JsEnvironmentConfigurator.getKlibDependencies(module, testServices, DependencyRelation.FriendDependency)
+    return Triple(runtimeKlibsPaths, transitiveLibraries, friendLibraries)
 }
