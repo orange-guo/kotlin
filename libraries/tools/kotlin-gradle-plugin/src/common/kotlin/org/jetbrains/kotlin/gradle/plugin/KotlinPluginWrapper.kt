@@ -102,21 +102,22 @@ abstract class DefaultKotlinBasePlugin : KotlinBasePlugin {
     }
 
     private fun addKotlinCompilerConfiguration(project: Project) {
-        project
+        val classpathConfiguration = project
             .configurations
             .maybeCreate(COMPILER_CLASSPATH_CONFIGURATION_NAME)
-            .defaultDependencies {
-                it.add(
+
+        classpathConfiguration.defaultDependencies {
+            it.addLater(
+                project.providers.provider {
                     project.dependencies.create("$KOTLIN_MODULE_GROUP:$KOTLIN_COMPILER_EMBEDDABLE:${project.getKotlinPluginVersion()}")
-                )
-            }
+                }
+            )
+        }
         project
             .tasks
             .withType(AbstractKotlinCompileTool::class.java)
             .configureEach { task ->
-                task.defaultCompilerClasspath.setFrom(
-                    project.configurations.named(COMPILER_CLASSPATH_CONFIGURATION_NAME)
-                )
+                task.defaultCompilerClasspath.setFrom(classpathConfiguration)
             }
     }
 
