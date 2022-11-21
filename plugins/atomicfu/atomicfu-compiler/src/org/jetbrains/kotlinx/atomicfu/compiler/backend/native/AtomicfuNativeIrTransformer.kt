@@ -8,103 +8,77 @@ package org.jetbrains.kotlinx.atomicfu.compiler.backend.native
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.declarations.*
-import org.jetbrains.kotlin.ir.expressions.IrCall
-import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
-import org.jetbrains.kotlin.ir.types.IrType
-import org.jetbrains.kotlin.ir.types.classFqName
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformer
-import org.jetbrains.kotlinx.atomicfu.compiler.backend.jvm.AtomicSymbols
-import org.jetbrains.kotlin.ir.builders.*
-
-private const val AFU_PKG = "kotlinx.atomicfu"
-private const val TRACE_BASE_TYPE = "TraceBase"
-private const val ATOMIC_VALUE_FACTORY = "atomic"
-private const val INVOKE = "invoke"
-private const val APPEND = "append"
-private const val GET = "get"
-private const val ATOMICFU = "atomicfu"
-private const val ATOMIC_ARRAY_RECEIVER_SUFFIX = "\$array"
-private const val DISPATCH_RECEIVER = "${ATOMICFU}\$dispatchReceiver"
-private const val ATOMIC_HANDLER = "${ATOMICFU}\$handler"
-private const val ACTION = "${ATOMICFU}\$action"
-private const val INDEX = "${ATOMICFU}\$index"
-private const val VOLATILE_WRAPPER_SUFFIX = "\$VolatileWrapper"
-private const val LOOP = "loop"
-private const val UPDATE = "update"
+import org.jetbrains.kotlinx.atomicfu.compiler.backend.jvm.JvmAtomicSymbols
+import org.jetbrains.kotlin.ir.builders.declarations.buildField
+import org.jetbrains.kotlin.ir.types.isBoolean
+import org.jetbrains.kotlinx.atomicfu.compiler.backend.addDefaultGetter
+import org.jetbrains.kotlinx.atomicfu.compiler.backend.common.AbstractAtomicfuTransformer
 
 class AtomicfuNativeIrTransformer(
-    val context: IrPluginContext,
-    val atomicSymbols: AtomicSymbols
-) {
-    private val ATOMIC_VALUE_TYPES = setOf("AtomicInt", "AtomicLong", "AtomicBoolean", "AtomicRef")
+    context: IrPluginContext,
+    atomicSymbols: JvmAtomicSymbols
+) : AbstractAtomicfuTransformer(context, atomicSymbols) {
 
-    fun transform(moduleFragment: IrModuleFragment) {
-        transformAtomicFields(moduleFragment)
-    }
-
-    private fun transformAtomicFields(moduleFragment: IrModuleFragment) {
+    override fun transformAtomicFields(moduleFragment: IrModuleFragment) {
         for (irFile in moduleFragment.files) {
-            irFile.transform(AtomicHandlerTransformer(), null)
+            irFile.transform(AtomicTransformer(), null)
         }
     }
 
-    private inner class AtomicHandlerTransformer : IrElementTransformer<IrFunction?> {
+    override fun transformAtomicExtensions(moduleFragment: IrModuleFragment) {
+
+    }
+
+    override fun transformAtomicFunctions(moduleFragment: IrModuleFragment) {
+
+    }
+
+    private inner class AtomicTransformer : IrElementTransformer<IrFunction?> {
+
         override fun visitClass(declaration: IrClass, data: IrFunction?): IrStatement {
             declaration.declarations.filter(::fromKotlinxAtomicfu).forEach {
-                (it as IrProperty).transformAtomicfuProperty(declaration)
+                (it as IrProperty).transformAtomicProperty(declaration)
             }
             return super.visitClass(declaration, data)
         }
 
-        private fun IrProperty.transformAtomicfuProperty(parent: IrDeclarationContainer) {
-            when {
-                isAtomic() -> {
-                    transformAtomicProperty(parent as IrClass)
-                }
-                else -> error("Property type not supported")
+        override fun visitFile(declaration: IrFile, data: IrFunction?): IrFile {
+            declaration.declarations.filter(::fromKotlinxAtomicfu).forEach {
+                (it as IrProperty).transformAtomicProperty(declaration)
             }
+            return super.visitFile(declaration, data)
         }
 
-        private fun IrProperty.transformAtomicProperty(parentClass: IrClass) {
-            backingField?.let { backingField ->
-                backingField.initializer?.let {
-                    val initializer = it.expression as IrCall
-                    when {
-                        initializer.isAtomicFactory() -> {
-                            // val a = atomic(77) -> val a = kotlin.native.concurrent.AtomicInt(77)
-                            with(atomicSymbols.createBuilder(this.symbol)) {
-                                it.expression = irCall(atomicSymbols.atomicIntNativeConstructor)
-                            }
-                        }
-                        else -> error("Unexpected initializer of the delegated property: $initializer")
-                    }
-                }
-            }
+        private fun IrProperty.transformAtomicProperty(parentClass: IrDeclarationContainer) {
+            // todo can I get parent from the parent field of the property?
+            // Atomic property is replaced with the
+            // For now supported for primitive types (int, long, boolean) and for linuxX64 and macosX64
+            //  val a = atomic(0)
+            //  @Volatile var a: Int = 0
+            backingField = buildVolatileRawField(this, parentClass)
+            // update property accessors
+            context.addDefaultGetter(this, parentClass)
         }
 
-        private fun IrProperty.isAtomic(): Boolean =
-            !isDelegated && backingField?.type?.isAtomicValueType() ?: false
-
-        private fun IrType.isAtomicValueType() =
-            classFqName?.let {
-                it.parent().asString() == AFU_PKG && it.shortName().asString() in ATOMIC_VALUE_TYPES
-            } ?: false
-
-        private fun fromKotlinxAtomicfu(declaration: IrDeclaration): Boolean =
-            declaration is IrProperty &&
-                    declaration.backingField?.type?.isKotlinxAtomicfuPackage() ?: false
-
-        private fun IrType.isKotlinxAtomicfuPackage() =
-            classFqName?.let { it.parent().asString() == AFU_PKG } ?: false
-
-        private fun IrCall.isAtomicFactory(): Boolean =
-            symbol.isKotlinxAtomicfuPackage() && symbol.owner.name.asString() == ATOMIC_VALUE_FACTORY &&
-                    type.isAtomicValueType()
-
-        private fun IrSimpleFunctionSymbol.isKotlinxAtomicfuPackage(): Boolean =
-            owner.parentClassOrNull?.classId?.let {
-                it.packageFqName.asString() == AFU_PKG
-            } ?: false
+        private fun buildVolatileRawField(property: IrProperty, parent: IrDeclarationContainer): IrField =
+            // Generate a new backing field for the given property:
+            // a volatile variable of the atomic value type
+            // val a = atomic(0)
+            // volatile var a: Int = 0
+            property.backingField?.let { backingField ->
+                val valueType = backingField.type.atomicToValueType()
+                context.irFactory.buildField {
+                    name = property.name
+                    type = if (valueType.isBoolean()) irBuiltIns.intType else valueType
+                    visibility = backingField.visibility // private
+                    isFinal = false
+                    isStatic = parent is IrFile
+                }.apply {
+                    annotations = backingField.annotations + atomicSymbols.volatileAnnotationConstructorCall
+                    this.parent = parent
+                }
+            } ?: error("Backing field of the atomic property ${property.render()} is null")
     }
 }

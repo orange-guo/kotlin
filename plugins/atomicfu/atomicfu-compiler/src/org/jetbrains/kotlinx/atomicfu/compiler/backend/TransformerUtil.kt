@@ -124,9 +124,6 @@ internal fun IrExpression.isConstNull() = this is IrConst<*> && this.kind.asStri
 internal fun IrField.getterName() = "<get-${name.asString()}>"
 internal fun IrField.setterName() = "<set-${name.asString()}>"
 
-internal fun String.getFieldName() = "<get-(\\w+)>".toRegex().find(this)?.groupValues?.get(1)
-    ?: error("Getter name $this does not match special name pattern <get-fieldName>")
-
 internal fun IrFunctionAccessExpression.getValueArguments() =
     (0 until valueArgumentsCount).map { i ->
         getValueArgument(i)

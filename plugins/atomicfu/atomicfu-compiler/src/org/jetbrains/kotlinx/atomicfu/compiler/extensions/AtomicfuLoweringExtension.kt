@@ -18,7 +18,7 @@ import org.jetbrains.kotlin.ir.visitors.acceptVoid
 import org.jetbrains.kotlin.platform.isJs
 import org.jetbrains.kotlin.platform.jvm.isJvm
 import org.jetbrains.kotlin.platform.konan.isNative
-import org.jetbrains.kotlinx.atomicfu.compiler.backend.jvm.AtomicSymbols
+import org.jetbrains.kotlinx.atomicfu.compiler.backend.jvm.JvmAtomicSymbols
 import org.jetbrains.kotlinx.atomicfu.compiler.backend.js.AtomicfuJsIrTransformer
 import org.jetbrains.kotlinx.atomicfu.compiler.backend.jvm.AtomicfuJvmIrTransformer
 import org.jetbrains.kotlinx.atomicfu.compiler.backend.native.AtomicfuNativeIrTransformer
@@ -31,11 +31,11 @@ public open class AtomicfuLoweringExtension : IrGenerationExtension {
         val platform = pluginContext.platform
         when {
             platform.isJvm() -> {
-                val atomicSymbols = AtomicSymbols(pluginContext.irBuiltIns, moduleFragment)
+                val atomicSymbols = JvmAtomicSymbols(pluginContext.irBuiltIns, moduleFragment)
                 AtomicfuJvmIrTransformer(pluginContext, atomicSymbols).transform(moduleFragment)
             }
             platform.isNative() -> {
-                val atomicSymbols = AtomicSymbols(pluginContext.irBuiltIns, moduleFragment)
+                val atomicSymbols = JvmAtomicSymbols(pluginContext.irBuiltIns, moduleFragment)
                 AtomicfuNativeIrTransformer(pluginContext, atomicSymbols).transform(moduleFragment)
             }
             platform.isJs() -> {

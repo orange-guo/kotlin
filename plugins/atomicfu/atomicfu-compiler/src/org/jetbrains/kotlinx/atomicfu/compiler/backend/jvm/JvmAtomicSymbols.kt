@@ -21,8 +21,9 @@ import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlinx.atomicfu.compiler.backend.*
 
+// TODO: abstract atomic symbols
 // Contains IR declarations needed by the atomicfu plugin.
-class AtomicSymbols(
+class JvmAtomicSymbols(
     val irBuiltIns: IrBuiltIns,
     private val moduleFragment: IrModuleFragment
 ) {
@@ -31,16 +32,6 @@ class AtomicSymbols(
     private val javaUtilConcurrent: IrPackageFragment = createPackage("java.util.concurrent.atomic")
     private val kotlinJvm: IrPackageFragment = createPackage("kotlin.jvm")
     val javaLangClass: IrClassSymbol = createClass(javaLang, "Class", ClassKind.CLASS, Modality.FINAL)
-
-    // Native classes
-    private val kotlinNativeConcurrentPackage: IrPackageFragment = createPackage("kotlin.native.concurrent")
-
-    val atomicIntNativeClass: IrClassSymbol =
-        createClass(kotlinNativeConcurrentPackage, "AtomicInt", ClassKind.CLASS, Modality.FINAL)
-
-    val atomicIntNativeConstructor: IrConstructorSymbol = atomicIntNativeClass.owner.addConstructor().apply {
-        addValueParameter("value_", irBuiltIns.intType)
-    }.symbol
 
     // AtomicIntegerFieldUpdater
     val atomicIntFieldUpdaterClass: IrClassSymbol =
@@ -449,6 +440,28 @@ class AtomicSymbols(
         atomicLongFieldUpdaterClass,
         atomicRefFieldUpdaterClass
     )
+
+    fun buildAtomicFieldUpdater(
+        field: IrField,
+        parentClass: IrClass
+    ): IrField {
+        val name = field.name.asString()
+        val fuClass = getJucaAFUClass(field.type)
+        return irFactory.buildField {
+            this.name = Name.identifier("$name\$FU")
+            this.type = fuClass.defaultType
+            this.visibility = field.visibility // private
+            isFinal = true
+            isStatic = true
+        }.apply {
+            initializer = IrExpressionBodyImpl(
+                with(createBuilder(symbol)) {
+                    newUpdater(fuClass, parentClass, irBuiltIns.anyNType, name)
+                }
+            )
+            this.parent = parentClass
+        }
+    }
 
     fun getJucaAFUClass(valueType: IrType): IrClassSymbol =
         when {

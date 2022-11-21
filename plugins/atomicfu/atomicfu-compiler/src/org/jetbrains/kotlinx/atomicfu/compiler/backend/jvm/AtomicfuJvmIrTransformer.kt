@@ -23,14 +23,9 @@ import org.jetbrains.kotlin.ir.visitors.*
 import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlin.util.capitalizeDecapitalize.*
 import org.jetbrains.kotlinx.atomicfu.compiler.backend.*
+import org.jetbrains.kotlinx.atomicfu.compiler.backend.common.AbstractAtomicfuTransformer
 import kotlin.collections.set
 
-private const val AFU_PKG = "kotlinx.atomicfu"
-private const val TRACE_BASE_TYPE = "TraceBase"
-private const val ATOMIC_VALUE_FACTORY = "atomic"
-private const val INVOKE = "invoke"
-private const val APPEND = "append"
-private const val GET = "get"
 private const val ATOMICFU = "atomicfu"
 private const val ATOMIC_ARRAY_RECEIVER_SUFFIX = "\$array"
 private const val DISPATCH_RECEIVER = "${ATOMICFU}\$dispatchReceiver"
@@ -42,44 +37,23 @@ private const val LOOP = "loop"
 private const val UPDATE = "update"
 
 class AtomicfuJvmIrTransformer(
-    private val context: IrPluginContext,
-    private val atomicSymbols: AtomicSymbols
-) {
-    private val irBuiltIns = context.irBuiltIns
+    context: IrPluginContext,
+    atomicSymbols: JvmAtomicSymbols
+) : AbstractAtomicfuTransformer(context, atomicSymbols) {
 
-    private val AFU_VALUE_TYPES: Map<String, IrType> = mapOf(
-        "AtomicInt" to irBuiltIns.intType,
-        "AtomicLong" to irBuiltIns.longType,
-        "AtomicBoolean" to irBuiltIns.booleanType,
-        "AtomicRef" to irBuiltIns.anyNType
-    )
-
-    private val ATOMICFU_INLINE_FUNCTIONS = setOf("loop", "update", "getAndUpdate", "updateAndGet")
-    protected val ATOMIC_VALUE_TYPES = setOf("AtomicInt", "AtomicLong", "AtomicBoolean", "AtomicRef")
-    protected val ATOMIC_ARRAY_TYPES = setOf("AtomicIntArray", "AtomicLongArray", "AtomicBooleanArray", "AtomicArray")
-
-    fun transform(moduleFragment: IrModuleFragment) {
-        transformAtomicFields(moduleFragment)
-        transformAtomicExtensions(moduleFragment)
-        transformAtomicfuDeclarations(moduleFragment)
-        for (irFile in moduleFragment.files) {
-            irFile.patchDeclarationParents()
-        }
-    }
-
-    private fun transformAtomicFields(moduleFragment: IrModuleFragment) {
+    override fun transformAtomicFields(moduleFragment: IrModuleFragment) {
         for (irFile in moduleFragment.files) {
             irFile.transform(AtomicHandlerTransformer(), null)
         }
     }
 
-    private fun transformAtomicExtensions(moduleFragment: IrModuleFragment) {
+    override fun transformAtomicExtensions(moduleFragment: IrModuleFragment) {
         for (irFile in moduleFragment.files) {
             irFile.transform(AtomicExtensionTransformer(), null)
         }
     }
 
-    private fun transformAtomicfuDeclarations(moduleFragment: IrModuleFragment) {
+    override fun transformAtomicFunctions(moduleFragment: IrModuleFragment) {
         for (irFile in moduleFragment.files) {
             irFile.transform(AtomicfuTransformer(), null)
         }
@@ -148,8 +122,9 @@ class AtomicfuJvmIrTransformer(
             backingField = buildVolatileRawField(this, parentClass)
             // update property accessors
             context.addDefaultGetter(this, parentClass)
-            val fieldUpdater = addJucaAFUProperty(this, parentClass)
-            registerAtomicHandler(fieldUpdater)
+            addAtomicFieldUpdaterProperty(this, parentClass).also {
+                registerAtomicHandler(it)
+            }
         }
 
         private fun IrProperty.transformAtomicArrayProperty(parent: IrDeclarationContainer) {
@@ -239,6 +214,7 @@ class AtomicfuJvmIrTransformer(
             propertyToAtomicHandler[this] = atomicHandlerProperty
         }
 
+        // todo move to IrBuilder, that should
         private fun buildVolatileRawField(property: IrProperty, parent: IrDeclarationContainer): IrField =
         // Generate a new backing field for the given property:
         // a volatile variable of the atomic value type
@@ -271,31 +247,18 @@ class AtomicfuJvmIrTransformer(
                 }
             } ?: error("Backing field of the atomic property ${property.render()} is null")
 
-        private fun addJucaAFUProperty(atomicProperty: IrProperty, parentClass: IrClass): IrProperty =
-        // Generate an atomic field updater for the volatile backing field of the given property:
-        // val a = atomic(0)
-        // volatile var a: Int = 0
+        private fun addAtomicFieldUpdaterProperty(atomicProperty: IrProperty, parentClass: IrClass): IrProperty {
+            // Generate an atomic field updater for the volatile backing field of the given property:
+            // val a = atomic(0)
+            // volatile var a: Int = 0
             // val a$FU = AtomicIntegerFieldUpdater.newUpdater(parentClass, "a")
-            atomicProperty.backingField?.let { volatileField ->
-                val fuClass = atomicSymbols.getJucaAFUClass(volatileField.type)
-                val fieldName = volatileField.name.asString()
-                val fuField = context.irFactory.buildField {
-                    name = Name.identifier(mangleFUName(fieldName))
-                    type = fuClass.defaultType
-                    visibility = volatileField.visibility // private
-                    isFinal = true
-                    isStatic = true
-                }.apply {
-                    initializer = IrExpressionBodyImpl(
-                        with(atomicSymbols.createBuilder(symbol)) {
-                            newUpdater(fuClass, parentClass, irBuiltIns.anyNType, fieldName)
-                        }
-                    )
-                    parent = parentClass
-                }
-                return context.addProperty(fuField, parentClass, atomicProperty.visibility, true)
+            val field = atomicProperty.backingField?.let { volatileField ->
+                atomicSymbols.buildAtomicFieldUpdater(volatileField, parentClass)
             } ?: error("Atomic property ${atomicProperty.render()} should have a non-null generated volatile backingField")
+            return context.addProperty(field, parentClass, atomicProperty.visibility, true)
+        }
 
+        // todo move to JVM IrBuilder
         private fun buildJucaArrayField(atomicfuArrayProperty: IrProperty, parent: IrDeclarationContainer) =
             atomicfuArrayProperty.backingField?.let { atomicfuArray ->
                 val init = atomicfuArray.initializer?.expression as? IrFunctionAccessExpression
@@ -333,6 +296,7 @@ class AtomicfuJvmIrTransformer(
                 }
             } ?: error("Atomic property does not have backingField")
 
+        // todo move to IrBuilder
         private fun generateWrapperClass(atomicProperty: IrProperty, parentContainer: IrDeclarationContainer): IrClass {
             val wrapperClassName = getVolatileWrapperClassName(atomicProperty)
             val volatileWrapperClass = parentContainer.declarations.singleOrNull { it is IrClass && it.name.asString() == wrapperClassName }
@@ -376,26 +340,8 @@ class AtomicfuJvmIrTransformer(
             getValueArgument(0)?.deepCopyWithSymbols()
                 ?: error("Atomic array constructor should take at least one argument: ${this.render()}")
 
-        private fun fromKotlinxAtomicfu(declaration: IrDeclaration): Boolean =
-            declaration is IrProperty &&
-                    declaration.backingField?.type?.isKotlinxAtomicfuPackage() ?: false
-
-        private fun IrProperty.isAtomic(): Boolean =
-            !isDelegated && backingField?.type?.isAtomicValueType() ?: false
-
-        private fun IrProperty.isDelegatedToAtomic(): Boolean =
-            isDelegated && backingField?.type?.isAtomicValueType() ?: false
-
-        private fun IrProperty.isAtomicArray(): Boolean =
-            backingField?.type?.isAtomicArrayType() ?: false
-
-        private fun IrProperty.isTrace(): Boolean =
-            backingField?.type?.isTraceBaseType() ?: false
-
         private fun IrProperty.isTopLevel(): Boolean =
             parent is IrClass && (parent as IrClass).name.asString().endsWith(VOLATILE_WRAPPER_SUFFIX)
-
-        private fun mangleFUName(fieldName: String) = "$fieldName\$FU"
     }
 
     private inner class AtomicExtensionTransformer : IrElementTransformerVoid() {
@@ -546,6 +492,7 @@ class AtomicfuJvmIrTransformer(
                                         isBooleanReceiver = valueType.isBoolean()
                                     )
                                 } else {
+                                    // todo move this to atomic symbols
                                     callFieldUpdater(
                                         fieldUpdaterSymbol = atomicSymbols.getJucaAFUClass(valueType),
                                         functionName = functionName,
@@ -838,57 +785,7 @@ class AtomicfuJvmIrTransformer(
             ?: error("Static instance of ${volatileWrapperClass.name.asString()} is missing in ${volatileWrapperClass.parent}")
     }
 
-    private fun IrType.isKotlinxAtomicfuPackage() =
-        classFqName?.let { it.parent().asString() == AFU_PKG } ?: false
-
-    private fun IrSimpleFunctionSymbol.isKotlinxAtomicfuPackage(): Boolean =
-        owner.parentClassOrNull?.classId?.let {
-            it.packageFqName.asString() == AFU_PKG
-        } ?: false
-
-    private fun IrType.isAtomicValueType() =
-        classFqName?.let {
-            it.parent().asString() == AFU_PKG && it.shortName().asString() in ATOMIC_VALUE_TYPES
-        } ?: false
-
-    private fun IrType.isAtomicArrayType() =
-        classFqName?.let {
-            it.parent().asString() == AFU_PKG && it.shortName().asString() in ATOMIC_ARRAY_TYPES
-        } ?: false
-
-    private fun IrType.isTraceBaseType() =
-        classFqName?.let {
-            it.parent().asString() == AFU_PKG && it.shortName().asString() == TRACE_BASE_TYPE
-        } ?: false
-
-    private fun IrCall.isArrayElementGetter(): Boolean =
-        dispatchReceiver?.let {
-            it.type.isAtomicArrayType() && symbol.owner.name.asString() == GET
-        } ?: false
-
-    private fun IrType.atomicToValueType(): IrType =
-        classFqName?.let {
-            AFU_VALUE_TYPES[it.shortName().asString()]
-        } ?: error("No corresponding value type was found for this atomic type: ${this.render()}")
-
-    private fun IrCall.isAtomicFactory(): Boolean =
-        symbol.isKotlinxAtomicfuPackage() && symbol.owner.name.asString() == ATOMIC_VALUE_FACTORY &&
-                type.isAtomicValueType()
-
-    private fun IrFunction.isAtomicExtension(): Boolean =
-        extensionReceiverParameter?.let { it.type.isAtomicValueType() && this.isInline } ?: false
-
     private fun IrStatement.isTraceCall() = this is IrCall && (isTraceInvoke() || isTraceAppend())
-
-    private fun IrCall.isTraceInvoke(): Boolean =
-        symbol.isKotlinxAtomicfuPackage() &&
-                symbol.owner.name.asString() == INVOKE &&
-                symbol.owner.dispatchReceiverParameter?.type?.isTraceBaseType() == true
-
-    private fun IrCall.isTraceAppend(): Boolean =
-        symbol.isKotlinxAtomicfuPackage() &&
-                symbol.owner.name.asString() == APPEND &&
-                symbol.owner.dispatchReceiverParameter?.type?.isTraceBaseType() == true
 
     private fun getVolatileWrapperClassName(property: IrProperty) =
         property.name.asString().capitalizeAsciiOnly() + '$' +
