@@ -7,11 +7,9 @@ package org.jetbrains.kotlin.fir.resolve.transformers
 
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.builtins.functions.FunctionClassKind
-import org.jetbrains.kotlin.descriptors.Visibility
 import org.jetbrains.kotlin.fakeElement
 import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.declarations.*
-import org.jetbrains.kotlin.fir.declarations.builder.buildReceiverParameterCopy
 import org.jetbrains.kotlin.fir.declarations.utils.isInline
 import org.jetbrains.kotlin.fir.declarations.utils.isLocal
 import org.jetbrains.kotlin.fir.declarations.utils.visibility
@@ -523,7 +521,7 @@ class FirCallCompletionResultsWriterTransformer(
         access: FirQualifiedAccess,
         candidate: Candidate
     ): List<FirTypeProjection> {
-        return computeTypeArgumentTypes(candidate)
+        val typeArguments = computeTypeArgumentTypes(candidate)
             .mapIndexed { index, type ->
                 when (val argument = access.typeArguments.getOrNull(index)) {
                     is FirTypeProjectionWithVariance -> {
@@ -550,6 +548,12 @@ class FirCallCompletionResultsWriterTransformer(
                     }
                 }
             }
+
+        // We must ensure that all extra type arguments are preserved in the result, so that they can still be resolved later (e.g. for
+        // navigation in the IDE).
+        return if (typeArguments.size < access.typeArguments.size) {
+            typeArguments + access.typeArguments.subList(typeArguments.size, access.typeArguments.size)
+        } else typeArguments
     }
 
     private fun computeTypeArgumentTypes(

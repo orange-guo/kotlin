@@ -45,14 +45,16 @@ internal object MapTypeArguments : ResolutionStage() {
             return
         }
 
+        candidate.typeArgumentMapping = TypeArgumentMapping.Mapped(
+            if (typeArguments.size > owner.typeParameters.size) typeArguments.take(owner.typeParameters.size)
+            else typeArguments
+        )
+
         if (
-            typeArguments.size == owner.typeParameters.size ||
-            callInfo.callKind == CallKind.DelegatingConstructorCall ||
-            (owner as? FirDeclaration)?.origin is FirDeclarationOrigin.DynamicScope
+            typeArguments.size != owner.typeParameters.size &&
+            callInfo.callKind != CallKind.DelegatingConstructorCall &&
+            (owner as? FirDeclaration)?.origin !is FirDeclarationOrigin.DynamicScope
         ) {
-            candidate.typeArgumentMapping = TypeArgumentMapping.Mapped(typeArguments)
-        } else {
-            candidate.typeArgumentMapping = TypeArgumentMapping.Mapped(emptyList())
             sink.yieldDiagnostic(InapplicableCandidate)
         }
     }
