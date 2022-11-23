@@ -120,8 +120,8 @@ FILE: parameterOfNonLocalSetter.kt
 
 IMPLICIT_TYPES_BODY_RESOLVE:
 FILE: parameterOfNonLocalSetter.kt
-    public final [STATUS] class X : R|kotlin/Any| {
-        public [STATUS] [ContainingClassKey=X] constructor(): R|X| {
+    public final [TYPES] class X : R|kotlin/Any| {
+        public? [TYPES] [ContainingClassKey=X] constructor(): R|X| {
             super<R|kotlin/Any|>()
         }
 
@@ -135,8 +135,8 @@ FILE: parameterOfNonLocalSetter.kt
 
 ANNOTATIONS_ARGUMENTS_MAPPING:
 FILE: parameterOfNonLocalSetter.kt
-    public final [STATUS] class X : R|kotlin/Any| {
-        public [STATUS] [ContainingClassKey=X] constructor(): R|X| {
+    public final [TYPES] class X : R|kotlin/Any| {
+        public? [TYPES] [ContainingClassKey=X] constructor(): R|X| {
             super<R|kotlin/Any|>()
         }
 
@@ -150,8 +150,8 @@ FILE: parameterOfNonLocalSetter.kt
 
 EXPECT_ACTUAL_MATCHING:
 FILE: parameterOfNonLocalSetter.kt
-    public final [STATUS] class X : R|kotlin/Any| {
-        public [STATUS] [ContainingClassKey=X] constructor(): R|X| {
+    public final [TYPES] class X : R|kotlin/Any| {
+        public? [TYPES] [ContainingClassKey=X] constructor(): R|X| {
             super<R|kotlin/Any|>()
         }
 
@@ -165,8 +165,8 @@ FILE: parameterOfNonLocalSetter.kt
 
 BODY_RESOLVE:
 FILE: parameterOfNonLocalSetter.kt
-    public final [STATUS] class X : R|kotlin/Any| {
-        public [STATUS] [ContainingClassKey=X] constructor(): R|X| {
+    public final [TYPES] class X : R|kotlin/Any| {
+        public? [TYPES] [ContainingClassKey=X] constructor(): R|X| {
             super<R|kotlin/Any|>()
         }
 

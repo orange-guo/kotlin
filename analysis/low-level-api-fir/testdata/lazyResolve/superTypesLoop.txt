@@ -343,7 +343,7 @@ FILE: superTypesLoop.kt
         }
 
     }
-    public open [STATUS] class C : <ERROR TYPE REF: Loop in supertype: /C -> /A> {
+    public open [TYPES] class C : <ERROR TYPE REF: Loop in supertype: /C -> /A> {
         public [STATUS] [ContainingClassKey=C] constructor(): R|C| {
             super<R|A|>()
         }

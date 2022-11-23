@@ -156,8 +156,8 @@ FILE: anonympuseObjectInInvalidPosition.kt
     }
 
         private [BODY_RESOLVE] get(): <ERROR TYPE REF: Wrong number of type arguments>
-    public abstract [SUPER_TYPES] interface A<[SUPER_TYPES] T> : R|kotlin/Any| {
-        public abstract [STATUS] fun x(): R|kotlin/Unit|
+    public? final? [SUPER_TYPES] interface A<[SUPER_TYPES] T> : R|kotlin/Any| {
+        public? final? [TYPES] fun x(): R|kotlin/Unit|
 
     }
 

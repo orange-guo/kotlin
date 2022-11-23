@@ -101,8 +101,8 @@ FILE: typeParameterOfNonLocalFunction.kt
 
 IMPLICIT_TYPES_BODY_RESOLVE:
 FILE: typeParameterOfNonLocalFunction.kt
-    public final [STATUS] class X : R|kotlin/Any| {
-        public [STATUS] [ContainingClassKey=X] constructor(): R|X| {
+    public final [TYPES] class X : R|kotlin/Any| {
+        public? [TYPES] [ContainingClassKey=X] constructor(): R|X| {
             super<R|kotlin/Any|>()
         }
 
@@ -113,8 +113,8 @@ FILE: typeParameterOfNonLocalFunction.kt
 
 ANNOTATIONS_ARGUMENTS_MAPPING:
 FILE: typeParameterOfNonLocalFunction.kt
-    public final [STATUS] class X : R|kotlin/Any| {
-        public [STATUS] [ContainingClassKey=X] constructor(): R|X| {
+    public final [TYPES] class X : R|kotlin/Any| {
+        public? [TYPES] [ContainingClassKey=X] constructor(): R|X| {
             super<R|kotlin/Any|>()
         }
 
@@ -125,8 +125,8 @@ FILE: typeParameterOfNonLocalFunction.kt
 
 EXPECT_ACTUAL_MATCHING:
 FILE: typeParameterOfNonLocalFunction.kt
-    public final [STATUS] class X : R|kotlin/Any| {
-        public [STATUS] [ContainingClassKey=X] constructor(): R|X| {
+    public final [TYPES] class X : R|kotlin/Any| {
+        public? [TYPES] [ContainingClassKey=X] constructor(): R|X| {
             super<R|kotlin/Any|>()
         }
 
@@ -137,8 +137,8 @@ FILE: typeParameterOfNonLocalFunction.kt
 
 BODY_RESOLVE:
 FILE: typeParameterOfNonLocalFunction.kt
-    public final [STATUS] class X : R|kotlin/Any| {
-        public [STATUS] [ContainingClassKey=X] constructor(): R|X| {
+    public final [TYPES] class X : R|kotlin/Any| {
+        public? [TYPES] [ContainingClassKey=X] constructor(): R|X| {
             super<R|kotlin/Any|>()
         }
 
