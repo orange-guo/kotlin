@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.fir.caches.*
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
 import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
+import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
 import org.jetbrains.kotlin.fir.declarations.utils.isExpect
 import org.jetbrains.kotlin.fir.declarations.utils.modality
 import org.jetbrains.kotlin.fir.declarations.utils.visibility
@@ -21,6 +22,7 @@ import org.jetbrains.kotlin.fir.resolve.transformers.ReturnTypeCalculatorForFull
 import org.jetbrains.kotlin.fir.scopes.*
 import org.jetbrains.kotlin.fir.scopes.impl.FirTypeIntersectionScopeContext.ResultOfIntersection
 import org.jetbrains.kotlin.fir.symbols.impl.*
+import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhase
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.Name
@@ -195,6 +197,7 @@ class FirTypeIntersectionScopeContext(
         mostSpecific: List<MemberWithBaseScope<D>>,
         extractedOverrides: List<MemberWithBaseScope<D>>,
     ): MemberWithBaseScope<FirCallableSymbol<*>> {
+        extractedOverrides.forEach { it.member.lazyResolveToPhase(FirResolvePhase.STATUS) }
         val newModality = chooseIntersectionOverrideModality(extractedOverrides)
         val newVisibility = chooseIntersectionVisibility(extractedOverrides)
         val mostSpecificSymbols = mostSpecific.map { it.member }
