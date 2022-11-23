@@ -1,3 +1,4 @@
+// FIR_DISABLE_LAZY_RESOLVE_CHECKS
 // FIR_IDENTICAL
 // FILE: KotlinFile.kt
 abstract class KotlinClass : JavaInterface3 {
