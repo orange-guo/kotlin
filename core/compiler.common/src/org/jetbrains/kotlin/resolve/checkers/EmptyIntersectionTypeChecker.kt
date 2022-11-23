@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.resolve.checkers
 
+import org.jetbrains.kotlin.resolve.calls.inference.hasRecursiveTypeParametersWithGivenSelfType
 import org.jetbrains.kotlin.types.AbstractTypeChecker
 import org.jetbrains.kotlin.types.EmptyIntersectionTypeKind
 import org.jetbrains.kotlin.types.isDefinitelyEmpty
@@ -28,6 +29,14 @@ internal object EmptyIntersectionTypeChecker {
             if (!mayCauseEmptyIntersection(firstType)) continue
 
             val firstSubstitutedType by lazy { firstType.eraseContainingTypeParameters() }
+            val firstTypeConstructor = firstType.typeConstructor()
+            val firstTypeIsSelfType by lazy {
+                hasRecursiveTypeParametersWithGivenSelfType(firstTypeConstructor)
+            }
+            val typeCheckerContext by lazy {
+                context.newTypeCheckerState(errorTypesEqualToAnything = true, stubTypesEqualToAnything = true)
+            }
+
 
             for (j in i + 1 until types.size) {
                 val secondType = types[j]
@@ -37,6 +46,15 @@ internal object EmptyIntersectionTypeChecker {
                 val secondSubstitutedType = secondType.eraseContainingTypeParameters()
 
                 if (!mayCauseEmptyIntersection(secondSubstitutedType) && !mayCauseEmptyIntersection(firstSubstitutedType)) continue
+
+                val secondTypeIsSelfType = hasRecursiveTypeParametersWithGivenSelfType(firstTypeConstructor)
+
+                if (secondTypeIsSelfType &&
+                    AbstractTypeChecker.isSubtypeOfClass(typeCheckerContext, secondType.typeConstructor(), firstType.typeConstructor())
+                ) continue
+                if (firstTypeIsSelfType &&
+                    AbstractTypeChecker.isSubtypeOfClass(typeCheckerContext, firstType.typeConstructor(), secondType.typeConstructor())
+                ) continue
 
                 val typeInfo = computeByHavingCommonSubtype(firstSubstitutedType, secondSubstitutedType) ?: continue
 
