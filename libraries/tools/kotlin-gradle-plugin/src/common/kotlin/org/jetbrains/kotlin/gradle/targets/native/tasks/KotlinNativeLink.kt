@@ -200,11 +200,13 @@ constructor(
     @get:Internal
     val apiFiles = project.files(project.configurations.getByName(compilation.apiConfigurationName)).filterKlibsPassedToCompiler()
 
-    private val externalDependenciesArgs by lazy { ExternalDependenciesBuilder(project, compilation).buildCompilerArgs() }
+    private class CacheSettings(val konanCacheKind: NativeCacheKind, val gradleUserHomeDir: File)
 
-    private val cacheBuilderSettings by lazy {
-        CacheBuilder.Settings.createWithProject(project, binary, konanTarget, toolOptions, externalDependenciesArgs)
+    private val cacheSettings by lazy {
+        CacheSettings(project.getKonanCacheKind(konanTarget), project.gradle.gradleUserHomeDir)
     }
+
+    private val externalDependenciesArgs by lazy { ExternalDependenciesBuilder(project, compilation).buildCompilerArgs() }
 
     override fun createCompilerArgs(): StubK2NativeCompilerArguments = StubK2NativeCompilerArguments()
 
@@ -311,11 +313,13 @@ constructor(
         )
 
         val executionContext = KotlinToolRunner.GradleExecutionContext.fromTaskContext(objectFactory, execOperations, logger)
-        val cacheArgs = CacheBuilder(
-            executionContext = executionContext,
-            settings = cacheBuilderSettings,
-            konanPropertiesService = konanPropertiesService.get()
-        ).buildCompilerArgs(resolvedDependencyGraph)
+        val additionalOptions = mutableListOf<String>().apply {
+            addAll(externalDependenciesArgs)
+            if (cacheSettings.konanCacheKind != NativeCacheKind.NONE && konanPropertiesService.get().cacheWorksFor(konanTarget))
+                add("-Xauto-cache-from=${cacheSettings.gradleUserHomeDir}")
+            if (logger.isInfoEnabled)
+                add("-verbose")
+        }
 
         @Suppress("DEPRECATION") val enableEndorsedLibs = this.enableEndorsedLibs // TODO: remove before 1.9.0, see KT-54098
 
@@ -338,7 +342,7 @@ constructor(
             isStaticFramework,
             exportLibraries.files.filterKlibsPassedToCompiler(),
             sources.asFileTree.files.toList(),
-            externalDependenciesArgs + cacheArgs
+            additionalOptions
         )
 
         KotlinNativeCompilerRunner(
