@@ -1,4 +1,4 @@
-compiler/testData/cli/jvm/enumEntriesNotEnabled.kt:7:26: error: unresolved reference: entries
+compiler/testData/cli/jvm/enumEntriesNotEnabled.kt:7:9: warning: variable 'entries' is never used
     val entries = MyEnum.entries
-                         ^
-COMPILATION_ERROR
+        ^
+OK
