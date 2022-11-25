@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.analyzer.CompilationErrorException
 import org.jetbrains.kotlin.backend.konan.*
 import org.jetbrains.kotlin.cli.common.*
 import org.jetbrains.kotlin.cli.common.arguments.K2NativeCompilerArguments
+import org.jetbrains.kotlin.cli.common.arguments.parseCommandLineArguments
 import org.jetbrains.kotlin.cli.common.config.addKotlinSourceRoot
 import org.jetbrains.kotlin.cli.common.config.kotlinSourceRoots
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity.*
@@ -56,44 +57,24 @@ class K2Native : CLICompiler<K2NativeCompilerArguments>() {
         }
 
         val pluginLoadResult =
-            PluginCliParser.loadPluginsSafe(arguments.pluginClasspaths, arguments.pluginOptions, arguments.pluginConfigurations, configuration)
+                PluginCliParser.loadPluginsSafe(arguments.pluginClasspaths, arguments.pluginOptions, arguments.pluginConfigurations, configuration)
         if (pluginLoadResult != ExitCode.OK) return pluginLoadResult
 
-        val environment = KotlinCoreEnvironment.createForProduction(rootDisposable,
-            configuration, EnvironmentConfigFiles.NATIVE_CONFIG_FILES)
-        val project = environment.project
         val messageCollector = configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY) ?: MessageCollector.NONE
         if (configuration.getBoolean(CommonConfigurationKeys.USE_FIR)) {
             messageCollector.report(ERROR, "K2 does not support Native target right now")
             return ExitCode.COMPILATION_ERROR
         }
-        // TODO: Should be either of two, or PHASE_CONFIG will go away with the old driver.
-        // TODO: -Xlist-phases does not work correctly for now.
-        configuration.put(CLIConfigurationKeys.PHASE_CONFIG, createPhaseConfig(toplevelPhaseErased, arguments, messageCollector))
-        configuration.put(CLIConfigurationKeys.FLEXIBLE_PHASE_CONFIG, createFlexiblePhaseConfig(arguments))
-
 
         val enoughArguments = arguments.freeArgs.isNotEmpty() || arguments.isUsefulWithoutFreeArgs
         if (!enoughArguments) {
-            configuration.report(ERROR, "You have not specified any compilation arguments. No output has been produced.")
+            messageCollector.report(ERROR, "You have not specified any compilation arguments. No output has been produced.")
         }
 
-        /* Set default version of metadata version */
-        val metadataVersionString = arguments.metadataVersion
-        if (metadataVersionString == null) {
-            configuration.put(CommonConfigurationKeys.METADATA_VERSION, KlibMetadataVersion.INSTANCE)
-        }
-
-        val relativePathBases = arguments.relativePathBases
-        if (relativePathBases != null) {
-            configuration.put(CommonConfigurationKeys.KLIB_RELATIVE_PATH_BASES, relativePathBases.toList())
-        }
-
-        configuration.put(CommonConfigurationKeys.KLIB_NORMALIZE_ABSOLUTE_PATH, arguments.normalizeAbsolutePath)
-        configuration.put(CLIConfigurationKeys.RENDER_DIAGNOSTIC_INTERNAL_NAME, arguments.renderInternalDiagnosticNames)
+        val environment = prepareEnvironment(arguments, configuration, rootDisposable)
 
         try {
-            KonanDriver(project, environment, configuration).run()
+            runKonanDriver(configuration, environment, rootDisposable)
         } catch (e: Throwable) {
             if (e is KonanCompilationException || e is CompilationErrorException)
                 return ExitCode.COMPILATION_ERROR
@@ -110,6 +91,57 @@ class K2Native : CLICompiler<K2NativeCompilerArguments>() {
         }
 
         return ExitCode.OK
+    }
+
+    private fun prepareEnvironment(
+            arguments: K2NativeCompilerArguments,
+            configuration: CompilerConfiguration,
+            rootDisposable: Disposable
+    ): KotlinCoreEnvironment {
+        val messageCollector = configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY) ?: MessageCollector.NONE
+        val environment = KotlinCoreEnvironment.createForProduction(rootDisposable,
+                configuration, EnvironmentConfigFiles.NATIVE_CONFIG_FILES)
+
+        // TODO: Should be either of two, or PHASE_CONFIG will go away with the old driver.
+        // TODO: -Xlist-phases does not work correctly for now.
+        configuration.put(CLIConfigurationKeys.PHASE_CONFIG, createPhaseConfig(toplevelPhaseErased, arguments, messageCollector))
+        configuration.put(CLIConfigurationKeys.FLEXIBLE_PHASE_CONFIG, createFlexiblePhaseConfig(arguments))
+
+        /* Set default version of metadata version */
+        val metadataVersionString = arguments.metadataVersion
+        if (metadataVersionString == null) {
+            configuration.put(CommonConfigurationKeys.METADATA_VERSION, KlibMetadataVersion.INSTANCE)
+        }
+
+        val relativePathBases = arguments.relativePathBases
+        if (relativePathBases != null) {
+            configuration.put(CommonConfigurationKeys.KLIB_RELATIVE_PATH_BASES, relativePathBases.toList())
+        }
+
+        configuration.put(CommonConfigurationKeys.KLIB_NORMALIZE_ABSOLUTE_PATH, arguments.normalizeAbsolutePath)
+        configuration.put(CLIConfigurationKeys.RENDER_DIAGNOSTIC_INTERNAL_NAME, arguments.renderInternalDiagnosticNames)
+
+        return environment
+    }
+
+    private fun runKonanDriver(
+            configuration: CompilerConfiguration,
+            environment: KotlinCoreEnvironment,
+            rootDisposable: Disposable
+    ) {
+        val konanDriver = KonanDriver(environment.project, environment, configuration) { args, setupConfiguration ->
+            val spawnedArguments = K2NativeCompilerArguments()
+            parseCommandLineArguments(args, spawnedArguments)
+            val spawnedConfiguration = CompilerConfiguration()
+
+            spawnedConfiguration.put(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, configuration.getNotNull(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY))
+            spawnedConfiguration.setupCommonArguments(spawnedArguments, this::createMetadataVersion)
+            setupPlatformSpecificArgumentsAndServices(spawnedConfiguration, spawnedArguments, Services.EMPTY)
+            spawnedConfiguration.setupConfiguration()
+            val spawnedEnvironment = prepareEnvironment(spawnedArguments, spawnedConfiguration, rootDisposable)
+            runKonanDriver(spawnedConfiguration, spawnedEnvironment, rootDisposable)
+        }
+        konanDriver.run()
     }
 
     val K2NativeCompilerArguments.isUsefulWithoutFreeArgs: Boolean
@@ -279,12 +311,11 @@ class K2Native : CLICompiler<K2NativeCompilerArguments>() {
                 val libraryToAddToCache = parseLibraryToAddToCache(arguments, configuration, outputKind)
                 if (libraryToAddToCache != null && !arguments.outputName.isNullOrEmpty())
                     configuration.report(ERROR, "${K2NativeCompilerArguments.ADD_CACHE} already implicitly sets output file name")
-                val cacheDirectories = arguments.cacheDirectories.toNonNullList()
                 libraryToAddToCache?.let { put(LIBRARY_TO_ADD_TO_CACHE, it) }
-                put(CACHE_DIRECTORIES, cacheDirectories)
                 put(CACHED_LIBRARIES, parseCachedLibraries(arguments, configuration))
-                val filesToCache = arguments.filesToCache
-                filesToCache?.let { put(FILES_TO_CACHE, it.toList()) }
+                put(CACHE_DIRECTORIES, arguments.cacheDirectories.toNonNullList())
+                put(AUTO_CACHEABLE_FROM, arguments.autoCacheableFrom.toNonNullList())
+                arguments.filesToCache?.let { put(FILES_TO_CACHE, it.toList()) }
                 put(MAKE_PER_FILE_CACHE, arguments.makePerFileCache)
 
                 parseShortModuleName(arguments, configuration, outputKind)?.let {

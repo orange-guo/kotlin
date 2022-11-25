@@ -376,7 +376,29 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
 
     internal val useDebugInfoInNativeLibs= configuration.get(BinaryOptions.stripDebugInfoFromNativeLibs) == false
 
+    internal val partialLinkage = configuration.get(KonanConfigKeys.PARTIAL_LINKAGE) == true
+
+    internal val additionalCacheFlags by lazy { platformManager.loader(target).additionalCacheFlags }
+
+    private val systemCacheFlavorString = buildString {
+        append(target.toString())
+        if (debug) append("-g")
+        append("STATIC")
+    }
+
+    private val userCacheFlavorString = buildString {
+        append(target.toString())
+        if (debug) append("-g")
+        if (partialLinkage) append("-pl")
+        append("STATIC")
+    }
+
+    private val systemRootCacheDirectory = File(distribution.konanHome).child("klib").child("cache")
+    internal val systemCacheDirectory = systemRootCacheDirectory.child(systemCacheFlavorString)
+    internal val autoCacheDirectory = systemRootCacheDirectory.child(userCacheFlavorString)
+
     internal val cacheSupport = run {
+        // TODO: Take some of these flags as part of cache meta-directory name.
         val ignoreCacheReason = when {
             optimizationsEnabled -> "for optimized compilation"
             memoryModel != defaultMemoryModel -> "with ${memoryModel.name.lowercase()} memory model"
@@ -399,6 +421,8 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
                 configuration = configuration,
                 resolvedLibraries = resolvedLibraries,
                 ignoreCacheReason = ignoreCacheReason,
+                systemCacheDirectory = systemCacheDirectory,
+                autoCacheDirectory = autoCacheDirectory,
                 target = target,
                 produce = produce
         )

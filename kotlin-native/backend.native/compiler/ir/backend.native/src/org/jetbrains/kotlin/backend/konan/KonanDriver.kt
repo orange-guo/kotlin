@@ -18,7 +18,12 @@ import org.jetbrains.kotlin.konan.library.impl.createKonanLibrary
 import org.jetbrains.kotlin.library.uniqueName
 import org.jetbrains.kotlin.protobuf.ExtensionRegistryLite
 
-class KonanDriver(val project: Project, val environment: KotlinCoreEnvironment, val configuration: CompilerConfiguration) {
+class KonanDriver(
+        val project: Project,
+        val environment: KotlinCoreEnvironment,
+        val configuration: CompilerConfiguration,
+        val spawnCompilation: (List<String>, CompilerConfiguration.() -> Unit) -> Unit
+) {
     fun run() {
         val fileNames = configuration.get(KonanConfigKeys.LIBRARY_TO_ADD_TO_CACHE)?.let { libPath ->
             if (configuration.get(KonanConfigKeys.MAKE_PER_FILE_CACHE) != true)
@@ -36,8 +41,15 @@ class KonanDriver(val project: Project, val environment: KotlinCoreEnvironment, 
             configuration.put(KonanConfigKeys.FILES_TO_CACHE, fileNames)
         }
 
-        val konanConfig = KonanConfig(project, configuration)
+        var konanConfig = KonanConfig(project, configuration)
         ensureModuleName(konanConfig)
+
+        val cacheBuilder = CacheBuilder(konanConfig, spawnCompilation)
+        if (cacheBuilder.needToBuild()) {
+            cacheBuilder.build()
+            konanConfig = KonanConfig(project, configuration) // TODO: Just set freshly built caches.
+        }
+
         pickCompilerDriver(konanConfig).run(konanConfig, environment)
     }
 
