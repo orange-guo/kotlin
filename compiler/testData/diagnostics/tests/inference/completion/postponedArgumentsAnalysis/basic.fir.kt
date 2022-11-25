@@ -13,7 +13,7 @@ fun <K> id1(x: K): K = x
 fun <L> id2(x: L): L = x
 
 fun <T> selectWithInv(x: T, y: Inv<T>): T = TODO()
-fun <T> select(vararg x: T) = x[0]
+fun <T> select(vararg x: <!CANNOT_INFER_PARAMETER_TYPE!>T<!>) = x[0]
 
 fun <T> takeLambdas(vararg x: (T) -> Unit) = x[0]
 fun <T : R, R : L, L> takeLambdasWithDirectlyDependentTypeParameters(x: (T) -> Unit, y: (R) -> Unit, z: (L) -> Unit) = x
@@ -70,7 +70,7 @@ fun main() {
     select(id1 { <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.Int")!>it<!>.inv() }, id1 { x: Number -> TODO() }, id1(id2 { x: Int -> x }))
     select(id1 { <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.Int")!>it<!>.inv() }, id1 { x: Number -> TODO() }, id1(id2(::takeInt)))
     select(id1 { x: Inv<out Number> -> TODO() }, id1 { <!DEBUG_INFO_EXPRESSION_TYPE("Inv<kotlin.Int>")!>it<!>.x.inv() }, id1 { x: Inv<Int> -> TODO() })
-    <!INFERRED_TYPE_VARIABLE_INTO_EMPTY_INTERSECTION!>select<!>(id1 { <!DEBUG_INFO_EXPRESSION_TYPE("Inv<kotlin.Number> & Inv<kotlin.Int>")!>it<!> }, id1 { x: Inv<Number> -> TODO() }, id1 { x: Inv<Int> -> TODO() })
+    <!INFERRED_TYPE_VARIABLE_INTO_EMPTY_INTERSECTION, NEW_INFERENCE_NO_INFORMATION_FOR_PARAMETER, NEW_INFERENCE_NO_INFORMATION_FOR_PARAMETER, NEW_INFERENCE_NO_INFORMATION_FOR_PARAMETER, NEW_INFERENCE_NO_INFORMATION_FOR_PARAMETER!>select<!>(id1 { <!DEBUG_INFO_EXPRESSION_TYPE("Inv<kotlin.Number> & Inv<kotlin.Int>")!>it<!> }, id1 { x: Inv<Number> -> TODO() }, id1 { x: Inv<Int> -> TODO() })
     select(id(id2 { <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.Int")!>it<!>.inv() }), id(id { x: Int -> x }))
 
     // Disambiguating callable references by other callable references without overloads
