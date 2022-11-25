@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.fir
 
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
+import org.jetbrains.kotlin.config.LanguageVersion
 
 private val LANGUAGE_VERSION: String = System.getProperty("fir.bench.language.version", "1.4")
 
@@ -14,7 +15,8 @@ class FullPipelineModularizedTest : AbstractFullPipelineModularizedTest() {
     override fun configureArguments(args: K2JVMCompilerArguments, moduleData: ModuleData) {
         args.useK2 = true
         args.useIR = true
-        args.apiVersion = LANGUAGE_VERSION
+        val languageVersion = LanguageVersion.fromVersionString(LANGUAGE_VERSION)
+        args.apiVersion = languageVersion?.let { maxOf(it, LanguageVersion.KOTLIN_1_5).toString() } ?: LANGUAGE_VERSION
         args.jvmDefault = "compatibility"
         args.optIn = moduleData.optInAnnotations.toTypedArray() + arrayOf(
             "kotlin.RequiresOptIn",
