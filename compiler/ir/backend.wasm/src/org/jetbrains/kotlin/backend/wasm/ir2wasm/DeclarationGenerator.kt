@@ -62,12 +62,15 @@ class DeclarationGenerator(
         if (declaration is IrConstructor && backendContext.inlineClassesUtils.isClassInlineLike(declaration.parentAsClass))
             return
 
+        if (backendContext.mapping.wasmNestedExternalToNewTopLevelFunction.keys.contains(declaration))
+            return
+
         val isIntrinsic = declaration.hasWasmNoOpCastAnnotation() || declaration.getWasmOpAnnotation() != null
         if (isIntrinsic) {
             return
         }
 
-        val jsCode = declaration.getJsFunAnnotation() ?: if (declaration.isExternal) declaration.name.asString() else null
+        val jsCode = if (declaration.isExternal) declaration.getJsFunAnnotation() else null
         val importedName = jsCode?.let {
             val jsCodeName = jsCodeName(declaration)
             context.addJsFun(jsCodeName, it)
