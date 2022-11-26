@@ -62,9 +62,6 @@ class DeclarationGenerator(
         if (declaration is IrConstructor && backendContext.inlineClassesUtils.isClassInlineLike(declaration.parentAsClass))
             return
 
-        if (backendContext.mapping.wasmNestedExternalToNewTopLevelFunction.keys.contains(declaration))
-            return
-
         val isIntrinsic = declaration.hasWasmNoOpCastAnnotation() || declaration.getWasmOpAnnotation() != null
         if (isIntrinsic) {
             return
