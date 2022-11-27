@@ -322,7 +322,6 @@ digraph postponedLambdaInReturn_kt {
     91 -> {92} [style=dotted];
     92 -> {93 98} [style=dotted];
     93 -> {94};
-    93 -> {74} [label="onUncaughtException"];
     94 -> {95};
     95 -> {96};
     96 -> {97};
@@ -332,7 +331,6 @@ digraph postponedLambdaInReturn_kt {
     100 -> {78} [color=green style=dashed];
     101 -> {102} [style=dotted];
     102 -> {103} [style=dotted];
-    103 -> {74} [style=dotted label="onUncaughtException"];
     103 -> {104} [style=dotted];
     104 -> {105} [style=dotted];
     105 -> {106} [style=dotted];

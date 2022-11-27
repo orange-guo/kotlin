@@ -167,12 +167,11 @@ digraph flowFromInplaceLambda_kt {
             57 [label="Stub" style="filled" fillcolor=gray];
             58 [label="Exit block" style="filled" fillcolor=gray];
         }
-        59 [label="Exit function materialize" style="filled" fillcolor=red];
+        59 [label="Exit function materialize" style="filled" fillcolor=red style="filled" fillcolor=gray];
     }
     51 -> {52};
     52 -> {53};
     53 -> {54};
-    54 -> {59} [label="onUncaughtException"];
     54 -> {55} [style=dotted];
     55 -> {56} [style=dotted];
     56 -> {57 59} [style=dotted];
