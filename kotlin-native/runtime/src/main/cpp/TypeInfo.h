@@ -136,6 +136,10 @@ struct TypeInfo {
     // TODO: Consider providing a generic traverse method instead.
     void (*processObjectInMark)(void* state, ObjHeader* object);
 
+    // Required alignment of instance
+    uint32_t instanceAlignment_;
+
+
     // vtable starts just after declared contents of the TypeInfo:
     // void* const vtable_[];
 #ifdef __cplusplus
