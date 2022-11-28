@@ -255,7 +255,7 @@ abstract class AbstractFirStatusResolveTransformer(
     final override val session: FirSession,
     val scopeSession: ScopeSession,
     protected val statusComputationSession: StatusComputationSession,
-    protected val designationMapForLocalClasses: Map<FirClassLikeDeclaration, FirClassLikeDeclaration?>,
+    private val designationMapForLocalClasses: Map<FirClassLikeDeclaration, FirClassLikeDeclaration?>,
     private val scopeForLocalClass: FirScope?
 ) : FirAbstractTreeTransformer<FirResolvedDeclarationStatus?>(phase = FirResolvePhase.STATUS) {
     protected val classes = mutableListOf<FirClass>()
@@ -278,7 +278,7 @@ abstract class AbstractFirStatusResolveTransformer(
         return (data ?: declarationStatus)
     }
 
-    protected inline fun storeClass(
+    private inline fun storeClass(
         klass: FirClass,
         computeResult: () -> FirDeclaration
     ): FirDeclaration {
@@ -333,7 +333,6 @@ abstract class AbstractFirStatusResolveTransformer(
                 EffectiveVisibility.Local
             )
         )
-        @Suppress("UNCHECKED_CAST")
         return transformClass(anonymousObject, data)
     }
 
@@ -366,7 +365,6 @@ abstract class AbstractFirStatusResolveTransformer(
         return declaration
     }
 
-    @Suppress("UNCHECKED_CAST")
     override fun transformClass(
         klass: FirClass,
         data: FirResolvedDeclarationStatus?
@@ -544,7 +542,6 @@ abstract class AbstractFirStatusResolveTransformer(
         data: FirResolvedDeclarationStatus?
     ): FirStatement {
         calculateDeprecations(valueParameter)
-        @Suppress("UNCHECKED_CAST")
         return transformDeclaration(valueParameter, data) as FirStatement
     }
 
@@ -559,7 +556,7 @@ abstract class AbstractFirStatusResolveTransformer(
         return block
     }
 
-    protected fun calculateDeprecations(simpleFunction: FirCallableDeclaration) {
+    private fun calculateDeprecations(simpleFunction: FirCallableDeclaration) {
         if (simpleFunction.deprecationsProvider is UnresolvedDeprecationProvider) {
             simpleFunction.replaceDeprecationsProvider(simpleFunction.getDeprecationsProvider(session.firCachesFactory))
         }
