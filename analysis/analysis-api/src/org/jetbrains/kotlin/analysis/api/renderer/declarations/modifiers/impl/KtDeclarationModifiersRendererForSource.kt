@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.declarations.modifiers.impl
 
+import org.jetbrains.kotlin.analysis.api.renderer.base.KtContextReceiversRenderer
 import org.jetbrains.kotlin.analysis.api.renderer.base.KtKeywordRenderer
 import org.jetbrains.kotlin.analysis.api.renderer.declarations.modifiers.KtDeclarationModifiersRenderer
 import org.jetbrains.kotlin.analysis.api.renderer.declarations.modifiers.renderers.*
@@ -12,6 +13,7 @@ import org.jetbrains.kotlin.analysis.api.renderer.declarations.modifiers.rendere
 public object KtDeclarationModifiersRendererForSource {
     public val NO_IMPLICIT_MODIFIERS: KtDeclarationModifiersRenderer = KtDeclarationModifiersRenderer {
         modifierListRenderer = KtModifierListRenderer.AS_LIST
+        contextReceiversRenderer = KtContextReceiversRenderer.AS_SOURCE
         modifierFilter = KtRendererModifierFilter.ALL
         modifiersSorter = KtModifiersSorter.CANONICAL
         modalityProvider = KtRendererModalityModifierProvider.WITHOUT_IMPLICIT_MODALITY

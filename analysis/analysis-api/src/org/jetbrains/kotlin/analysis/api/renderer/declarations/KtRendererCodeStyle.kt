@@ -24,6 +24,9 @@ public interface KtRendererCodeStyle {
     public fun getSeparatorBetweenAnnotations(symbol: KtAnnotated): String
 
     context(KtAnalysisSession)
+    public fun getSeparatorAfterContextModifier(): String
+
+    context(KtAnalysisSession)
     public fun getSeparatorBetweenModifiers(): String
 
     context(KtAnalysisSession)
@@ -31,9 +34,8 @@ public interface KtRendererCodeStyle {
 }
 
 public object KtRecommendedRendererCodeStyle : KtRendererCodeStyle {
-    context(KtAnalysisSession) override fun getIndentSize(): Int {
-        return 4
-    }
+    context(KtAnalysisSession)
+    override fun getIndentSize(): Int = 4
 
     context(KtAnalysisSession)
     override fun getSeparatorBetweenAnnotationAndOwner(symbol: KtAnnotated): String {
@@ -55,9 +57,11 @@ public object KtRecommendedRendererCodeStyle : KtRendererCodeStyle {
         }
     }
 
-    context(KtAnalysisSession) override fun getSeparatorBetweenModifiers(): String {
-        return " "
-    }
+    context(KtAnalysisSession)
+    override fun getSeparatorAfterContextModifier(): String = "\n"
+
+    context(KtAnalysisSession)
+    override fun getSeparatorBetweenModifiers(): String = " "
 
     context(KtAnalysisSession)
     override fun getSeparatorBetweenMembers(first: KtDeclarationSymbol, second: KtDeclarationSymbol): String {

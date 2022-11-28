@@ -71,6 +71,12 @@ public class Fe10IdeNormalAnalysisSourceModuleRendererTestGenerated extends Abst
     }
 
     @Test
+    @TestMetadata("contextReceiver.kt")
+    public void testContextReceiver() throws Exception {
+        runTest("analysis/analysis-api/testData/components/symbolDeclarationRenderer/renderDeclaration/contextReceiver.kt");
+    }
+
+    @Test
     @TestMetadata("delegates.kt")
     public void testDelegates() throws Exception {
         runTest("analysis/analysis-api/testData/components/symbolDeclarationRenderer/renderDeclaration/delegates.kt");

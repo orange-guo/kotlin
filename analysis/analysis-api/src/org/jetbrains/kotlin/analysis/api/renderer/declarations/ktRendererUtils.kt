@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.analysis.api.renderer.declarations
 
 import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
 import org.jetbrains.kotlin.analysis.api.annotations.KtAnnotated
+import org.jetbrains.kotlin.analysis.api.renderer.declarations.modifiers.KtLastRenderedModifierKind
 import org.jetbrains.kotlin.analysis.api.symbols.KtDeclarationSymbol
 import org.jetbrains.kotlin.analysis.utils.printer.PrettyPrinter
 import org.jetbrains.kotlin.lexer.KtKeywordToken
@@ -27,14 +28,18 @@ public fun <S> renderAnnotationsAndModifiers(
     keywords: List<KtKeywordToken>,
 ): Unit where S : KtAnnotated, S : KtDeclarationSymbol = printer {
     val annotationsRendered: Boolean
-    val modifiersRendered: Boolean
+    val lastRenderedModifierKind: KtLastRenderedModifierKind
+
     codeStyle.getSeparatorBetweenAnnotationAndOwner(symbol).separated(
         { annotationsRendered = checkIfPrinted { annotationRenderer.renderAnnotations(symbol, printer) } },
-        { modifiersRendered = checkIfPrinted { modifiersRenderer.renderDeclarationModifiers(symbol, printer) } }
+        { lastRenderedModifierKind = modifiersRenderer.renderDeclarationModifiers(symbol, printer) }
     )
+
     val separator = when {
-        annotationsRendered && !modifiersRendered -> codeStyle.getSeparatorBetweenAnnotationAndOwner(symbol)
-        annotationsRendered || modifiersRendered -> codeStyle.getSeparatorBetweenModifiers()
+        annotationsRendered && lastRenderedModifierKind == KtLastRenderedModifierKind.NONE ->
+            codeStyle.getSeparatorBetweenAnnotationAndOwner(symbol)
+        lastRenderedModifierKind == KtLastRenderedModifierKind.CONTEXT_RECEIVERS -> codeStyle.getSeparatorAfterContextModifier()
+        annotationsRendered || lastRenderedModifierKind == KtLastRenderedModifierKind.SIMPLE -> codeStyle.getSeparatorBetweenModifiers()
         else -> ""
     }
 

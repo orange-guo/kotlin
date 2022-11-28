@@ -6,35 +6,37 @@
 package org.jetbrains.kotlin.analysis.api.renderer.declarations.modifiers
 
 import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
+import org.jetbrains.kotlin.analysis.api.renderer.base.KtContextReceiversRenderer
 import org.jetbrains.kotlin.analysis.api.renderer.base.KtKeywordRenderer
+import org.jetbrains.kotlin.analysis.api.renderer.declarations.KtDeclarationRenderer
 import org.jetbrains.kotlin.analysis.api.renderer.declarations.modifiers.renderers.*
 import org.jetbrains.kotlin.analysis.api.symbols.KtDeclarationSymbol
 import org.jetbrains.kotlin.analysis.utils.printer.PrettyPrinter
 
 public class KtDeclarationModifiersRenderer private constructor(
     public val modifierListRenderer: KtModifierListRenderer,
+    public val contextReceiversRenderer: KtContextReceiversRenderer,
     public val modifierFilter: KtRendererModifierFilter,
     public val modifiersSorter: KtModifiersSorter,
     public val modalityProvider: KtRendererModalityModifierProvider,
     public val visibilityProvider: KtRendererVisibilityModifierProvider,
     public val otherModifiersProvider: KtRendererOtherModifiersProvider,
-    public val keywordRenderer: KtKeywordRenderer,
 ) {
-    context(KtAnalysisSession)
-    public fun renderDeclarationModifiers(symbol: KtDeclarationSymbol, printer: PrettyPrinter) {
-        modifierListRenderer.renderModifiers(symbol, printer)
+    context(KtAnalysisSession, KtDeclarationRenderer)
+    public fun renderDeclarationModifiers(symbol: KtDeclarationSymbol, printer: PrettyPrinter): KtLastRenderedModifierKind {
+        return modifierListRenderer.renderModifiers(symbol, printer)
     }
 
     public inline fun with(action: Builder.() -> Unit): KtDeclarationModifiersRenderer {
         val renderer = this
         return KtDeclarationModifiersRenderer {
             this.modifierListRenderer = renderer.modifierListRenderer
+            this.contextReceiversRenderer = renderer.contextReceiversRenderer
             this.modifierFilter = renderer.modifierFilter
             this.modifiersSorter = renderer.modifiersSorter
             this.modalityProvider = renderer.modalityProvider
             this.visibilityProvider = renderer.visibilityProvider
             this.otherModifiersProvider = renderer.otherModifiersProvider
-            this.keywordRenderer = renderer.keywordRenderer
             action()
         }
     }
@@ -46,6 +48,7 @@ public class KtDeclarationModifiersRenderer private constructor(
 
     public class Builder {
         public lateinit var modifierListRenderer: KtModifierListRenderer
+        public lateinit var contextReceiversRenderer: KtContextReceiversRenderer
         public lateinit var modifierFilter: KtRendererModifierFilter
         public lateinit var modifiersSorter: KtModifiersSorter
         public lateinit var modalityProvider: KtRendererModalityModifierProvider
@@ -55,12 +58,12 @@ public class KtDeclarationModifiersRenderer private constructor(
 
         public fun build(): KtDeclarationModifiersRenderer = KtDeclarationModifiersRenderer(
             modifierListRenderer,
+            contextReceiversRenderer,
             modifierFilter,
             modifiersSorter,
             modalityProvider,
             visibilityProvider,
             otherModifiersProvider,
-            keywordRenderer,
         )
     }
 }

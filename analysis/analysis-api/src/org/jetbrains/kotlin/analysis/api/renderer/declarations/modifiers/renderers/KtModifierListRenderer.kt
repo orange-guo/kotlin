@@ -6,7 +6,10 @@
 package org.jetbrains.kotlin.analysis.api.renderer.declarations.modifiers.renderers
 
 import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
+import org.jetbrains.kotlin.analysis.api.base.KtContextReceiversOwner
+import org.jetbrains.kotlin.analysis.api.renderer.declarations.KtDeclarationRenderer
 import org.jetbrains.kotlin.analysis.api.renderer.declarations.modifiers.KtDeclarationModifiersRenderer
+import org.jetbrains.kotlin.analysis.api.renderer.declarations.modifiers.KtLastRenderedModifierKind
 import org.jetbrains.kotlin.analysis.api.symbols.KtDeclarationSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.markers.KtSymbolWithModality
 import org.jetbrains.kotlin.analysis.api.symbols.markers.KtSymbolWithVisibility
@@ -14,12 +17,34 @@ import org.jetbrains.kotlin.analysis.utils.printer.PrettyPrinter
 import org.jetbrains.kotlin.lexer.KtModifierKeywordToken
 
 public interface KtModifierListRenderer {
-    context(KtAnalysisSession, KtDeclarationModifiersRenderer)
-    public fun renderModifiers(symbol: KtDeclarationSymbol, printer: PrettyPrinter)
+    context(KtAnalysisSession, KtDeclarationRenderer, KtDeclarationModifiersRenderer)
+    public fun renderModifiers(symbol: KtDeclarationSymbol, printer: PrettyPrinter): KtLastRenderedModifierKind
 
     public object AS_LIST : KtModifierListRenderer {
-        context(KtAnalysisSession, KtDeclarationModifiersRenderer)
-        override fun renderModifiers(symbol: KtDeclarationSymbol, printer: PrettyPrinter) {
+        context(KtAnalysisSession, KtDeclarationRenderer, KtDeclarationModifiersRenderer)
+        override fun renderModifiers(symbol: KtDeclarationSymbol, printer: PrettyPrinter): KtLastRenderedModifierKind {
+            var lastRenderedModifierKind = KtLastRenderedModifierKind.NONE
+            printer {
+                codeStyle.getSeparatorAfterContextModifier().separated(
+                    {
+                        if (symbol is KtContextReceiversOwner) {
+                            val rendered = with(typeRenderer) {
+                                checkIfPrinted { contextReceiversRenderer.renderContextReceivers(symbol, printer) }
+                            }
+                            if (rendered) lastRenderedModifierKind = KtLastRenderedModifierKind.CONTEXT_RECEIVERS
+                        }
+                    },
+                    {
+                        val rendered = checkIfPrinted { renderSimpleModifiers(symbol, printer) }
+                        if (rendered) lastRenderedModifierKind = KtLastRenderedModifierKind.SIMPLE
+                    },
+                )
+            }
+            return lastRenderedModifierKind
+        }
+
+        context(KtAnalysisSession, KtDeclarationRenderer, KtDeclarationModifiersRenderer)
+        private fun renderSimpleModifiers(symbol: KtDeclarationSymbol, printer: PrettyPrinter) {
             val modifiers = getModifiers(symbol)
                 .distinct()
                 .filter { modifierFilter.filter(it, symbol) }
@@ -42,4 +67,3 @@ public interface KtModifierListRenderer {
         }
     }
 }
-
