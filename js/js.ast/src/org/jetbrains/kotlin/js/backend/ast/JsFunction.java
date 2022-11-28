@@ -24,11 +24,20 @@ public final class JsFunction extends JsLiteral implements HasName {
     private Set<Modifier> modifiers;
 
     public JsFunction(@NotNull JsScope parentScope, @NotNull String description) {
-        this(parentScope, description, null);
+        this(parentScope, description, false, null);
     }
 
     public JsFunction(@NotNull JsScope parentScope, @NotNull JsBlock body, @NotNull String description) {
-        this(parentScope, description, null);
+        this(parentScope, body, false, description);
+    }
+
+    public JsFunction(
+            @NotNull JsScope parentScope,
+            @NotNull JsBlock body,
+            boolean isStatic,
+            @NotNull String description
+    ) {
+        this(parentScope, description, isStatic, null);
         this.body = body;
     }
 
@@ -38,6 +47,7 @@ public final class JsFunction extends JsLiteral implements HasName {
             @Nullable JsName name
     ) {
         this.name = name;
+        this.isStatic = isStatic;
         scope = new JsFunctionScope(parentScope, name == null ? description : name.getIdent());
     }
 
