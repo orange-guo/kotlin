@@ -286,12 +286,7 @@ class FirClassSubstitutionScope(
 
         val newDispatchReceiverType = dispatchReceiverTypeForSubstitutedMembers.substitute(substitutor)
 
-        if (member.origin != FirDeclarationOrigin.Library &&
-            member.origin != FirDeclarationOrigin.BuiltIns &&
-            member.origin !is FirDeclarationOrigin.Java
-        ) {
-            member.lazyResolveToPhase(FirResolvePhase.STATUS)
-        }
+        member.lazyResolveToPhase(FirResolvePhase.TYPES)
         val returnType = member.returnTypeRef.coneTypeSafe<ConeKotlinType>()
         val fakeOverrideSubstitution = runIf(returnType == null) { FakeOverrideSubstitution(substitutor, member.symbol) }
         val newReturnType = returnType?.substitute(substitutor)
