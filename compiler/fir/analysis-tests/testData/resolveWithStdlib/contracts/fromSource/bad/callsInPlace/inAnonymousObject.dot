@@ -30,8 +30,8 @@ digraph inAnonymousObject_kt {
     0 -> {1};
     1 -> {2};
     1 -> {15 18 21 27} [color=red];
-    2 -> {3} [color=red];
     2 -> {11} [color=green];
+    2 -> {3} [color=red];
     2 -> {11} [style=dashed];
     3 -> {4};
     3 -> {15 27} [color=green];
@@ -43,11 +43,11 @@ digraph inAnonymousObject_kt {
     8 -> {9};
     9 -> {10};
     11 -> {12} [color=green];
-    12 -> {13} [style=dotted];
     12 -> {18} [color=green];
+    12 -> {13} [style=dotted];
     12 -> {18} [style=dashed];
-    13 -> {14} [style=dotted];
     13 -> {21} [color=green];
+    13 -> {14} [style=dotted];
     13 -> {21} [style=dashed];
     14 -> {3} [color=green];
 

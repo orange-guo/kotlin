@@ -143,7 +143,7 @@ digraph postponedLambdaInReturn_kt {
     19 -> {20};
     20 -> {21};
     21 -> {22};
-    22 -> {30 24};
+    22 -> {24 30};
     22 -> {23} [style=dotted];
     22 -> {30} [style=dashed];
     23 -> {24};
@@ -157,7 +157,7 @@ digraph postponedLambdaInReturn_kt {
     32 -> {33};
     33 -> {34};
     34 -> {35};
-    35 -> {45 36};
+    35 -> {36 45};
     36 -> {37};
     37 -> {38};
     38 -> {39};
@@ -290,7 +290,7 @@ digraph postponedLambdaInReturn_kt {
     }
     65 -> {66};
     66 -> {67};
-    67 -> {75 69};
+    67 -> {69 75};
     67 -> {68} [style=dotted];
     67 -> {75} [style=dashed];
     68 -> {69};
@@ -320,9 +320,9 @@ digraph postponedLambdaInReturn_kt {
     89 -> {90} [style=dotted];
     90 -> {91} [style=dotted];
     91 -> {92} [style=dotted];
-    92 -> {98 93} [style=dotted];
+    92 -> {93 98} [style=dotted];
     93 -> {94};
-    93 -> {74}    [label=onUncaughtException];
+    93 -> {74} [label="onUncaughtException"];
     94 -> {95};
     95 -> {96};
     96 -> {97};
@@ -332,8 +332,8 @@ digraph postponedLambdaInReturn_kt {
     100 -> {78} [color=green style=dashed];
     101 -> {102} [style=dotted];
     102 -> {103} [style=dotted];
+    103 -> {74} [style=dotted label="onUncaughtException"];
     103 -> {104} [style=dotted];
-    103 -> {74} [style=dotted]    [label=onUncaughtException];
     104 -> {105} [style=dotted];
     105 -> {106} [style=dotted];
     106 -> {68};
@@ -436,7 +436,7 @@ digraph postponedLambdaInReturn_kt {
     115 -> {116};
     116 -> {117};
     117 -> {118};
-    118 -> {127 120};
+    118 -> {120 127};
     118 -> {119} [style=dotted];
     118 -> {127} [style=dashed];
     119 -> {120};
@@ -452,7 +452,7 @@ digraph postponedLambdaInReturn_kt {
     130 -> {131};
     131 -> {132};
     132 -> {133};
-    133 -> {143 134};
+    133 -> {134 143};
     134 -> {135};
     135 -> {136};
     136 -> {137};
