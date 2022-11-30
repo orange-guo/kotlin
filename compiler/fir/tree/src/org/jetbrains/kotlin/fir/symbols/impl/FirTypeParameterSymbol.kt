@@ -30,9 +30,7 @@ class FirTypeParameterSymbol : FirClassifierSymbol<FirTypeParameter>() {
 
     val resolvedBounds: List<FirResolvedTypeRef>
         get() {
-            if (origin !is FirDeclarationOrigin.Java) {
-                lazyResolveToPhase(FirResolvePhase.TYPES)
-            }
+            lazyResolveToPhase(FirResolvePhase.TYPES)
             @Suppress("UNCHECKED_CAST")
             return fir.bounds as List<FirResolvedTypeRef>
         }
