@@ -138,12 +138,6 @@ fun main(args: Array<String>) {
 //            }
         }
 
-        testGroup("js/js.tests/tests-gen", "compiler/testData/diagnostics", testRunnerMethodName = "runTest0") {
-            testClass<AbstractFirJsDiagnosticTest>(suiteTestClassName = "FirJsOldFrontendDiagnosticsTestGenerated") {
-                model("testsWithJsStdLib", pattern = "^([^_](.+))\\.kt$", excludedPattern = excludedFirTestdataPattern)
-            }
-        }
-
         testGroup("js/js.tests/tests-gen", "compiler/testData", testRunnerMethodName = "runTest0") {
             testClass<AbstractJsCodegenBoxTest> {
                 model("codegen/box", excludeDirs = jvmOnlyBoxTests)
@@ -179,6 +173,10 @@ fun main(args: Array<String>) {
 
             testClass<AbstractIrJsLocalVariableTest> {
                 model("debug/localVariables")
+            }
+
+            testClass<AbstractFirJsDiagnosticTest>(suiteTestClassName = "FirJsOldFrontendDiagnosticsTestGenerated") {
+                model("diagnostics/testsWithJsStdLib", pattern = "^([^_](.+))\\.kt$", excludedPattern = excludedFirTestdataPattern)
             }
 
             testClass<AbstractFir2IrJsTextTest>(
