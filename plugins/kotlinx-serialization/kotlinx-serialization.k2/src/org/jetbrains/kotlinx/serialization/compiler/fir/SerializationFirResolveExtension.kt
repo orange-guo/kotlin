@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.getContainingDeclarationSymbol
+import org.jetbrains.kotlin.fir.containingClassForStaticMemberAttr
 import org.jetbrains.kotlin.fir.copy
 import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
 import org.jetbrains.kotlin.fir.declarations.builder.*
@@ -258,13 +259,16 @@ class SerializationFirResolveExtension(session: FirSession) : FirDeclarationGene
 
     override fun generateConstructors(context: MemberGenerationContext): List<FirConstructorSymbol> {
         val owner = context.owner
+        val lookupTag = ConeClassLikeLookupTagImpl(owner.classId)
         val defaultObjectConstructor = buildPrimaryConstructor(
             owner, isInner = false, SerializationPluginKey, status = FirResolvedDeclarationStatusImpl(
                 Visibilities.Private,
                 Modality.FINAL,
                 EffectiveVisibility.PrivateInClass
             )
-        )
+        ).also {
+            it.containingClassForStaticMemberAttr = lookupTag
+        }
         if (owner.name == SerialEntityNames.SERIALIZER_CLASS_NAME && owner.typeParameterSymbols.isNotEmpty()) {
             val parameterizedConstructor = buildConstructor {
                 moduleData = session.moduleData
@@ -285,6 +289,8 @@ class SerializationFirResolveExtension(session: FirSession) : FirDeclarationGene
                         Name.identifier("${SerialEntityNames.typeArgPrefix}$i")
                     )
                 })
+            }.also {
+                it.containingClassForStaticMemberAttr = lookupTag
             }
             return listOf(defaultObjectConstructor.symbol, parameterizedConstructor.symbol)
         }
