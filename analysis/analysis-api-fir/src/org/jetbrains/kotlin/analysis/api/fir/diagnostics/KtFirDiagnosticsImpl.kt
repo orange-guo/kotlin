@@ -871,7 +871,7 @@ internal class RuntimeAnnotationNotSupportedImpl(
 internal class RuntimeAnnotationOnExternalDeclarationImpl(
     override val firDiagnostic: KtPsiDiagnostic,
     override val token: KtLifetimeToken,
-) : KtFirDiagnostic.RuntimeAnnotationOnExternalDeclaration(), KtAbstractFirDiagnostic<PsiElement>
+) : KtFirDiagnostic.RuntimeAnnotationOnExternalDeclaration(), KtAbstractFirDiagnostic<KtElement>
 
 internal class NativeAnnotationsAllowedOnlyOnMemberOrExtensionFunImpl(
     override val type: KtType,

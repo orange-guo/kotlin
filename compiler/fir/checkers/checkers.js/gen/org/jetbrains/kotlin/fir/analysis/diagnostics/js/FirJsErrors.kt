@@ -27,7 +27,7 @@ import org.jetbrains.kotlin.psi.KtParameter
 
 object FirJsErrors {
     // Annotations
-    val WRONG_JS_QUALIFIER by error0<KtExpression>()
+    val WRONG_JS_QUALIFIER by error0<KtElement>()
     val JS_MODULE_PROHIBITED_ON_VAR by error0<KtElement>(SourceElementPositioningStrategies.DECLARATION_SIGNATURE_OR_DEFAULT)
     val JS_MODULE_PROHIBITED_ON_NON_NATIVE by error0<KtElement>(SourceElementPositioningStrategies.DECLARATION_SIGNATURE_OR_DEFAULT)
     val NESTED_JS_MODULE_PROHIBITED by error0<KtElement>(SourceElementPositioningStrategies.DECLARATION_SIGNATURE_OR_DEFAULT)
