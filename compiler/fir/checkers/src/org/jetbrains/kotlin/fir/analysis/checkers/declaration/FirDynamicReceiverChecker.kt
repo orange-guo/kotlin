@@ -19,7 +19,7 @@ object FirDynamicReceiverChecker : FirCallableDeclarationChecker() {
     override fun check(declaration: FirCallableDeclaration, context: CheckerContext, reporter: DiagnosticReporter) {
         if (
             declaration.receiverParameter?.typeRef?.coneType is ConeDynamicType &&
-            declaration.hasAnnotation(DynamicExtension)
+            !declaration.hasAnnotation(DynamicExtension)
         ) {
             reporter.reportOn(declaration.receiverParameter?.source, FirErrors.DYNAMIC_RECEIVER_NOT_ALLOWED, context)
         }
