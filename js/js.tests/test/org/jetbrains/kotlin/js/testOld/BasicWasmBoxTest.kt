@@ -95,7 +95,7 @@ abstract class BasicWasmBoxTest(
             val psiFiles = createPsiFiles(allSourceFiles.map { File(it).canonicalPath }.sorted())
             val config = createConfig(languageVersionSettings)
             val filesToCompile = psiFiles.map { TranslationUnit.SourceFile(it).file }
-            val debugMode = DebugMode.fromSystemProperty("kotlin.wasm.debugMode")
+            val debugMode = DebugMode.DEBUG//fromSystemProperty("kotlin.wasm.debugMode")
 
             val phaseConfig = if (debugMode >= DebugMode.SUPER_DEBUG) {
                 val dumpOutputDir = File(outputDirBase, "irdump")
