@@ -20,7 +20,7 @@ public interface KtUsualClassTypeRenderer {
         context(KtAnalysisSession, KtTypeRenderer)
         override fun renderType(type: KtUsualClassType, printer: PrettyPrinter): Unit = printer {
             " ".separated(
-                { annotationsRender.renderAnnotations(type, printer) },
+                { annotationsRenderer.renderAnnotations(type, printer) },
                 {
                     classIdRenderer.renderClassTypeQualifier(type, printer)
                     if (type.nullability == KtTypeNullability.NULLABLE) {

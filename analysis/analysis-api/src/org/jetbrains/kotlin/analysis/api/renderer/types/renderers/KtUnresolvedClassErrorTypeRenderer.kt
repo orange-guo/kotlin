@@ -17,7 +17,7 @@ public interface KtUnresolvedClassErrorTypeRenderer {
     public object UNRESOLVED_QUALIFIER : KtUnresolvedClassErrorTypeRenderer {
         context(KtAnalysisSession, KtTypeRenderer)
         override fun renderType(type: KtClassErrorType, printer: PrettyPrinter): Unit = printer {
-            annotationsRender.renderAnnotations(type, printer)
+            annotationsRenderer.renderAnnotations(type, printer)
             classIdRenderer.renderClassTypeQualifier(type, printer)
         }
     }

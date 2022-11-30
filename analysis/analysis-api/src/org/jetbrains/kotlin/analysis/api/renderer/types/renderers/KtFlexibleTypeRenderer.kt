@@ -43,7 +43,7 @@ public interface KtFlexibleTypeRenderer {
 
                 isMutabilityFlexibleType(lower, upper) -> {
                     " ".separated(
-                        { annotationsRender.renderAnnotations(type, printer) },
+                        { annotationsRenderer.renderAnnotations(type, printer) },
                         { append(lower.classId.asFqNameString().replace("Mutable", "(Mutable)")) },
                     )
                     printCollectionIfNotEmpty(lower.ownTypeArguments, prefix = "<", postfix = ">") { typeArgument ->

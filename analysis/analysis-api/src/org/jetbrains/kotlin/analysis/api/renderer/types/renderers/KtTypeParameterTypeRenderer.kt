@@ -20,7 +20,7 @@ public interface KtTypeParameterTypeRenderer {
         context(KtAnalysisSession, KtTypeRenderer)
         override fun renderType(type: KtTypeParameterType, printer: PrettyPrinter): Unit = printer {
             " ".separated(
-                { annotationsRender.renderAnnotations(type, printer) },
+                { annotationsRenderer.renderAnnotations(type, printer) },
                 {
                     typeNameRenderer.renderName(type.name, type, printer)
                     if (type.nullability == KtTypeNullability.NULLABLE) {
