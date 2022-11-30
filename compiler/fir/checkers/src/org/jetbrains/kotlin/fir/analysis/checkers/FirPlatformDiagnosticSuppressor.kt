@@ -10,13 +10,9 @@ import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirVariable
 
 interface FirPlatformDiagnosticSuppressor {
-    fun shouldReportUnusedParameter(parameter: FirVariable, context: CheckerContext): Boolean
-
     fun shouldReportNoBody(declaration: FirCallableDeclaration, context: CheckerContext): Boolean
 
     object Default : FirPlatformDiagnosticSuppressor {
-        override fun shouldReportUnusedParameter(parameter: FirVariable, context: CheckerContext): Boolean = true
-
         override fun shouldReportNoBody(declaration: FirCallableDeclaration, context: CheckerContext): Boolean = true
     }
 }
