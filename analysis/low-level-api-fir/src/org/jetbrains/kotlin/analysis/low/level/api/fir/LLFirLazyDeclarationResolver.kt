@@ -17,6 +17,9 @@ internal class LLFirLazyDeclarationResolver(private val sessionInvalidator: LLFi
     override fun startResolvingPhase(phase: FirResolvePhase) {}
     override fun finishResolvingPhase(phase: FirResolvePhase) {}
 
+    override fun disableLazyResolveContractChecks() {}
+    override fun enableLazyResolveContractsChecks() {}
+
     override fun lazyResolveToPhase(symbol: FirBasedSymbol<*>, toPhase: FirResolvePhase) {
         val fir = symbol.fir
         val session = fir.moduleData.session

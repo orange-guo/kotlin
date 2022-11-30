@@ -13,5 +13,8 @@ object FirDummyCompilerLazyDeclarationResolver : FirLazyDeclarationResolver() {
     override fun startResolvingPhase(phase: FirResolvePhase) {}
     override fun finishResolvingPhase(phase: FirResolvePhase) {}
 
+    override fun disableLazyResolveContractChecks() {}
+    override fun enableLazyResolveContractsChecks() {}
+
     override fun lazyResolveToPhase(symbol: FirBasedSymbol<*>, toPhase: FirResolvePhase) {}
 }

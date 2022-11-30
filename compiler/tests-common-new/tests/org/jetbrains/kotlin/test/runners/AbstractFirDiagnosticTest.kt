@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.test.runners
 
 import org.jetbrains.kotlin.config.ExplicitApiMode
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.resolve.transformers.FirDummyCompilerLazyDeclarationResolver
 import org.jetbrains.kotlin.fir.symbols.FirLazyDeclarationResolver
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import org.jetbrains.kotlin.test.Constructor
@@ -176,6 +177,10 @@ class FirFrontendFacadeForDiagnosticTests(testServices: TestServices) : FirFront
 
     @OptIn(org.jetbrains.kotlin.fir.SessionConfiguration::class)
     override fun registerExtraComponents(session: FirSession) {
-        session.register(FirLazyDeclarationResolver::class, lazyResolver)
+        if (session.kind == FirSession.Kind.Source) {
+            session.register(FirLazyDeclarationResolver::class, lazyResolver)
+        } else {
+            session.register(FirDummyCompilerLazyDeclarationResolver::class, lazyResolver)
+        }
     }
 }
