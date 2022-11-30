@@ -83,7 +83,7 @@ object FirJsExternalChecker : FirBasicDeclarationChecker() {
             reporter.reportOn(declaration.source, FirJsErrors.NESTED_CLASS_IN_EXTERNAL_INTERFACE, context)
         }
 
-        if (declaration !is FirPropertyAccessor && declaration.isExtension) {
+        if (declaration !is FirPropertyAccessor && declaration is FirCallableDeclaration && declaration.isExtension) {
             val target = when (declaration) {
                 is FirFunction -> "extension function"
                 is FirProperty -> "extension property"
@@ -101,7 +101,7 @@ object FirJsExternalChecker : FirBasicDeclarationChecker() {
                 superClasses.removeAll { it.classId?.asSingleFqName()?.toUnsafe() == StandardNames.FqNames._enum }
             }
             val superDeclarations = superClasses.mapNotNull { it.toSymbol(context.session) }
-            if (superDeclarations.any { !it.isNativeObject(context) && it.singleFqName != StandardNames.FqNames.throwable }) {
+            if (superDeclarations.any { !it.isNativeObject(context) && it.classId.asSingleFqName() != StandardNames.FqNames.throwable }) {
                 reporter.reportOn(declaration.source, FirJsErrors.EXTERNAL_TYPE_EXTENDS_NON_EXTERNAL_TYPE, context)
             }
         }
