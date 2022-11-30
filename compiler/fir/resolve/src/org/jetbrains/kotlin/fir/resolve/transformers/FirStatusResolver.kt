@@ -19,8 +19,8 @@ import org.jetbrains.kotlin.fir.extensions.*
 import org.jetbrains.kotlin.fir.resolve.ScopeSession
 import org.jetbrains.kotlin.fir.resolve.toSymbol
 import org.jetbrains.kotlin.fir.scopes.ProcessorAction
+import org.jetbrains.kotlin.fir.scopes.getDirectOverriddenFunctions
 import org.jetbrains.kotlin.fir.scopes.unsubstitutedScope
-import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhase
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.types.Variance
@@ -111,7 +111,6 @@ class FirStatusResolver(
     ): FirResolvedDeclarationStatus {
         val statuses = overriddenStatuses ?: getOverriddenProperties(property, containingClass)
             .map {
-                it.lazyResolveToPhase(FirResolvePhase.STATUS)
                 it.status as FirResolvedDeclarationStatus
             }
 
@@ -131,7 +130,7 @@ class FirStatusResolver(
             val scope = containingClass.unsubstitutedScope(session, scopeSession, withForcedTypeCalculator = false)
             val symbol = function.symbol
             scope.processFunctionsByName(function.name) {}
-            scope.processDirectOverriddenFunctionsWithBaseScope(symbol) { overriddenSymbol, _ ->
+            scope.getDirectOverriddenFunctions(symbol).forEach { overriddenSymbol ->
                 if (session.visibilityChecker.isVisibleForOverriding(
                         candidateInDerivedClass = function, candidateInBaseClass = overriddenSymbol.fir
                     )
@@ -140,8 +139,8 @@ class FirStatusResolver(
                 }
                 ProcessorAction.NEXT
             }
-        }.mapNotNull {
-            it.status as? FirResolvedDeclarationStatus
+        }.map {
+            it.status as FirResolvedDeclarationStatus
         }
     }
 

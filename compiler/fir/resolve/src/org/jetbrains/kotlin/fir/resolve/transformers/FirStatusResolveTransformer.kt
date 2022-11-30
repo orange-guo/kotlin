@@ -486,14 +486,12 @@ abstract class AbstractFirStatusResolveTransformer(
     ): FirStatement = whileAnalysing(property) {
         val overridden = statusResolver.getOverriddenProperties(property, containingClass)
 
-        val overriddenProperties = overridden.mapNotNull {
-            it.lazyResolveToPhase(FirResolvePhase.TYPES)
-            it.status as? FirResolvedDeclarationStatus
+        val overriddenProperties = overridden.map {
+            it.status as FirResolvedDeclarationStatus
         }
 
         val overriddenSetters = overridden.mapNotNull {
-            it.setter?.lazyResolveToPhase(FirResolvePhase.TYPES)
-            it.setter?.status as? FirResolvedDeclarationStatus
+            it.setter?.status as FirResolvedDeclarationStatus?
         }
 
         property.transformStatus(
