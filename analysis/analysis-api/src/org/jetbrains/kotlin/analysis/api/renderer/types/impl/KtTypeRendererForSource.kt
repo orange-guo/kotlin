@@ -5,8 +5,10 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.types.impl
 
+import org.jetbrains.kotlin.analysis.api.renderer.base.KtContextReceiversRenderer
 import org.jetbrains.kotlin.analysis.api.renderer.base.KtKeywordRenderer
 import org.jetbrains.kotlin.analysis.api.renderer.base.annotations.KtAnnotationRendererForSource
+import org.jetbrains.kotlin.analysis.api.renderer.base.annotations.KtRendererAnnotationsFilter
 import org.jetbrains.kotlin.analysis.api.renderer.declarations.KtRendererTypeApproximator
 import org.jetbrains.kotlin.analysis.api.renderer.types.KtTypeRenderer
 import org.jetbrains.kotlin.analysis.api.renderer.types.renderers.*
@@ -29,11 +31,14 @@ public object KtTypeRendererForSource {
         typeApproximator = KtRendererTypeApproximator.TO_DENNOTABLE
         typeProjectionRenderer = KtTypeProjectionRenderer.WITH_VARIANCE
         annotationsRenderer = KtAnnotationRendererForSource.WITH_QUALIFIED_NAMES
+            .withExtraFilter(KtRendererAnnotationsFilter.NO_CONTEXT_FUNCTION_TYPE_PARAMS)
+        contextReceiversRenderer = KtContextReceiversRenderer.AS_SOURCE
         keywordRenderer = KtKeywordRenderer.AS_WORD
     }
 
     public val WITH_SHORT_NAMES: KtTypeRenderer = WITH_QUALIFIED_NAMES.with {
         classIdRenderer = KtClassTypeQualifierRenderer.WITH_SHORT_NAMES_WITH_NESTED_CLASSIFIERS
         annotationsRenderer = KtAnnotationRendererForSource.WITH_SHORT_NAMES
+            .withExtraFilter(KtRendererAnnotationsFilter.NO_CONTEXT_FUNCTION_TYPE_PARAMS)
     }
 }

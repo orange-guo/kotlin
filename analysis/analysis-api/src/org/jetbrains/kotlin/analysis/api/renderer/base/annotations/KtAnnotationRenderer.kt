@@ -38,6 +38,10 @@ public class KtAnnotationRenderer internal constructor(
         }
     }
 
+    public fun withExtraFilter(filter: KtRendererAnnotationsFilter): KtAnnotationRenderer = with {
+        annotationFilter = annotationFilter and filter
+    }
+
     public class Builder {
         public lateinit var annotationListRenderer: KtAnnotationListRenderer
         public lateinit var annotationFilter: KtRendererAnnotationsFilter

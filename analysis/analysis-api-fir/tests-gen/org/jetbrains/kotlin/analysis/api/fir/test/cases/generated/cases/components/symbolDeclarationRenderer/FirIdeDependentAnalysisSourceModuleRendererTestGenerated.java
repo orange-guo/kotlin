@@ -234,5 +234,11 @@ public class FirIdeDependentAnalysisSourceModuleRendererTestGenerated extends Ab
         public void testAnnotationOnTypesWithComplexExpression() throws Exception {
             runTest("analysis/analysis-api/testData/components/symbolDeclarationRenderer/renderDeclaration/types/annotationOnTypesWithComplexExpression.kt");
         }
+
+        @Test
+        @TestMetadata("contextFunctionTypes.kt")
+        public void testContextFunctionTypes() throws Exception {
+            runTest("analysis/analysis-api/testData/components/symbolDeclarationRenderer/renderDeclaration/types/contextFunctionTypes.kt");
+        }
     }
 }

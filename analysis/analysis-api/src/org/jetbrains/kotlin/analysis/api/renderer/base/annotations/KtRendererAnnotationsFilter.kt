@@ -10,6 +10,9 @@ import org.jetbrains.kotlin.analysis.api.annotations.KtAnnotated
 import org.jetbrains.kotlin.analysis.api.annotations.KtAnnotationApplication
 import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.load.java.NULLABILITY_ANNOTATIONS
+import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.name.StandardClassIds
 
 public interface KtRendererAnnotationsFilter {
     context(KtAnalysisSession)
@@ -46,6 +49,26 @@ public interface KtRendererAnnotationsFilter {
         }
     }
 
+    /**
+     * Filters the `@ContextFunctionTypeParams` annotation from FE10 functional types.
+     *
+     * Example:
+     *
+     * ```
+     * @ContextFunctionTypeParams(count = 1) (context(A) () -> Unit)
+     * // becomes
+     * context(A) () -> Unit
+     * ```
+     */
+    public object NO_CONTEXT_FUNCTION_TYPE_PARAMS : KtRendererAnnotationsFilter {
+        private val CONTEXT_FUNCTION_TYPE_PARAMS_CLASS_ID =
+            ClassId(StandardClassIds.BASE_KOTLIN_PACKAGE, Name.identifier("ContextFunctionTypeParams"))
+
+        context(KtAnalysisSession)
+        override fun filter(annotation: KtAnnotationApplication, owner: KtAnnotated): Boolean {
+            return annotation.classId != CONTEXT_FUNCTION_TYPE_PARAMS_CLASS_ID
+        }
+    }
 
     public object NONE : KtRendererAnnotationsFilter {
         context(KtAnalysisSession)
