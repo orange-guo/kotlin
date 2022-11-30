@@ -17,7 +17,7 @@ import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.name.Name
 
-private val fqNames = listOf(
+private val fqNames = setOf(
     StandardNames.FqNames.charSequence.child(Name.identifier("get")),
     StandardNames.FqNames.charIterator.toUnsafe().child(Name.identifier("nextChar")),
 )
@@ -28,7 +28,7 @@ object FirJsMultipleInheritanceChecker : FirClassChecker() {
     override fun check(declaration: FirClass, context: CheckerContext, reporter: DiagnosticReporter) {
         val scope = declaration.unsubstitutedScope(context)
 
-        val members = mutableListOf<FirNamedFunctionSymbol>().apply {
+        val members = buildList {
             for (it in simpleNames) {
                 scope.processFunctionsByName(it, this::add)
             }
