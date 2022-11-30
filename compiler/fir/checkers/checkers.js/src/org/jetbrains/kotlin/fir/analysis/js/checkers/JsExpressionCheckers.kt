@@ -14,7 +14,7 @@ object JsExpressionCheckers : ExpressionCheckers() {
             FirJsQualifierChecker,
         )
 
-    override val basicExpressionCheckers: Set<FirBasicExpressionChecker>
+    override val qualifiedAccessExpressionCheckers: Set<FirQualifiedAccessExpressionChecker>
         get() = setOf(
             FirJsDebugInfoExpressionChecker,
         )
