@@ -89,14 +89,6 @@ class FirFieldSymbol(callableId: CallableId) : FirVariableSymbol<FirField>(calla
     val hasInitializer: Boolean
         get() = fir.initializer != null
 
-    val resolvedInitializerType
-        get(): ConeKotlinType? {
-            ensureType(fir.initializer?.typeRef)
-            return fir.initializer?.typeRef?.coneType
-        }
-
-    val initializerSource get() = fir.initializer?.source
-
     val isVal: Boolean
         get() = fir.isVal
 
