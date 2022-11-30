@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.fir.analysis.js.checkers.declaration
 
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
+import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.closestNonLocalWith
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirBasicDeclarationChecker
@@ -16,6 +17,7 @@ import org.jetbrains.kotlin.fir.analysis.js.checkers.isNativeObject
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirFile
 import org.jetbrains.kotlin.fir.declarations.FirProperty
+import org.jetbrains.kotlin.fir.declarations.fullyExpandedClassId
 import org.jetbrains.kotlin.fir.expressions.FirAnnotationCall
 import org.jetbrains.kotlin.fir.resolvedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
@@ -25,7 +27,7 @@ import org.jetbrains.kotlin.utils.addToStdlib.lastIsInstanceOrNull
 
 object FirJsModuleChecker : FirBasicDeclarationChecker() {
     override fun check(declaration: FirDeclaration, context: CheckerContext, reporter: DiagnosticReporter) {
-        if (declaration is FirFile || !declaration.isEitherModuleOrNonModule) return
+        if (declaration is FirFile || !declaration.isEitherModuleOrNonModule(context.session)) return
 
         if (declaration is FirProperty && declaration.isVar) {
             reporter.reportOn(declaration.source, FirJsErrors.JS_MODULE_PROHIBITED_ON_VAR, context)
@@ -40,16 +42,14 @@ object FirJsModuleChecker : FirBasicDeclarationChecker() {
         if (context.isTopLevel) {
             val file = context.containingDeclarations.lastIsInstanceOrNull<FirFile>()
 
-            if (file != null && file.isEitherModuleOrNonModule) {
+            if (file != null && file.isEitherModuleOrNonModule(context.session)) {
                 reporter.reportOn(declaration.source, FirJsErrors.NESTED_JS_MODULE_PROHIBITED, context)
             }
         }
     }
 
-    private val FirDeclaration.isEitherModuleOrNonModule
-        get() = annotations.any {
-            val call = it as? FirAnnotationCall ?: return@any false
-            val annotationFqName = (call.calleeReference.resolvedSymbol as? FirCallableSymbol<*>)?.callableId?.asSingleFqName()?.parent()
-            annotationFqName == JsModule.asSingleFqName() || annotationFqName == JsNonModule.asSingleFqName()
-        }
+    private fun FirDeclaration.isEitherModuleOrNonModule(session: FirSession) = annotations.any {
+        val annotationFqName = it.fullyExpandedClassId(session)?.asSingleFqName()
+        annotationFqName == JsModule.asSingleFqName() || annotationFqName == JsNonModule.asSingleFqName()
+    }
 }
