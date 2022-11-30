@@ -36,6 +36,9 @@ abstract class FirLazyDeclarationResolver : FirSessionComponent {
     }
 
     abstract fun lazyResolveToPhase(symbol: FirBasedSymbol<*>, toPhase: FirResolvePhase)
+
+    // Call in scopes instead of lazyResolveToPhase(TYPES/STATUS)
+    abstract fun assertResolvedToPhase(symbol: FirBasedSymbol<*>, phase: FirResolvePhase)
 }
 
 val FirSession.lazyDeclarationResolver: FirLazyDeclarationResolver by FirSession.sessionComponentAccessor()
@@ -60,6 +63,12 @@ fun FirBasedSymbol<*>.lazyResolveToPhase(toPhase: FirResolvePhase) {
     phaseManager.lazyResolveToPhase(this, toPhase)
 }
 
+fun FirBasedSymbol<*>.assertResolvedToPhase(toPhase: FirResolvePhase) {
+    val session = fir.moduleData.session
+    val phaseManager = session.lazyDeclarationResolver
+    phaseManager.assertResolvedToPhase(this, toPhase)
+}
+
 /**
  * Lazy resolve [FirDeclaration] to [FirResolvePhase].
  *
@@ -67,4 +76,8 @@ fun FirBasedSymbol<*>.lazyResolveToPhase(toPhase: FirResolvePhase) {
  */
 fun FirDeclaration.lazyResolveToPhase(toPhase: FirResolvePhase) {
     symbol.lazyResolveToPhase(toPhase)
+}
+
+fun FirDeclaration.assertResolvedToPhase(toPhase: FirResolvePhase) {
+    symbol.assertResolvedToPhase(toPhase)
 }

@@ -17,4 +17,6 @@ object FirDummyCompilerLazyDeclarationResolver : FirLazyDeclarationResolver() {
     override fun enableLazyResolveContractsChecks() {}
 
     override fun lazyResolveToPhase(symbol: FirBasedSymbol<*>, toPhase: FirResolvePhase) {}
+
+    override fun assertResolvedToPhase(symbol: FirBasedSymbol<*>, phase: FirResolvePhase) {}
 }

@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.utils.visibility
 import org.jetbrains.kotlin.fir.resolve.substitution.ConeSubstitutor
 import org.jetbrains.kotlin.fir.resolve.transformers.ensureResolvedTypeDeclaration
-import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhase
+import org.jetbrains.kotlin.fir.symbols.assertResolvedToPhase
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.types.AbstractTypeChecker
 import org.jetbrains.kotlin.types.model.KotlinTypeMarker
@@ -102,8 +102,8 @@ class FirStandardOverrideChecker(private val session: FirSession) : FirAbstractO
         overrideCandidate: FirCallableDeclaration,
         baseDeclaration: FirCallableDeclaration
     ): ConeSubstitutor? {
-        overrideCandidate.lazyResolveToPhase(FirResolvePhase.TYPES)
-        baseDeclaration.lazyResolveToPhase(FirResolvePhase.TYPES)
+        overrideCandidate.assertResolvedToPhase(FirResolvePhase.TYPES)
+        baseDeclaration.assertResolvedToPhase(FirResolvePhase.TYPES)
         val substitutor = buildSubstitutorForOverridesCheck(overrideCandidate, baseDeclaration, session) ?: return null
         if (
             overrideCandidate.typeParameters.isNotEmpty() &&
@@ -128,8 +128,8 @@ class FirStandardOverrideChecker(private val session: FirSession) : FirAbstractO
 
         val substitutor = buildTypeParametersSubstitutorIfCompatible(overrideCandidate, baseDeclaration) ?: return false
 
-        overrideCandidate.lazyResolveToPhase(FirResolvePhase.TYPES)
-        baseDeclaration.lazyResolveToPhase(FirResolvePhase.TYPES)
+        overrideCandidate.assertResolvedToPhase(FirResolvePhase.TYPES)
+        baseDeclaration.assertResolvedToPhase(FirResolvePhase.TYPES)
         if (!isEqualReceiverTypes(
                 overrideCandidate.receiverParameter?.typeRef,
                 baseDeclaration.receiverParameter?.typeRef,
@@ -150,8 +150,8 @@ class FirStandardOverrideChecker(private val session: FirSession) : FirAbstractO
 
         if (overrideCandidate !is FirProperty) return false
         val substitutor = buildTypeParametersSubstitutorIfCompatible(overrideCandidate, baseDeclaration) ?: return false
-        overrideCandidate.lazyResolveToPhase(FirResolvePhase.TYPES)
-        baseDeclaration.lazyResolveToPhase(FirResolvePhase.TYPES)
+        overrideCandidate.assertResolvedToPhase(FirResolvePhase.TYPES)
+        baseDeclaration.assertResolvedToPhase(FirResolvePhase.TYPES)
         return isEqualReceiverTypes(overrideCandidate.receiverParameter?.typeRef, baseDeclaration.receiverParameter?.typeRef, substitutor)
     }
 }

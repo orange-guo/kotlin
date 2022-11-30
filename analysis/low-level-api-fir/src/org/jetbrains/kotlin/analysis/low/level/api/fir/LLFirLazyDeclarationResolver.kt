@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.analysis.low.level.api.fir.sessions.LLFirResolvableM
 import org.jetbrains.kotlin.analysis.low.level.api.fir.sessions.LLFirSessionInvalidator
 import org.jetbrains.kotlin.fir.ThreadSafeMutableState
 import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
+import org.jetbrains.kotlin.fir.render
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.FirLazyDeclarationResolver
 
@@ -35,6 +36,18 @@ internal class LLFirLazyDeclarationResolver(private val sessionInvalidator: LLFi
         } catch (e: Throwable) {
             sessionInvalidator.invalidate(session)
             throw e
+        }
+    }
+
+    override fun assertResolvedToPhase(symbol: FirBasedSymbol<*>, phase: FirResolvePhase) {
+        val fir = symbol.fir
+        val session = fir.moduleData.session
+        if (session !is LLFirResolvableModuleSession) return
+        val fromPhase = fir.resolvePhase
+        if (fromPhase < phase) {
+            throw AssertionError(
+                "LLFirLazyDeclarationResolver for\n${fir.render()}\n: expected phase $phase but actually phase is $fromPhase"
+            )
         }
     }
 }
