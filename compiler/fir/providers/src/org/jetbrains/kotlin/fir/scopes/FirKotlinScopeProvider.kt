@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.FirSessionComponent
 import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
+import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
 import org.jetbrains.kotlin.fir.declarations.utils.delegateFields
 import org.jetbrains.kotlin.fir.declarations.utils.isExpect
 import org.jetbrains.kotlin.fir.resolve.*
@@ -20,6 +21,7 @@ import org.jetbrains.kotlin.fir.scopes.impl.*
 import org.jetbrains.kotlin.fir.symbols.ConeClassLikeLookupTag
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
+import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhase
 import org.jetbrains.kotlin.fir.types.*
 
 class FirKotlinScopeProvider(
@@ -94,6 +96,7 @@ fun FirClass.unsubstitutedScope(
     scopeSession: ScopeSession,
     withForcedTypeCalculator: Boolean
 ): FirTypeScope {
+    lazyResolveToPhase(FirResolvePhase.TYPES)
     val scope = scopeProvider.getUseSiteMemberScope(this, useSiteSession, scopeSession)
     if (withForcedTypeCalculator) return FirScopeWithFakeOverrideTypeCalculator(scope, FakeOverrideTypeCalculator.Forced)
     return scope
@@ -112,14 +115,17 @@ fun FirClass.scopeForClass(
     useSiteSession: FirSession,
     scopeSession: ScopeSession,
     memberOwnerLookupTag: ConeClassLikeLookupTag
-): FirTypeScope = scopeForClassImpl(
-    substitutor, useSiteSession, scopeSession,
-    skipPrivateMembers = false,
-    classFirDispatchReceiver = this,
-    // TODO: why it's always false?
-    isFromExpectClass = false,
-    memberOwnerLookupTag = memberOwnerLookupTag
-)
+): FirTypeScope {
+    lazyResolveToPhase(FirResolvePhase.TYPES)
+    return scopeForClassImpl(
+        substitutor, useSiteSession, scopeSession,
+        skipPrivateMembers = false,
+        classFirDispatchReceiver = this,
+        // TODO: why it's always false?
+        isFromExpectClass = false,
+        memberOwnerLookupTag = memberOwnerLookupTag
+    )
+}
 
 fun ConeKotlinType.scopeForSupertype(
     useSiteSession: FirSession,

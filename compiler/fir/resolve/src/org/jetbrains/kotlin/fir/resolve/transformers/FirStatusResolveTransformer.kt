@@ -474,6 +474,7 @@ abstract class AbstractFirStatusResolveTransformer(
         simpleFunction: FirSimpleFunction,
         data: FirResolvedDeclarationStatus?
     ): FirStatement = whileAnalysing(simpleFunction) {
+        simpleFunction.lazyResolveToPhase(FirResolvePhase.TYPES)
         val resolvedStatus = statusResolver.resolveStatus(simpleFunction, containingClass, isLocal = false)
         simpleFunction.transformStatus(this, resolvedStatus)
         calculateDeprecations(simpleFunction)
@@ -484,6 +485,7 @@ abstract class AbstractFirStatusResolveTransformer(
         property: FirProperty,
         data: FirResolvedDeclarationStatus?
     ): FirStatement = whileAnalysing(property) {
+        property.lazyResolveToPhase(FirResolvePhase.TYPES)
         val overridden = statusResolver.getOverriddenProperties(property, containingClass)
 
         val overriddenProperties = overridden.map {
