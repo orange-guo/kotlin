@@ -1,6 +1,7 @@
 // IGNORE_BACKEND: JS, JS_IR, NATIVE, WASM
 // IGNORE_BACKEND: JS_IR_ES6
 // WASM_MUTE_REASON: IGNORED_IN_JS
+// LANGUAGE: -ProhibitIllegalValueParameterUsageInDefaultArguments
 
 fun f(
     f1: () -> String = { f2() },
