@@ -12,5 +12,5 @@ interface C<T> : A<T>
 
 fun <K : C<Int>> main() {
     val foo = Foo<K>()
-    Bar<B<String>>().<!INFERRED_TYPE_VARIABLE_INTO_EMPTY_INTERSECTION_WARNING!>takeFoo<!>(foo) // error in 1.3.72, no error in 1.4.31
+    Bar<B<String>>().<!INFERRED_TYPE_VARIABLE_INTO_EMPTY_INTERSECTION_ERROR!>takeFoo<!>(foo) // error in 1.3.72, no error in 1.4.31
 }
