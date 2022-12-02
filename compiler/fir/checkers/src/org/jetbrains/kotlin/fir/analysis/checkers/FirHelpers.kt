@@ -709,3 +709,19 @@ fun CheckerContext.closestNonLocalWith(declaration: FirDeclaration) =
     (containingDeclarations + declaration).takeWhile { it.isNonLocal }.lastOrNull()
 
 val CheckerContext.isTopLevel get() = containingDeclarations.lastOrNull() is FirFile
+
+fun FirBasedSymbol<*>.hasAnnotationOrInsideAnnotatedClass(classId: ClassId, session: FirSession): Boolean {
+    if (hasAnnotation(classId)) return true
+    val container = getContainingClassSymbol(session) ?: return false
+    return container.hasAnnotationOrInsideAnnotatedClass(classId, session)
+}
+
+fun FirDeclaration.hasAnnotationOrInsideAnnotatedClass(classId: ClassId, session: FirSession) =
+    symbol.hasAnnotationOrInsideAnnotatedClass(classId, session)
+
+fun FirBasedSymbol<*>.getAnnotationStringParameter(classId: ClassId): String? {
+    val annotation = getAnnotationByClassId(classId) as? FirAnnotationCall
+    val expression = annotation?.argumentMapping?.mapping?.values?.firstOrNull() as? FirConstExpression<*>
+    return expression?.value as? String
+}
+
