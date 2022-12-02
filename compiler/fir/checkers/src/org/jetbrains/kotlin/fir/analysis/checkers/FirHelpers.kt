@@ -14,12 +14,10 @@ import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget
 import org.jetbrains.kotlin.diagnostics.*
-import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors
 import org.jetbrains.kotlin.fir.analysis.getChild
-import org.jetbrains.kotlin.fir.containingClassForLocalAttr
-import org.jetbrains.kotlin.fir.containingClassLookupTag
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.utils.*
 import org.jetbrains.kotlin.fir.expressions.*
@@ -27,7 +25,6 @@ import org.jetbrains.kotlin.fir.expressions.impl.FirEmptyExpressionBlock
 import org.jetbrains.kotlin.fir.references.FirSuperReference
 import org.jetbrains.kotlin.fir.expressions.toResolvedCallableSymbol
 import org.jetbrains.kotlin.fir.declarations.fullyExpandedClass
-import org.jetbrains.kotlin.fir.isSubstitutionOrIntersectionOverride
 import org.jetbrains.kotlin.fir.resolve.*
 import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
 import org.jetbrains.kotlin.fir.scopes.*
@@ -36,7 +33,6 @@ import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.*
 import org.jetbrains.kotlin.fir.types.*
-import org.jetbrains.kotlin.fir.unwrapFakeOverrides
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlin.psi.KtParameter
@@ -102,6 +98,18 @@ fun ConeKotlinType.isInlineClass(session: FirSession): Boolean = toRegularClassS
 fun FirTypeRef.toRegularClassSymbol(session: FirSession): FirRegularClassSymbol? {
     return coneType.toRegularClassSymbol(session)
 }
+
+/**
+ * Returns the ClassLikeDeclaration where the Fir object has been defined
+ * or null if no proper declaration has been found.
+ */
+fun FirBasedSymbol<*>.getContainingClassSymbol(session: FirSession): FirClassLikeSymbol<*>? = when (this) {
+    is FirCallableSymbol<*> -> containingClassLookupTag()?.toSymbol(session)
+    is FirClassLikeSymbol<*> -> getContainingClassLookupTag()?.toSymbol(session)
+    else -> null
+}
+
+fun FirDeclaration.getContainingClassSymbol(session: FirSession) = symbol.getContainingClassSymbol(session)
 
 fun FirClassLikeSymbol<*>.outerClassSymbol(context: CheckerContext): FirClassLikeSymbol<*>? {
     if (this !is FirClassSymbol<*>) return null
@@ -667,13 +675,33 @@ private fun findDefaultValue(source: KtLightSourceElement): KtLightSourceElement
     )
 }
 
+fun FirPropertySymbol.directOverriddenProperties(session: FirSession, scopeSession: ScopeSession): List<FirPropertySymbol> {
+    val classSymbol = getContainingClassSymbol(session) as? FirClassSymbol ?: return emptyList()
+    val scope = classSymbol.unsubstitutedScope(session, scopeSession, withForcedTypeCalculator = false)
+
+    scope.processPropertiesByName(name) { }
+    return scope.getDirectOverriddenProperties(this, true)
+}
+
+fun FirNamedFunctionSymbol.directOverriddenFunctions(session: FirSession, scopeSession: ScopeSession): List<FirNamedFunctionSymbol> {
+    val classSymbol = getContainingClassSymbol(session) as? FirClassSymbol ?: return emptyList()
+    val scope = classSymbol.unsubstitutedScope(session, scopeSession, withForcedTypeCalculator = false)
+
+    scope.processFunctionsByName(name) { }
+    return scope.getDirectOverriddenFunctions(this, true)
+}
+
+fun FirCallableSymbol<*>.directOverriddenCallables(session: FirSession, scopeSession: ScopeSession) = when (this) {
+    is FirPropertySymbol -> directOverriddenProperties(session, scopeSession)
+    is FirNamedFunctionSymbol -> directOverriddenFunctions(session, scopeSession)
+    else -> emptyList()
+}
+
 fun FirNamedFunctionSymbol.directOverriddenFunctions(context: CheckerContext) =
     directOverriddenFunctions(context.session, context.sessionHolder.scopeSession)
 
 fun FirCallableSymbol<*>.directOverriddenCallables(context: CheckerContext) =
     directOverriddenCallables(context.session, context.sessionHolder.scopeSession)
-
-fun FirBasedSymbol<*>.isEffectivelyExternal(context: CheckerContext) = isEffectivelyExternal(context.session)
 
 val CheckerContext.closestNonLocal get() = containingDeclarations.takeWhile { it.isNonLocal }.lastOrNull()
 
@@ -681,15 +709,3 @@ fun CheckerContext.closestNonLocalWith(declaration: FirDeclaration) =
     (containingDeclarations + declaration).takeWhile { it.isNonLocal }.lastOrNull()
 
 val CheckerContext.isTopLevel get() = containingDeclarations.lastOrNull() is FirFile
-
-fun FirFunctionSymbol<*>.isOverridingExternalWithOptionalParams(context: CheckerContext): Boolean {
-    if (!isSubstitutionOrIntersectionOverride && modality == Modality.ABSTRACT) return false
-
-    val overridden = (this as? FirNamedFunctionSymbol)?.directOverriddenFunctions(context) ?: return false
-
-    for (overriddenFunction in overridden.filter { it.isEffectivelyExternal(context) }) {
-        if (overriddenFunction.valueParameterSymbols.any { it.hasDefaultValue }) return true
-    }
-
-    return false
-}
