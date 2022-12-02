@@ -41,6 +41,14 @@ class DiagnosticsService(val testServices: TestServices) : TestService {
         }
     }
 
+    fun isSeverityAllowed(module: TestModule, severity: Severity): Boolean {
+        val conditions = conditionsPerModule.getOrPut(module) {
+            computeDiagnosticConditionForModule(module)
+        }
+
+        return conditions.severityMap.getOrDefault(severity, true)
+    }
+
     private fun computeDiagnosticConditionForModule(module: TestModule): DiagnosticConditions {
         val diagnosticsInDirective = module.directives[DiagnosticsDirectives.DIAGNOSTICS]
         val enabledNames = mutableSetOf<String>()
@@ -63,6 +71,7 @@ class DiagnosticsService(val testServices: TestServices) : TestService {
         }
         if (DiagnosticsDirectives.MARK_DYNAMIC_CALLS in module.directives) {
             enabledNames += "DEBUG_INFO_DYNAMIC"
+            severityMap[Severity.INFO] = true
         }
         return DiagnosticConditions(
             enabledNames,

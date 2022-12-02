@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.test.frontend.fir
 
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.LanguageVersionSettings
+import org.jetbrains.kotlin.diagnostics.Severity
 import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
 import org.jetbrains.kotlin.fir.java.FirProjectSessionProvider
@@ -18,6 +19,7 @@ import org.jetbrains.kotlin.ir.backend.js.resolverLogger
 import org.jetbrains.kotlin.js.config.JSConfigurationKeys
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.test.model.TestModule
+import org.jetbrains.kotlin.test.services.DiagnosticsService
 import org.jetbrains.kotlin.test.services.TestServices
 
 object TestFirJsSessionFactory {
@@ -43,9 +45,11 @@ object TestFirJsSessionFactory {
     fun createModuleBasedSession(
         mainModuleData: FirModuleDataImpl, sessionProvider: FirProjectSessionProvider, extensionRegistrars: List<FirExtensionRegistrar>,
         languageVersionSettings: LanguageVersionSettings, lookupTracker: LookupTracker?,
-        sessionConfigurator: FirSessionConfigurator.() -> Unit
+        sessionConfigurator: FirSessionConfigurator.() -> Unit,
+        allowInfoCheckers: Boolean,
     ): FirSession =
         FirJsSessionFactory.createJsModuleBasedSession(
-            mainModuleData, sessionProvider, extensionRegistrars, languageVersionSettings, lookupTracker, sessionConfigurator
+            mainModuleData, sessionProvider, extensionRegistrars, languageVersionSettings, lookupTracker, sessionConfigurator,
+            allowInfoCheckers,
         )
 }

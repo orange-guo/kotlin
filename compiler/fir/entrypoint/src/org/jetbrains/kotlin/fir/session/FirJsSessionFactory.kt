@@ -8,6 +8,7 @@ package org.jetbrains.kotlin.fir.session
 import org.jetbrains.kotlin.config.*
 import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.analysis.FirOverridesBackwardCompatibilityHelper
+import org.jetbrains.kotlin.fir.checkers.registerInfoJsCheckers
 import org.jetbrains.kotlin.fir.checkers.registerJsCheckers
 import org.jetbrains.kotlin.fir.deserialization.ModuleDataProvider
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
@@ -28,7 +29,8 @@ object FirJsSessionFactory : FirAbstractSessionFactory() {
         extensionRegistrars: List<FirExtensionRegistrar>,
         languageVersionSettings: LanguageVersionSettings = LanguageVersionSettingsImpl.DEFAULT,
         lookupTracker: LookupTracker?,
-        init: FirSessionConfigurator.() -> Unit
+        init: FirSessionConfigurator.() -> Unit,
+        allowInfoCheckers: Boolean,
     ): FirSession {
         return createModuleBasedSession(
             moduleData,
@@ -39,7 +41,12 @@ object FirJsSessionFactory : FirAbstractSessionFactory() {
             null,
             init,
             registerExtraComponents = { it.registerJsSpecificResolveComponents() },
-            registerExtraCheckers = { it.registerJsCheckers() },
+            registerExtraCheckers = {
+                it.registerJsCheckers()
+                if (allowInfoCheckers) {
+                    it.registerInfoJsCheckers()
+                }
+            },
             createKotlinScopeProvider = { FirKotlinScopeProvider { _, declaredMemberScope, _, _ -> declaredMemberScope } },
             createProviders = { _, _, symbolProvider, generatedSymbolsProvider, dependenciesSymbolProvider ->
                 listOfNotNull(

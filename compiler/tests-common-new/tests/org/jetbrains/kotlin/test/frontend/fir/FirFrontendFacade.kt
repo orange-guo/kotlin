@@ -19,6 +19,7 @@ import org.jetbrains.kotlin.cli.jvm.config.jvmClasspathRoots
 import org.jetbrains.kotlin.cli.jvm.config.jvmModularRoots
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
+import org.jetbrains.kotlin.diagnostics.Severity
 import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.FirAnalyzerFacade
 import org.jetbrains.kotlin.fir.checkers.registerExtendedCommonCheckers
@@ -186,6 +187,7 @@ class FirFrontendFacade(
                     languageVersionSettings,
                     null,
                     sessionConfigurator,
+                    testServices.diagnosticsService.isSeverityAllowed(module, Severity.INFO),
                 )
             }
             module.targetPlatform.isNative() -> {
