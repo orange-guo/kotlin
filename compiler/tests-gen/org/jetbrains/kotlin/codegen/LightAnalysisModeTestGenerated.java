@@ -39708,16 +39708,6 @@ public class LightAnalysisModeTestGenerated extends AbstractLightAnalysisModeTes
             KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/volatile"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JVM, true);
         }
 
-        @TestMetadata("intrinsics.kt")
-        public void testIntrinsics() throws Exception {
-            runTest("compiler/testData/codegen/box/volatile/intrinsics.kt");
-        }
-
-        @TestMetadata("messagePassing.kt")
-        public void testMessagePassing() throws Exception {
-            runTest("compiler/testData/codegen/box/volatile/messagePassing.kt");
-        }
-
         @TestMetadata("volatileBool.kt")
         public void testVolatileBool() throws Exception {
             runTest("compiler/testData/codegen/box/volatile/volatileBool.kt");

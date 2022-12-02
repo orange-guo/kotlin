@@ -1,4 +1,4 @@
-// TARGET BACKEND: NATIVE
+// TARGET_BACKEND: NATIVE
 
 import kotlin.native.concurrent.*
 import kotlin.jvm.Volatile
@@ -7,6 +7,10 @@ import kotlin.jvm.Volatile
 var y = -1
 
 fun box() : String {
+    if (Platform.memoryModel != MemoryModel.EXPERIMENTAL) {
+        // The test doesn't make sense for legacy mm, you can't have anything non-atomic to protect with @Volatile var
+        return "OK"
+    }
     val w1 = Worker.start()
     val w2 = Worker.start()
 

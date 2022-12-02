@@ -1,4 +1,4 @@
-// TARGET BACKEND: NATIVE
+// TARGET_BACKEND: NATIVE
 
 @file:Suppress("INVISIBLE_MEMBER")
 @file:OptIn(kotlin.ExperimentalStdlibApi::class)

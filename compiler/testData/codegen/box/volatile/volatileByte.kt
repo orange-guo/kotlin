@@ -1,3 +1,6 @@
+// WITH_STDLIB
+// IGNORE_BACKEND: WASM
+
 import kotlin.jvm.Volatile
 
 class ByteWrapper(@Volatile var x: Byte)

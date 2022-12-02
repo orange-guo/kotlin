@@ -1,3 +1,6 @@
+// WITH_STDLIB
+// IGNORE_BACKEND: WASM
+
 import kotlin.jvm.Volatile
 
 class DoubleWrapper(@Volatile var x: Double)

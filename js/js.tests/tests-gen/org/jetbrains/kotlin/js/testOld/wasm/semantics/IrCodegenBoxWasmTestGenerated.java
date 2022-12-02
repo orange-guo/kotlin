@@ -32678,16 +32678,6 @@ public class IrCodegenBoxWasmTestGenerated extends AbstractIrCodegenBoxWasmTest 
             KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/volatile"), Pattern.compile("^([^_](.+))\\.kt$"), null, TargetBackend.WASM, true);
         }
 
-        @TestMetadata("intrinsics.kt")
-        public void testIntrinsics() throws Exception {
-            runTest("compiler/testData/codegen/box/volatile/intrinsics.kt");
-        }
-
-        @TestMetadata("messagePassing.kt")
-        public void testMessagePassing() throws Exception {
-            runTest("compiler/testData/codegen/box/volatile/messagePassing.kt");
-        }
-
         @TestMetadata("volatileBool.kt")
         public void testVolatileBool() throws Exception {
             runTest("compiler/testData/codegen/box/volatile/volatileBool.kt");

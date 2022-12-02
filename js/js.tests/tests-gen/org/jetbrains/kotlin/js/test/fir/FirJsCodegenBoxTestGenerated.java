@@ -36484,18 +36484,6 @@ public class FirJsCodegenBoxTestGenerated extends AbstractFirJsCodegenBoxTest {
         }
 
         @Test
-        @TestMetadata("intrinsics.kt")
-        public void testIntrinsics() throws Exception {
-            runTest("compiler/testData/codegen/box/volatile/intrinsics.kt");
-        }
-
-        @Test
-        @TestMetadata("messagePassing.kt")
-        public void testMessagePassing() throws Exception {
-            runTest("compiler/testData/codegen/box/volatile/messagePassing.kt");
-        }
-
-        @Test
         @TestMetadata("volatileBool.kt")
         public void testVolatileBool() throws Exception {
             runTest("compiler/testData/codegen/box/volatile/volatileBool.kt");
