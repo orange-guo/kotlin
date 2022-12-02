@@ -1101,9 +1101,6 @@ open class FirDeclarationsResolveTransformer(transformer: FirAbstractBodyResolve
                 buildResolvedTypeRef {
                     type = this@toExpectedTypeRef.coneType
                     annotations.addAll(this@toExpectedTypeRef.annotations)
-                    this@toExpectedTypeRef.source?.fakeElement(KtFakeSourceElementKind.ImplicitTypeRef)?.let {
-                        source = it
-                    }
                 }
             }
         }
