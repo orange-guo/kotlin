@@ -24,6 +24,7 @@ dependencies {
 
     testImplementation(commonDependency("junit:junit"))
     testImplementation(projectTests(":compiler:tests-common"))
+    testImplementation(projectTests(":compiler:tests-common-new"))
     testImplementation(projectTests(":compiler:fir:raw-fir:psi2fir"))
 
     testCompileOnly(project(":kotlin-test:kotlin-test-jvm"))

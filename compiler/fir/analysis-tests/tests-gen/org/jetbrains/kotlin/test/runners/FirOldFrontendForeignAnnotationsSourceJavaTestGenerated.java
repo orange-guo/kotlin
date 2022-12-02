@@ -23,7 +23,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
     public class Tests {
         @Test
         public void testAllFilesPresentInTests() throws Exception {
-            KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+            KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
         }
 
         @Test
@@ -152,7 +152,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
         public class Jsr305 {
             @Test
             public void testAllFilesPresentInJsr305() throws Exception {
-                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/jsr305"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/jsr305"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
             }
 
             @Test
@@ -191,7 +191,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
             public class Ignore {
                 @Test
                 public void testAllFilesPresentInIgnore() throws Exception {
-                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/jsr305/ignore"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/jsr305/ignore"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
                 }
 
                 @Test
@@ -207,7 +207,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
             public class NullabilityWarnings {
                 @Test
                 public void testAllFilesPresentInNullabilityWarnings() throws Exception {
-                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/jsr305/nullabilityWarnings"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/jsr305/nullabilityWarnings"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
                 }
 
                 @Test
@@ -258,7 +258,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
                 public class FromPlatformTypes {
                     @Test
                     public void testAllFilesPresentInFromPlatformTypes() throws Exception {
-                        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/jsr305/nullabilityWarnings/fromPlatformTypes"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/jsr305/nullabilityWarnings/fromPlatformTypes"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
                     }
 
                     @Test
@@ -388,7 +388,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
                 public class TypeQualifierDefault {
                     @Test
                     public void testAllFilesPresentInTypeQualifierDefault() throws Exception {
-                        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/jsr305/nullabilityWarnings/typeQualifierDefault"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/jsr305/nullabilityWarnings/typeQualifierDefault"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
                     }
 
                     @Test
@@ -447,7 +447,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
             public class TypeQualifierDefault {
                 @Test
                 public void testAllFilesPresentInTypeQualifierDefault() throws Exception {
-                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/jsr305/typeQualifierDefault"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/jsr305/typeQualifierDefault"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
                 }
 
                 @Test
@@ -512,7 +512,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
         public class Jsr305NullabilityWarnings {
             @Test
             public void testAllFilesPresentInJsr305NullabilityWarnings() throws Exception {
-                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/jsr305NullabilityWarnings"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/jsr305NullabilityWarnings"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
             }
 
             @Nested
@@ -521,7 +521,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
             public class Migration {
                 @Test
                 public void testAllFilesPresentInMigration() throws Exception {
-                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/jsr305NullabilityWarnings/migration"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/jsr305NullabilityWarnings/migration"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
                 }
 
                 @Test
@@ -586,7 +586,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
         public class TypeQualifierDefault {
             @Test
             public void testAllFilesPresentInTypeQualifierDefault() throws Exception {
-                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/typeQualifierDefault"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/tests/typeQualifierDefault"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
             }
 
             @Test
@@ -603,7 +603,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
     public class Java8Tests {
         @Test
         public void testAllFilesPresentInJava8Tests() throws Exception {
-            KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java8Tests"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+            KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java8Tests"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
         }
 
         @Test
@@ -630,7 +630,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
         public class Jspecify {
             @Test
             public void testAllFilesPresentInJspecify() throws Exception {
-                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java8Tests/jspecify"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java8Tests/jspecify"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
             }
 
             @Test
@@ -645,7 +645,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
             public class StrictMode {
                 @Test
                 public void testAllFilesPresentInStrictMode() throws Exception {
-                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java8Tests/jspecify/strictMode"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java8Tests/jspecify/strictMode"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
                 }
 
                 @Test
@@ -751,7 +751,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
             public class WarnMode {
                 @Test
                 public void testAllFilesPresentInWarnMode() throws Exception {
-                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java8Tests/jspecify/warnMode"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java8Tests/jspecify/warnMode"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
                 }
 
                 @Test
@@ -846,7 +846,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
         public class Jsr305 {
             @Test
             public void testAllFilesPresentInJsr305() throws Exception {
-                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java8Tests/jsr305"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java8Tests/jsr305"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
             }
 
             @Test
@@ -898,7 +898,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
         public class Misc {
             @Test
             public void testAllFilesPresentInMisc() throws Exception {
-                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java8Tests/misc"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java8Tests/misc"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
             }
 
             @Test
@@ -1023,7 +1023,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
     public class Java11Tests {
         @Test
         public void testAllFilesPresentInJava11Tests() throws Exception {
-            KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java11Tests"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+            KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java11Tests"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
         }
 
         @Nested
@@ -1032,7 +1032,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
         public class Jspecify {
             @Test
             public void testAllFilesPresentInJspecify() throws Exception {
-                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java11Tests/jspecify"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java11Tests/jspecify"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
             }
 
             @Nested
@@ -1041,7 +1041,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
             public class ModuleAnnotations {
                 @Test
                 public void testAllFilesPresentInModuleAnnotations() throws Exception {
-                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java11Tests/jspecify/moduleAnnotations"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java11Tests/jspecify/moduleAnnotations"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
                 }
 
                 @Nested
@@ -1050,7 +1050,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
                 public class Strict {
                     @Test
                     public void testAllFilesPresentInStrict() throws Exception {
-                        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java11Tests/jspecify/moduleAnnotations/strict"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java11Tests/jspecify/moduleAnnotations/strict"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
                     }
 
                     @Test
@@ -1126,7 +1126,7 @@ public class FirOldFrontendForeignAnnotationsSourceJavaTestGenerated extends Abs
                 public class Warn {
                     @Test
                     public void testAllFilesPresentInWarn() throws Exception {
-                        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java11Tests/jspecify/moduleAnnotations/warn"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), true);
+                        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/foreignAnnotationsTests/java11Tests/jspecify/moduleAnnotations/warn"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(fir|ll)\\.kts?$"), true);
                     }
 
                     @Test

@@ -9,11 +9,14 @@ import org.jetbrains.kotlin.test.directives.FirDiagnosticsDirectives
 import org.jetbrains.kotlin.test.services.MetaTestConfigurator
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.utils.firTestDataFile
+import org.jetbrains.kotlin.test.utils.isLLFirTestData
 import java.io.File
 
 class FirOldFrontendMetaConfigurator(testServices: TestServices) : MetaTestConfigurator(testServices) {
     override fun transformTestDataPath(testDataFileName: String): String {
         val originalFile = File(testDataFileName)
+        if (originalFile.isLLFirTestData) return testDataFileName
+
         val isFirIdentical = originalFile.useLines { lines -> lines.any { it == "// ${FirDiagnosticsDirectives.FIR_IDENTICAL.name}" } }
         return if (isFirIdentical) {
             testDataFileName

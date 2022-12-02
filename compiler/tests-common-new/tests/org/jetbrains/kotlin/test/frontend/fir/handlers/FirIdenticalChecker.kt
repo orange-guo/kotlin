@@ -9,26 +9,22 @@ import org.jetbrains.kotlin.test.WrappedException
 import org.jetbrains.kotlin.test.model.AfterAnalysisChecker
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.moduleStructure
-import org.jetbrains.kotlin.test.utils.FirIdenticalCheckerHelper
-import org.jetbrains.kotlin.test.utils.firTestDataFile
-import org.jetbrains.kotlin.test.utils.isFirTestData
-import org.jetbrains.kotlin.test.utils.originalTestDataFile
+import org.jetbrains.kotlin.test.utils.*
 import java.io.File
 
 class FirIdenticalChecker(testServices: TestServices) : AfterAnalysisChecker(testServices) {
     private val helper = object : FirIdenticalCheckerHelper(testServices) {
-        override fun getClassicFileToCompare(testDataFile: File): File {
-            return if (testDataFile.isFirTestData) testDataFile.originalTestDataFile else testDataFile
-        }
-
-        override fun getFirFileToCompare(testDataFile: File): File {
-            return if (testDataFile.isFirTestData) testDataFile else testDataFile.firTestDataFile
-        }
+        override fun getClassicFileToCompare(testDataFile: File): File = testDataFile.originalTestDataFile
+        override fun getFirFileToCompare(testDataFile: File): File = testDataFile.firTestDataFile
     }
 
     override fun check(failedAssertions: List<WrappedException>) {
         if (failedAssertions.isNotEmpty()) return
         val testDataFile = testServices.moduleStructure.originalTestDataFiles.first()
+
+        // Skip `.ll.kt` test files, which are instead checked by `LLFirIdenticalChecker`.
+        if (testDataFile.isLLFirTestData) return
+
         if (testDataFile.isFirTestData) {
             val firFile = helper.getFirFileToCompare(testDataFile)
             val classicFile = helper.getClassicFileToCompare(testDataFile)
