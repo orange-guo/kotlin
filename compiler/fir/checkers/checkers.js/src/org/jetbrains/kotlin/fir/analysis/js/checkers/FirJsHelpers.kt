@@ -80,11 +80,7 @@ fun FirBasedSymbol<*>.isNativeObject(session: FirSession): Boolean {
         return property.hasAnnotationOrInsideAnnotatedClass(JsStandardClassIds.Annotations.JsNative, session)
     }
 
-    return if (this is FirAnonymousInitializerSymbol) {
-        getContainingClassSymbol(session)?.isNativeObject(session) == true
-    } else {
-        false
-    }
+    return false
 }
 
 val PREDEFINED_ANNOTATIONS = setOf(
