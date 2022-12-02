@@ -7,10 +7,9 @@ package org.jetbrains.kotlin.fir.analysis.js.checkers
 
 import org.jetbrains.kotlin.fir.analysis.checkers.FirPlatformDiagnosticSuppressor
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
+import org.jetbrains.kotlin.fir.analysis.checkers.hasAnnotationOrInsideAnnotatedClass
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
-import org.jetbrains.kotlin.fir.declarations.FirVariable
-import org.jetbrains.kotlin.fir.declarations.hasAnnotationOrInsideAnnotatedClass
 import org.jetbrains.kotlin.name.JsStandardClassIds
 
 private val NATIVE_ANNOTATIONS = arrayOf(
