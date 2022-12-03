@@ -120,6 +120,8 @@ abstract class DefaultAuthorizableClient<ServerType : ServerBase>(
         return actualResult as T
     }
 
+    private class NextObjectQuery
+
     @OptIn(ObsoleteCoroutinesApi::class, ExperimentalCoroutinesApi::class)
     override suspend fun connectToServer() {
 
@@ -145,8 +147,6 @@ abstract class DefaultAuthorizableClient<ServerType : ServerBase>(
                 }
             }
         }
-
-        class NextObjectQuery
 
         val nextObjectQuery = NextObjectQuery()
         val objectReaderActor = GlobalScope.actor<NextObjectQuery>(capacity = Channel.UNLIMITED) {
