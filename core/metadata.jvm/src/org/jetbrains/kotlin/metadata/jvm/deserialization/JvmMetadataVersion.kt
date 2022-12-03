@@ -18,6 +18,9 @@ class JvmMetadataVersion(versionArray: IntArray, val isStrictSemantics: Boolean)
         return isCompatibleInternal(INSTANCE_INC)
     }
 
+    @Deprecated("Please use isCompatibleWithDeployMetadataVersion()", ReplaceWith("isCompatibleWithDeployMetadataVersion()"))
+    fun isCompatible(): Boolean = isCompatibleInternal(INSTANCE_INC)
+
     fun isCompatible(metadataVersionFromLanguageVersion: JvmMetadataVersion): Boolean {
         // * Compiler of deployVersion X (INSTANCE) with LV Y (metadataVersionFromLanguageVersion)
         //   * can read metadata with version <= max(X+1, Y)
@@ -27,17 +30,16 @@ class JvmMetadataVersion(versionArray: IntArray, val isStrictSemantics: Boolean)
 
     private fun isCompatibleInternal(limitVersion: JvmMetadataVersion): Boolean {
         // NOTE: 1.0 is a pre-Kotlin-1.0 metadata version, with which the current compiler is incompatible
-        return (major != 1 || minor != 0) &&
-                if (isStrictSemantics) {
-                    isCompatibleTo(INSTANCE)
-                } else {
-                    this <= limitVersion
-                }
+        if (major == 1 && minor == 0) return false
+        // The same for 0.*
+        if (major == 0) return false
+        // Otherwise we just compare with the given limitVersion
+        return if (isStrictSemantics) isCompatibleTo(INSTANCE) else this <= limitVersion
     }
 
-    private fun inc(): JvmMetadataVersion {
-        if (minor < 9 || major > 1) return JvmMetadataVersion(major, minor + 1, patch)
-        return JvmMetadataVersion(2, 0, patch)
+    fun inc(): JvmMetadataVersion {
+        if (minor < 9 || major > 1) return JvmMetadataVersion(major, minor + 1, 0)
+        return JvmMetadataVersion(2, 0, 0)
     }
 
     companion object {

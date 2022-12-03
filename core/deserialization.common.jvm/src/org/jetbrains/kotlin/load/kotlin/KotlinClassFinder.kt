@@ -34,15 +34,12 @@ interface KotlinClassFinder : KotlinMetadataFinder {
             operator fun component2(): ByteArray? = byteContent
         }
 
-        class ClassFileContent(
-            @Suppress("ArrayInDataClass")
-            val content: ByteArray
-        ) : Result()
+        class ClassFileContent(val content: ByteArray) : Result()
     }
 }
 
-fun KotlinClassFinder.findKotlinClass(classId: ClassId): KotlinJvmBinaryClass? =
-    findKotlinClassOrContent(classId, LanguageVersion.LATEST_STABLE)?.toKotlinJvmBinaryClass()
+fun KotlinClassFinder.findKotlinClass(classId: ClassId, languageVersion: LanguageVersion): KotlinJvmBinaryClass? =
+    findKotlinClassOrContent(classId, languageVersion)?.toKotlinJvmBinaryClass()
 
-fun KotlinClassFinder.findKotlinClass(javaClass: JavaClass): KotlinJvmBinaryClass? =
-    findKotlinClassOrContent(javaClass, LanguageVersion.LATEST_STABLE)?.toKotlinJvmBinaryClass()
+fun KotlinClassFinder.findKotlinClass(javaClass: JavaClass, languageVersion: LanguageVersion): KotlinJvmBinaryClass? =
+    findKotlinClassOrContent(javaClass, languageVersion)?.toKotlinJvmBinaryClass()

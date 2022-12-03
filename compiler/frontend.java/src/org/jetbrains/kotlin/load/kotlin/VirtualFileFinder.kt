@@ -46,7 +46,7 @@ abstract class VirtualFileFinder : KotlinClassFinder {
             file = file.parent!!.findChild(classFileName(javaClass) + ".class").sure { "Virtual file not found for $javaClass" }
         }
 
-        return KotlinBinaryClassCache.getKotlinBinaryClassOrClassFileContent(file)
+        return KotlinBinaryClassCache.getKotlinBinaryClassOrClassFileContent(file, languageVersion)
     }
 
     private fun classFileName(jClass: JavaClass): String {

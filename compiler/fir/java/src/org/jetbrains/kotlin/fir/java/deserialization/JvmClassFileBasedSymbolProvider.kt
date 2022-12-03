@@ -68,7 +68,9 @@ class JvmClassFileBasedSymbolProvider(
 
             val facadeName = kotlinJvmBinaryClass.classHeader.multifileClassName?.takeIf { it.isNotEmpty() }
             val facadeFqName = facadeName?.let { JvmClassName.byInternalName(it).fqNameForTopLevelClassMaybeWithDollars }
-            val facadeBinaryClass = facadeFqName?.let { kotlinClassFinder.findKotlinClass(ClassId.topLevel(it)) }
+            val facadeBinaryClass = facadeFqName?.let {
+                kotlinClassFinder.findKotlinClass(ClassId.topLevel(it), session.languageVersionSettings.languageVersion)
+            }
 
             val moduleData = moduleDataProvider.getModuleData(kotlinJvmBinaryClass.containingLibrary.toPath()) ?: return@mapNotNull null
 
@@ -97,8 +99,11 @@ class JvmClassFileBasedSymbolProvider(
     private val KotlinJvmBinaryClass.incompatibility: IncompatibleVersionErrorData<JvmMetadataVersion>?
         get() {
             // TODO: skipMetadataVersionCheck
-            if (classHeader.metadataVersion.isCompatible(session.languageVersionSettings.languageVersion.toMetadataVersion())) return null
-            return IncompatibleVersionErrorData(classHeader.metadataVersion, JvmMetadataVersion.INSTANCE, location, classId)
+            val expectedMetadataVersion = session.languageVersionSettings.languageVersion.toMetadataVersion()
+            if (classHeader.metadataVersion.isCompatible(expectedMetadataVersion)) return null
+            return IncompatibleVersionErrorData(
+                classHeader.metadataVersion, maxOf(expectedMetadataVersion, JvmMetadataVersion.INSTANCE.inc()), location, classId
+            )
         }
 
     private val KotlinJvmBinaryClass.isPreReleaseInvisible: Boolean

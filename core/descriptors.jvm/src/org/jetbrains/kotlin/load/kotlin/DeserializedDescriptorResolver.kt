@@ -84,7 +84,9 @@ class DeserializedDescriptorResolver {
     private val KotlinJvmBinaryClass.incompatibility: IncompatibleVersionErrorData<JvmMetadataVersion>?
         get() {
             if (skipMetadataVersionCheck || classHeader.metadataVersion.isCompatible(ownMetadataVersion)) return null
-            return IncompatibleVersionErrorData(classHeader.metadataVersion, JvmMetadataVersion.INSTANCE, location, classId)
+            return IncompatibleVersionErrorData(
+                classHeader.metadataVersion, maxOf(ownMetadataVersion, JvmMetadataVersion.INSTANCE.inc()), location, classId
+            )
         }
 
     /**

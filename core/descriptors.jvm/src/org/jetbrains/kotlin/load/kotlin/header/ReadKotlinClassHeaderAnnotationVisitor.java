@@ -61,7 +61,7 @@ public class ReadKotlinClassHeaderAnnotationVisitor implements AnnotationVisitor
     private String[] serializedIrFields = null;
 
     @Nullable
-    public KotlinClassHeader createHeader() {
+    public KotlinClassHeader createHeaderWithDefaultMetadataVersion() {
         return createHeader(JvmMetadataVersion.INSTANCE);
     }
 
