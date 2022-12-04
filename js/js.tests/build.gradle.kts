@@ -107,6 +107,7 @@ if (kotlinBuildProperties.isInJpsBuildIdeaSync) {
 enum class OsName { WINDOWS, MAC, LINUX, UNKNOWN }
 enum class OsArch { X86_32, X86_64, ARM64, UNKNOWN }
 data class OsType(val name: OsName, val arch: OsArch)
+
 val currentOsType = run {
     val gradleOs = OperatingSystem.current()
     val osName = when {
@@ -337,8 +338,10 @@ fun Test.setUpBoxTests() {
     }
 
     systemProperty("kotlin.js.test.root.out.dir", "$buildDir/")
-    systemProperty("overwrite.output", project.providers.gradleProperty("overwrite.output")
-        .forUseAtConfigurationTime().orNull ?: "false")
+    systemProperty(
+        "overwrite.output", project.providers.gradleProperty("overwrite.output")
+            .forUseAtConfigurationTime().orNull ?: "false"
+    )
 
     val rootLocalProperties = Properties().apply {
         rootProject.file("local.properties").takeIf { it.isFile }?.inputStream()?.use {
@@ -381,6 +384,7 @@ projectTest("jsTest", parallel = true, jUnitMode = JUnitMode.JUnit5, maxHeapSize
 }
 
 projectTest("jsIrTest", true, jUnitMode = JUnitMode.JUnit5, maxHeapSizeMb = 4096) {
+    dependsOn(npmInstall)
     setUpJsBoxTests(jsEnabled = false, jsIrEnabled = true, firEnabled = false)
     useJUnitPlatform()
 }
@@ -426,16 +430,20 @@ val runMocha by task<NpmTask> {
 
     ignoreExitValue.set(kotlinBuildProperties.ignoreTestFailures)
 
-    dependsOn(npmInstall, "test")
+    dependsOn(npmInstall)
+    if (!kotlinBuildProperties.isTeamcityBuild)
+        dependsOn("test")
 
     val check by tasks
     check.dependsOn(this)
 
-    environment.set(mapOf(
-        "KOTLIN_JS_LOCATION" to rootDir.resolve("dist/js/kotlin.js").toString(),
-        "KOTLIN_JS_TEST_LOCATION" to rootDir.resolve("dist/js/kotlin-test.js").toString(),
-        "BOX_FLAG_LOCATION" to rootDir.resolve("compiler/testData/jsBoxFlag.js").toString()
-    ))
+    environment.set(
+        mapOf(
+            "KOTLIN_JS_LOCATION" to rootDir.resolve("dist/js/kotlin.js").toString(),
+            "KOTLIN_JS_TEST_LOCATION" to rootDir.resolve("dist/js/kotlin-test.js").toString(),
+            "BOX_FLAG_LOCATION" to rootDir.resolve("compiler/testData/jsBoxFlag.js").toString()
+        )
+    )
 }
 
 projectTest("wasmTest", true) {
