@@ -299,7 +299,6 @@ class FirFrontendFacade(
             lightTreeEnabled,
             enablePluginPhases,
             generateSignatures = module.targetBackend == TargetBackend.JVM_IR_SERIALIZE || isMppSupported,
-            takeDependsOnFilesIntoAccount = !isMppSupported
         )
         val firFiles = firAnalyzerFacade.runResolution()
         val filesMap = firFiles.mapNotNull { firFile ->
