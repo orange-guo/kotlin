@@ -42,7 +42,7 @@ abstract class AbstractBytecodeTextTestBase<R : ResultingArtifact.FrontendOutput
             +WITH_REFLECT
         }
 
-        commonConfigurationForTest(targetFrontend, frontendFacade, frontendToBackendConverter, backendFacade, isCodegenTest = true)
+        commonConfigurationForTest(targetFrontend, frontendFacade, frontendToBackendConverter, backendFacade)
 
         commonHandlersForCodegenTest()
 

@@ -26,12 +26,9 @@ fun <F : ResultingArtifact.FrontendOutput<F>, B : ResultingArtifact.BackendInput
     frontendFacade: Constructor<FrontendFacade<F>>,
     frontendToBackendConverter: Constructor<Frontend2BackendConverter<F, B>>,
     backendFacade: Constructor<BackendFacade<B, BinaryArtifacts.Jvm>>,
-    isCodegenTest: Boolean
+    commonServicesConfiguration: (FrontendKind<*>) -> Unit = { commonServicesConfigurationForCodegenTest(it) }
 ) {
-    if (isCodegenTest)
-        commonServicesConfigurationForCodegenTest(targetFrontend)
-    else
-        commonServicesConfigurationForDebugTest(targetFrontend)
+    commonServicesConfiguration(targetFrontend)
     facadeStep(frontendFacade)
     classicFrontendHandlersStep()
     firHandlersStep()

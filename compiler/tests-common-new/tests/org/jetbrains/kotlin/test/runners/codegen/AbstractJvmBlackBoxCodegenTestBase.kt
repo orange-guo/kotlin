@@ -44,7 +44,7 @@ abstract class AbstractJvmBlackBoxCodegenTestBase<R : ResultingArtifact.Frontend
     abstract val backendFacade: Constructor<BackendFacade<I, BinaryArtifacts.Jvm>>
 
     override fun TestConfigurationBuilder.configuration() {
-        commonConfigurationForTest(targetFrontend, frontendFacade, frontendToBackendConverter, backendFacade, isCodegenTest = true)
+        commonConfigurationForTest(targetFrontend, frontendFacade, frontendToBackendConverter, backendFacade)
 
         configureClassicFrontendHandlersStep {
             useHandlers(

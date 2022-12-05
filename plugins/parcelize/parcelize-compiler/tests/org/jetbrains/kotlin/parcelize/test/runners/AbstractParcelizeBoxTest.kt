@@ -54,7 +54,7 @@ abstract class AbstractParcelizeBoxTestBase<R : ResultingArtifact.FrontendOutput
             +REPORT_ONLY_EXPLICITLY_DEFINED_DEBUG_INFO
         }
 
-        commonConfigurationForTest(targetFrontend, frontendFacade, frontendToBackendConverter, backendFacade, isCodegenTest = true)
+        commonConfigurationForTest(targetFrontend, frontendFacade, frontendToBackendConverter, backendFacade)
 
         configureClassicFrontendHandlersStep {
             useHandlers(
