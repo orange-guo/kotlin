@@ -245,11 +245,11 @@ class CacheUpdater(
             for (fileDeserializer in moduleDeserializer.fileDeserializers()) {
                 val reachableSignatures = fileDeserializer.symbolDeserializer.signatureDeserializer.signatureToIndexMapping()
                 val maybeImportedSignatures = HashSet(reachableSignatures.keys)
-                val implementedSymbols = collectImplementedSymbol(fileDeserializer.symbolDeserializer.deserializedSymbols)
-                for ((signature, symbol) in implementedSymbols) {
+                val deserializedSymbols = fileDeserializer.collectDeserializedSymbols()
+                for ((signature, symbol) in deserializedSymbols) {
                     var symbolCanBeExported = maybeImportedSignatures.remove(signature)
                     resolveFakeOverrideFunction(symbol)?.let { resolvedSignature ->
-                        if (resolvedSignature !in implementedSymbols) {
+                        if (resolvedSignature !in deserializedSymbols) {
                             maybeImportedSignatures.add(resolvedSignature)
                         }
                         symbolCanBeExported = true

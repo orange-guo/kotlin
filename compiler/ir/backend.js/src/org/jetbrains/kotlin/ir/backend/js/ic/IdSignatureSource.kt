@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.ir.backend.js.ic
 
+import org.jetbrains.kotlin.backend.common.serialization.IrFileDeserializer
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.symbols.IrSymbol
@@ -50,9 +51,17 @@ internal fun resolveFakeOverrideFunction(symbol: IrSymbol): IdSignature? {
     }
 }
 
-internal fun collectImplementedSymbol(deserializedSymbols: Map<IdSignature, IrSymbol>): Map<IdSignature, IrSymbol> {
-    return HashMap<IdSignature, IrSymbol>(deserializedSymbols.size).apply {
-        for ((signature, symbol) in deserializedSymbols) {
+internal fun IrFileDeserializer.collectDeserializedSymbols(): Map<IdSignature, IrSymbol> {
+    return HashMap<IdSignature, IrSymbol>(symbolDeserializer.deserializedSymbols.size).apply {
+        for ((signature, symbol) in symbolDeserializer.deserializedSymbols) {
+            // unused unbound symbols may leave in deserializedSymbols map
+            // e.g. during loading overriddenSymbols unbound symbols may appear,
+            // however later they may be updated with others bound symbols,
+            // moreover these unbound symbols from deserializedSymbols don't appear in symbolTable as unbound symbols
+            if (!symbol.isBound) {
+                continue
+            }
+
             put(signature, symbol)
 
             fun <T> addSymbol(decl: T): Boolean where T : IrDeclarationWithVisibility, T : IrSymbolOwner {
@@ -63,7 +72,7 @@ internal fun collectImplementedSymbol(deserializedSymbols: Map<IdSignature, IrSy
                 }
 
                 val sig = decl.symbol.signature
-                if (sig != null && sig !in deserializedSymbols) {
+                if (sig != null && sig !in symbolDeserializer.deserializedSymbols) {
                     return put(sig, decl.symbol) == null
                 }
                 return false
