@@ -51,7 +51,7 @@ object JavaScopeProvider : FirScopeProvider() {
         }
     }
 
-    private fun buildJavaEnhancementScope(
+    fun buildJavaEnhancementScope(
         useSiteSession: FirSession,
         symbol: FirRegularClassSymbol,
         scopeSession: ScopeSession
@@ -69,7 +69,7 @@ object JavaScopeProvider : FirScopeProvider() {
         }
     }
 
-    private fun buildDeclaredMemberScope(useSiteSession: FirSession, regularClass: FirRegularClass): FirContainingNamesAwareScope {
+    fun buildDeclaredMemberScope(useSiteSession: FirSession, regularClass: FirRegularClass): FirContainingNamesAwareScope {
         return if (regularClass is FirJavaClass) useSiteSession.declaredMemberScopeWithLazyNestedScope(
             regularClass,
             existingNames = regularClass.existingNestedClassifierNames,

@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.analysis.api.fir.symbols.KtFirEnumEntrySymbol
 import org.jetbrains.kotlin.analysis.api.fir.symbols.KtFirFileSymbol
 import org.jetbrains.kotlin.analysis.api.fir.symbols.KtFirNamedClassOrObjectSymbol
 import org.jetbrains.kotlin.analysis.api.fir.types.KtFirType
+import org.jetbrains.kotlin.analysis.api.fir.utils.firSymbol
 import org.jetbrains.kotlin.analysis.api.impl.base.scopes.KtCompositeScope
 import org.jetbrains.kotlin.analysis.api.impl.base.scopes.KtCompositeTypeScope
 import org.jetbrains.kotlin.analysis.api.impl.base.scopes.KtEmptyScope
@@ -30,13 +31,20 @@ import org.jetbrains.kotlin.analysis.api.symbols.markers.KtSymbolWithMembers
 import org.jetbrains.kotlin.analysis.api.types.KtType
 import org.jetbrains.kotlin.analysis.low.level.api.fir.api.LLFirResolveSession
 import org.jetbrains.kotlin.analysis.utils.printer.getElementTextInContext
+import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
+import org.jetbrains.kotlin.fir.declarations.utils.classId
 import org.jetbrains.kotlin.fir.declarations.utils.delegateFields
 import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
 import org.jetbrains.kotlin.fir.expressions.FirAnonymousObjectExpression
+import org.jetbrains.kotlin.fir.java.JavaScopeProvider
+import org.jetbrains.kotlin.fir.java.declarations.FirJavaClass
+import org.jetbrains.kotlin.analysis.api.fir.scopes.JavaClassDeclaredMembersEnhancementScope
+import org.jetbrains.kotlin.fir.resolve.ScopeSession
 import org.jetbrains.kotlin.fir.resolve.calls.FirSyntheticPropertiesScope
 import org.jetbrains.kotlin.fir.resolve.scope
+import org.jetbrains.kotlin.fir.resolve.scopeSessionKey
 import org.jetbrains.kotlin.fir.resolve.substitution.ConeSubstitutor
 import org.jetbrains.kotlin.fir.scopes.FakeOverrideTypeCalculator
 import org.jetbrains.kotlin.fir.scopes.FirContainingNamesAwareScope
@@ -117,7 +125,12 @@ internal class KtFirScopeProvider(
     override fun getDeclaredMemberScope(classSymbol: KtSymbolWithMembers): KtScope {
         return declaredMemberScopeCache.getOrPut(classSymbol) {
             val firScope = classSymbol.withFirForScope {
-                analysisSession.useSiteSession.declaredMemberScope(it)
+                val useSiteSession = analysisSession.useSiteSession
+                (classSymbol.firSymbol.fir as? FirJavaClass)?.let { regularClass ->
+                    buildJavaEnhancementDeclaredMemberScope(
+                        useSiteSession, regularClass.symbol, scopeSession
+                    )
+                } ?: useSiteSession.declaredMemberScope(it)
             } ?: return@getOrPut getEmptyScope()
 
             KtFirDelegatingScope(firScope, builder, token)
@@ -248,6 +261,20 @@ internal class KtFirScopeProvider(
             else -> TODO(firScope::class.toString())
         }
     }
+
+    private fun buildJavaEnhancementDeclaredMemberScope(useSiteSession: FirSession, symbol: FirRegularClassSymbol, scopeSession: ScopeSession): JavaClassDeclaredMembersEnhancementScope {
+        return scopeSession.getOrBuild(symbol, JAVA_ENHANCEMENT_FOR_DECLARED_MEMBER) {
+            val firJavaClass = symbol.fir
+            require(firJavaClass is FirJavaClass) {
+                "${firJavaClass.classId} is expected to be FirJavaClass, but ${firJavaClass::class} found"
+            }
+            JavaClassDeclaredMembersEnhancementScope(
+                symbol,
+                JavaScopeProvider.buildDeclaredMemberScope(useSiteSession, firJavaClass),
+                JavaScopeProvider.buildJavaEnhancementScope(useSiteSession, symbol, scopeSession)
+            )
+        }
+    }
 }
 
 private class EnumEntryContainingNamesAwareScope(private val originalScope: FirContainingNamesAwareScope) : FirContainingNamesAwareScope() {
@@ -279,3 +306,5 @@ private class EnumEntryContainingNamesAwareScope(private val originalScope: FirC
         // enum entries does not have constructors
     }
 }
+
+private val JAVA_ENHANCEMENT_FOR_DECLARED_MEMBER = scopeSessionKey<FirRegularClassSymbol, JavaClassDeclaredMembersEnhancementScope>()
