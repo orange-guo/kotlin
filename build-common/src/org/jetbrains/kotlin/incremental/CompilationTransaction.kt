@@ -98,11 +98,12 @@ class RecoverableCompilationTransaction(
      * Moves the original [outputFile] to the [stashDir] instead of deleting.
      */
     override fun deleteFile(outputFile: Path) {
+        if (!Files.exists(outputFile)) {
+            return
+        }
         if (isFileRelocationIsAlreadyRegisteredFor(outputFile)) {
-            if (Files.exists(outputFile)) {
-                reporter.debug { "Deleting $outputFile" }
-                Files.delete(outputFile)
-            }
+            reporter.debug { "Deleting $outputFile" }
+            Files.delete(outputFile)
             return
         }
         reporter.measure(BuildTime.BACKUP_OUTPUT) {
