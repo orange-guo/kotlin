@@ -13,7 +13,6 @@ import org.jetbrains.kotlin.backend.wasm.utils.isCanonical
 import org.jetbrains.kotlin.ir.IrBuiltIns
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.backend.js.lower.PrimaryConstructorLowering
-import org.jetbrains.kotlin.ir.backend.js.transformers.irToJs.getSourceLocation
 import org.jetbrains.kotlin.ir.backend.js.utils.erasedUpperBound
 import org.jetbrains.kotlin.ir.backend.js.utils.findUnitGetInstanceFunction
 import org.jetbrains.kotlin.ir.backend.js.utils.isDispatchReceiver
@@ -291,7 +290,7 @@ class BodyGenerator(
             body.buildRefNull(WasmHeapType.Simple.Data)
         }
 
-        body.buildConstI32Symbol(context.referenceClassId(klassSymbol))
+        body.buildConstI32Symbol(context.referenceClassId(klassSymbol), location)
         body.buildConstI32(0, location) // Any::_hashCode
     }
 
@@ -479,14 +478,14 @@ class BodyGenerator(
                     val klass = call.getTypeArgument(0)!!.getClass()
                         ?: error("No class given for wasmClassId intrinsic")
                     assert(!klass.isInterface)
-                    body.buildConstI32Symbol(context.referenceClassId(klass.symbol))
+                    body.buildConstI32Symbol(context.referenceClassId(klass.symbol), location)
                 }
 
                 wasmSymbols.wasmInterfaceId -> {
                     val irInterface = call.getTypeArgument(0)!!.getClass()
                         ?: error("No interface given for wasmInterfaceId intrinsic")
                     assert(irInterface.isInterface)
-                    body.buildConstI32Symbol(context.referenceInterfaceId(irInterface.symbol))
+                    body.buildConstI32Symbol(context.referenceInterfaceId(irInterface.symbol), location)
                 }
 
                 wasmSymbols.wasmIsInterface -> {
@@ -557,11 +556,11 @@ class BodyGenerator(
                 wasmSymbols.unsafeGetScratchRawMemory -> {
                     // TODO: This drops size of the allocated segment. Instead we can check that it's in bounds for better error messages.
                     body.buildDrop()
-                    body.buildConstI32Symbol(context.scratchMemAddr)
+                    body.buildConstI32Symbol(context.scratchMemAddr, location)
                 }
 
                 wasmSymbols.unsafeGetScratchRawMemorySize -> {
-                    body.buildConstI32Symbol(WasmSymbol(context.scratchMemSizeInBytes))
+                    body.buildConstI32Symbol(WasmSymbol(context.scratchMemSizeInBytes), location)
                 }
 
                 wasmSymbols.wasmArrayCopy -> {
@@ -572,7 +571,7 @@ class BodyGenerator(
                 }
 
                 wasmSymbols.stringGetPoolSize -> {
-                    body.buildConstI32Symbol(context.stringPoolSize)
+                    body.buildConstI32Symbol(context.stringPoolSize, location)
                 }
 
                 wasmSymbols.wasmArrayNewData0 -> {
