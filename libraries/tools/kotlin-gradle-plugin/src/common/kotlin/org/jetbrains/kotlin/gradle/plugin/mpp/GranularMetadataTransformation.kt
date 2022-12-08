@@ -100,17 +100,9 @@ internal sealed class MetadataDependencyResolution(
 internal class GranularMetadataTransformation(
     val project: Project,
     val kotlinSourceSet: KotlinSourceSet,
-    /** A list of scopes that the dependencies from [kotlinSourceSet] are treated as requested dependencies. */
-    private val sourceSetRequestedScopes: List<KotlinDependencyScope>,
     /** A configuration that holds the dependencies of the appropriate scope for all Kotlin source sets in the project */
     private val parentTransformations: Lazy<Iterable<GranularMetadataTransformation>>
 ) {
-    init {
-        require(KotlinDependencyScope.RUNTIME_ONLY_SCOPE !in sourceSetRequestedScopes) {
-            "KT-55230: RuntimeOnly scope is not supported for metadata dependency transformation"
-        }
-    }
-
     val metadataDependencyResolutions: Iterable<MetadataDependencyResolution> by lazy { doTransform() }
 
     // Keep parents of each dependency, too. We need a dependency's parent when it's an MPP's metadata module dependency:
@@ -121,12 +113,12 @@ internal class GranularMetadataTransformation(
     )
 
     private val requestedDependencies: Iterable<Dependency> by lazy {
-        requestedDependencies(project, kotlinSourceSet, sourceSetRequestedScopes)
+        requestedDependencies(project, kotlinSourceSet)
     }
 
-    internal val configurationToResolve: Configuration by lazy {
-        resolvableMetadataConfigurationForDependencies(project, requestedDependencies)
-    }
+    internal val configurationToResolve: Configuration = project
+        .configurations
+        .getByName(kotlinSourceSet.metadataLibrariesConfigurationName)
 
     private fun doTransform(): Iterable<MetadataDependencyResolution> {
         val result = mutableListOf<MetadataDependencyResolution>()
@@ -237,7 +229,6 @@ internal class GranularMetadataTransformation(
         val sourceSetVisibility =
             SourceSetVisibilityProvider(project).getVisibleSourceSets(
                 kotlinSourceSet,
-                sourceSetRequestedScopes,
                 if (projectStructureMetadata.isPublishedAsRoot) module else parent, module,
                 projectStructureMetadata,
                 resolvedToProject
@@ -312,7 +303,7 @@ internal fun resolvableMetadataConfigurationForSourceSets(
     sourceSets: Iterable<KotlinSourceSet>,
 ): Configuration = resolvableMetadataConfigurationForDependencies(
     project,
-    sourceSets.flatMapTo(mutableListOf()) { requestedDependencies(project, it, KotlinDependencyScope.compileScopes) }
+    sourceSets.flatMapTo(mutableListOf()) { requestedDependencies(project, it) }
 )
 
 /** If a source set is not a published source set, its dependencies are not included in [allSourceSetsConfiguration].
@@ -347,13 +338,10 @@ internal fun resolvableMetadataConfigurationForDependencies(
 
 internal fun requestedDependencies(
     project: Project,
-    sourceSet: KotlinSourceSet,
-    requestedScopes: Iterable<KotlinDependencyScope>
+    sourceSet: KotlinSourceSet
 ): Iterable<Dependency> {
     fun collectScopedDependenciesFromSourceSet(sourceSet: KotlinSourceSet): Set<Dependency> =
-        requestedScopes.flatMapTo(mutableSetOf()) { scope ->
-            project.configurations.sourceSetDependencyConfigurationByScope(sourceSet, scope).incoming.dependencies
-        }
+        project.configurations.getByName(sourceSet.metadataLibrariesConfigurationName).incoming.dependencies
 
     val otherContributingSourceSets = dependsOnClosureWithInterCompilationDependencies(sourceSet)
     return listOf(sourceSet, *otherContributingSourceSets.toTypedArray()).flatMap(::collectScopedDependenciesFromSourceSet)

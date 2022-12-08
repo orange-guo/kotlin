@@ -185,8 +185,7 @@ class GradleProjectModuleBuilder(private val addInferredSourceSetVisibilityAsExp
                     moduleByFragment[fragment] = this@apply
                     fragment.kotlinSourceRoots = sourceSet.kotlin.sourceDirectories.toList()
 
-                    // FIXME: Kotlin/Native implementation-effective-api dependencies are missing here. Introduce dependency scopes
-                    requestedDependencies(project, sourceSet, listOf(KotlinDependencyScope.API_SCOPE)).forEach {
+                    requestedDependencies(project, sourceSet).forEach {
                         val moduleDependency = it.toKpmModuleDependency(project)
                         fragment.declaredModuleDependencies.add(moduleDependency)
                     }
