@@ -104,9 +104,27 @@ public class FirStandaloneNormalAnalysisSourceModuleAnalysisApiAnnotationsOnDecl
         }
 
         @Test
+        @TestMetadata("varargComplexParameter.kt")
+        public void testVarargComplexParameter() throws Exception {
+            runTest("analysis/analysis-api/testData/annotations/annotationsOnDeclaration/direct/varargComplexParameter.kt");
+        }
+
+        @Test
+        @TestMetadata("varargNamedParameter.kt")
+        public void testVarargNamedParameter() throws Exception {
+            runTest("analysis/analysis-api/testData/annotations/annotationsOnDeclaration/direct/varargNamedParameter.kt");
+        }
+
+        @Test
         @TestMetadata("varargParameter.kt")
         public void testVarargParameter() throws Exception {
             runTest("analysis/analysis-api/testData/annotations/annotationsOnDeclaration/direct/varargParameter.kt");
+        }
+
+        @Test
+        @TestMetadata("varargSpreadParameter.kt")
+        public void testVarargSpreadParameter() throws Exception {
+            runTest("analysis/analysis-api/testData/annotations/annotationsOnDeclaration/direct/varargSpreadParameter.kt");
         }
     }
 
