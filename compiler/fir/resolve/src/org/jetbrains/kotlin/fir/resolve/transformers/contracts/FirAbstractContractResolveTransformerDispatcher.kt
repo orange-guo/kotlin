@@ -153,7 +153,9 @@ abstract class FirAbstractContractResolveTransformerDispatcher(
             } finally {
                 contractMode = true
             }
-            val resolvedId = contractCall.toResolvedCallableSymbol()?.callableId ?: return transformOwnerWithUnresolvedContract(owner)
+            dataFlowAnalyzer.exitContractDescription()
+
+            val resolvedId = contractCall.toResolvedCallableSymbol()?.callableId
             if (resolvedId != FirContractsDslNames.CONTRACT) return transformOwnerWithUnresolvedContract(owner)
             if (contractCall.arguments.size != 1) return transformOwnerOfErrorContract(owner)
             val argument = contractCall.argument as? FirLambdaArgumentExpression ?: return transformOwnerOfErrorContract(owner)
@@ -173,7 +175,6 @@ abstract class FirAbstractContractResolveTransformerDispatcher(
                 this.source = owner.contractDescription.source
             }
             owner.replaceContractDescription(resolvedContractDescription)
-            dataFlowAnalyzer.exitContractDescription()
             return owner
         }
 
@@ -229,12 +230,10 @@ abstract class FirAbstractContractResolveTransformerDispatcher(
                     val functionCall = contractDescription.contractCall
                     owner.replaceContractDescription(FirEmptyContractDescription)
                     owner.body.replaceFirstStatement(functionCall)
-                    dataFlowAnalyzer.exitContractDescription()
                     owner
                 }
                 is FirRawContractDescription -> { // new syntax contract description
                     owner.replaceContractDescription(FirEmptyContractDescription)
-                    dataFlowAnalyzer.exitContractDescription()
                     owner
                 }
                 else -> owner // TODO: change
@@ -279,7 +278,6 @@ abstract class FirAbstractContractResolveTransformerDispatcher(
 
         private fun <T : FirContractDescriptionOwner> transformOwnerOfErrorContract(owner: T): T {
             // TODO
-            dataFlowAnalyzer.exitContractDescription()
             return owner
         }
 
