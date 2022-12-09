@@ -537,19 +537,14 @@ open class FirDeclarationsResolveTransformer(transformer: FirAbstractBodyResolve
         regularClass: FirRegularClass,
         data: ResolutionMode
     ): FirRegularClass {
-        dataFlowAnalyzer.enterClass()
-
+        dataFlowAnalyzer.enterClass(regularClass, !implicitTypeOnly)
         val result = context.withRegularClass(regularClass, components) {
             transformDeclarationContent(regularClass, data) as FirRegularClass
         }
-
-        if (!implicitTypeOnly) {
-            val controlFlowGraph = dataFlowAnalyzer.exitRegularClass(result)
+        val controlFlowGraph = dataFlowAnalyzer.exitClass()
+        if (controlFlowGraph != null) {
             result.replaceControlFlowGraphReference(FirControlFlowGraphReferenceImpl(controlFlowGraph))
-        } else {
-            dataFlowAnalyzer.exitClass()
         }
-
         return result
     }
 
@@ -566,19 +561,15 @@ open class FirDeclarationsResolveTransformer(transformer: FirAbstractBodyResolve
                 transformer.firProviderInterceptor
             )
         }
-        if (!implicitTypeOnly && anonymousObject.controlFlowGraphReference == null) {
-            dataFlowAnalyzer.enterAnonymousObject(anonymousObject)
-        } else {
-            dataFlowAnalyzer.enterClass()
-        }
+        // TODO: why would there be a graph already?
+        val buildGraph = !implicitTypeOnly && anonymousObject.controlFlowGraphReference == null
+        dataFlowAnalyzer.enterClass(anonymousObject, buildGraph)
         val result = context.withAnonymousObject(anonymousObject, components) {
             transformDeclarationContent(anonymousObject, data) as FirAnonymousObject
         }
-        if (!implicitTypeOnly && result.controlFlowGraphReference == null) {
-            val graph = dataFlowAnalyzer.exitAnonymousObject(result)
+        val graph = dataFlowAnalyzer.exitClass()
+        if (graph != null) {
             result.replaceControlFlowGraphReference(FirControlFlowGraphReferenceImpl(graph))
-        } else {
-            dataFlowAnalyzer.exitClass()
         }
         return result
     }
