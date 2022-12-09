@@ -138,7 +138,7 @@ class JsEnvironmentConfigurator(testServices: TestServices) : EnvironmentConfigu
             val inferMainModule = JsEnvironmentConfigurationDirectives.INFER_MAIN_MODULE in testServices.moduleStructure.allDirectives
             return when {
                 inferMainModule -> modules.last()
-                else -> modules.singleOrNull { it.name == ModuleStructureExtractor.DEFAULT_MODULE_NAME } ?: modules.single()
+                else -> modules.singleOrNull { it.name == ModuleStructureExtractor.DEFAULT_MODULE_NAME } ?: modules.last()
             }
         }
 

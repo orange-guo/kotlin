@@ -5,31 +5,21 @@
 
 package org.jetbrains.kotlin.test.frontend.fir
 
+import org.jetbrains.kotlin.KtSourceFile
 import org.jetbrains.kotlin.backend.common.serialization.signature.IdSignatureDescriptor
 import org.jetbrains.kotlin.builtins.DefaultBuiltIns
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.codegen.state.GenerationState
-import org.jetbrains.kotlin.config.CommonConfigurationKeys
-import org.jetbrains.kotlin.config.CompilerConfiguration
-import org.jetbrains.kotlin.config.LanguageVersionSettings
-import org.jetbrains.kotlin.config.languageVersionSettings
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.config.*
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl
 import org.jetbrains.kotlin.fir.AbstractFirAnalyzerFacade
 import org.jetbrains.kotlin.fir.FirAnalyzerFacade
-import org.jetbrains.kotlin.fir.FirSession
-import org.jetbrains.kotlin.fir.backend.Fir2IrConverter
-import org.jetbrains.kotlin.fir.backend.Fir2IrExtensions
-import org.jetbrains.kotlin.fir.backend.Fir2IrResult
-import org.jetbrains.kotlin.fir.backend.Fir2IrVisibilityConverter
+import org.jetbrains.kotlin.fir.backend.*
 import org.jetbrains.kotlin.fir.backend.jvm.Fir2IrJvmSpecialAnnotationSymbolProvider
 import org.jetbrains.kotlin.fir.backend.jvm.FirJvmKotlinMangler
 import org.jetbrains.kotlin.fir.declarations.FirFile
 import org.jetbrains.kotlin.fir.descriptors.FirModuleDescriptor
-import org.jetbrains.kotlin.fir.moduleData
-import org.jetbrains.kotlin.fir.resolve.providers.firProvider
-import org.jetbrains.kotlin.fir.resolve.providers.impl.FirProviderImpl
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.ir.backend.js.JsFactories
 import org.jetbrains.kotlin.ir.backend.js.getSerializedData
@@ -37,8 +27,9 @@ import org.jetbrains.kotlin.ir.backend.js.incrementalDataProvider
 import org.jetbrains.kotlin.ir.backend.js.lower.serialization.ir.JsManglerDesc
 import org.jetbrains.kotlin.ir.backend.js.lower.serialization.ir.JsManglerIr
 import org.jetbrains.kotlin.ir.backend.js.serializeSingleFirFile
+import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 import org.jetbrains.kotlin.ir.declarations.impl.IrFactoryImpl
-import org.jetbrains.kotlin.ir.symbols.IrSymbol
+import org.jetbrains.kotlin.ir.util.SymbolTable
 import org.jetbrains.kotlin.library.resolver.KotlinResolvedLibrary
 import org.jetbrains.kotlin.library.unresolvedDependencies
 import org.jetbrains.kotlin.storage.LockBasedStorageManager
@@ -62,31 +53,62 @@ class Fir2IrJsResultsConverter(
         module: TestModule,
         inputArtifact: FirOutputArtifact
     ): IrBackendInput {
-        val compilerConfigurationProvider = testServices.compilerConfigurationProvider
-        val configuration = compilerConfigurationProvider.getCompilerConfiguration(module)
+        val isMppSupported = module.languageVersionSettings.supportsFeature(LanguageFeature.MultiPlatformProjects)
+        val configuration = testServices.compilerConfigurationProvider.getCompilerConfiguration(module)
 
-        val fir2IrExtensions = Fir2IrExtensions.Default
-        val firFiles = inputArtifact.allFirFiles.values
-        val (irModuleFragment, components) =
-            inputArtifact.partsForDependsOnModules.last().firAnalyzerFacade.convertToJsIr(firFiles, fir2IrExtensions, module, configuration, testServices)
+        val componentsMap = mutableMapOf<String, Fir2IrComponents>()
+        val irFragments = mutableListOf<IrModuleFragment>()
+        val sourceFiles = mutableListOf<KtSourceFile>()
+        val firFilesBySourceFile = mutableMapOf<KtSourceFile?, FirFile>()
+        val fileComponents = mutableMapOf<FirFile, Fir2IrComponents>()
+        var symbolTable: SymbolTable? = null
 
-        val sourceFiles = firFiles.mapNotNull { it.sourceFile }
-        val firFilesBySourceFile = firFiles.associateBy { it.sourceFile }
+        for (part in inputArtifact.partsForDependsOnModules) {
+            val dependentComponents = mutableListOf<Fir2IrComponents>()
+            if (isMppSupported) {
+                for (dependency in part.module.dependsOnDependencies) {
+                    dependentComponents.add(componentsMap[dependency.moduleName]!!)
+                }
+            }
 
-        val icData = configuration.incrementalDataProvider?.getSerializedData(sourceFiles) ?: emptyList()
-        val expectDescriptorToSymbol = mutableMapOf<DeclarationDescriptor, IrSymbol>()
+            val (irModuleFragment, components) =
+                part.firAnalyzerFacade.convertToJsIr(
+                    part.firFiles.values,
+                    fir2IrExtensions = Fir2IrExtensions.Default,
+                    module,
+                    configuration,
+                    testServices,
+                    dependentComponents,
+                    generateSignatures = isMppSupported
+                )
+            componentsMap[part.module.name] = components
+            symbolTable = components.symbolTable
+
+            irFragments.add(irModuleFragment)
+
+            sourceFiles.addAll(part.firFiles.mapNotNull { it.value.sourceFile })
+
+            for (firFile in part.firFiles.values) {
+                firFilesBySourceFile[firFile.sourceFile] = firFile
+                fileComponents[firFile] = components
+            }
+        }
+
         val metadataVersion =
             configuration.get(CommonConfigurationKeys.METADATA_VERSION)
                 ?: GenerationState.LANGUAGE_TO_METADATA_VERSION.getValue(module.languageVersionSettings.languageVersion)
 
         return IrBackendInput.JsIrBackendInput(
-            irModuleFragment,
+            module,
+            irFragments,
             sourceFiles,
-            icData,
-            expectDescriptorToSymbol,
-            hasErrors = false // TODO: implement error check
+            configuration.incrementalDataProvider?.getSerializedData(sourceFiles) ?: emptyList(),
+            expectDescriptorToSymbol = mutableMapOf(),
+            hasErrors = false, // TODO: implement error check
+            symbolTable!!
         ) { file ->
             val firFile = firFilesBySourceFile[file] ?: error("cannot find FIR file by source file ${file.name} (${file.path})")
+            val components = fileComponents[firFile]!!
             serializeSingleFirFile(firFile, components.session, components.scopeSession, metadataVersion)
         }
     }
@@ -97,21 +119,19 @@ fun AbstractFirAnalyzerFacade.convertToJsIr(
     fir2IrExtensions: Fir2IrExtensions,
     module: TestModule,
     configuration: CompilerConfiguration,
-    testServices: TestServices
+    testServices: TestServices,
+    depenentComponents: List<Fir2IrComponents>,
+    generateSignatures: Boolean
 ): Fir2IrResult {
     this as FirAnalyzerFacade
     val signaturer = IdSignatureDescriptor(JsManglerDesc)
-    val commonFirFiles = session.moduleData.dependsOnDependencies
-        .map { it.session }
-        .filter { it.kind == FirSession.Kind.Source }
-        .flatMap { (it.firProvider as FirProviderImpl).getAllFirFiles() }
 
     // TODO: consider avoiding repeated libraries resolution
     val libraries = resolveJsLibraries(module, testServices, configuration)
     val (dependencies, builtIns) = loadResolvedLibraries(libraries, configuration.languageVersionSettings, testServices)
 
     return Fir2IrConverter.createModuleFragmentWithSignaturesIfNeeded(
-        session, scopeSession, firFiles + commonFirFiles,
+        session, scopeSession, firFiles.toList(),
         languageVersionSettings, signaturer,
         fir2IrExtensions,
         FirJvmKotlinMangler(session), // TODO: replace with potentially simpler JS version
@@ -119,9 +139,9 @@ fun AbstractFirAnalyzerFacade.convertToJsIr(
         Fir2IrVisibilityConverter.Default,
         Fir2IrJvmSpecialAnnotationSymbolProvider(), // TODO: replace with appropriate (probably empty) implementation
         irGeneratorExtensions,
-        generateSignatures = false,
+        generateSignatures = generateSignatures,
         kotlinBuiltIns = builtIns ?: DefaultBuiltIns.Instance, // TODO: consider passing externally,
-        dependentComponents = emptyList()
+        dependentComponents = depenentComponents
     ).also {
         (it.irModuleFragment.descriptor as? FirModuleDescriptor)?.let { it.allDependencyModules = dependencies }
     }

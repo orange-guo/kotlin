@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.test.services.impl
 
+import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.platform.CommonPlatforms
 import org.jetbrains.kotlin.platform.TargetPlatform
 import org.jetbrains.kotlin.platform.js.JsPlatforms
@@ -333,13 +334,18 @@ class ModuleStructureExtractorImpl(
                 languageVersionSettings = currentModuleLanguageVersionSettingsBuilder.build()
             )
             modules += testModule
-            additionalSourceProviders.flatMapTo(filesOfCurrentModule) { additionalSourceProvider ->
-                additionalSourceProvider.produceAdditionalFiles(
-                    globalDirectives ?: RegisteredDirectives.Empty,
-                    testModule
-                ).also { additionalFiles ->
-                    require(additionalFiles.all { it.isAdditional }) {
-                        "Files produced by ${additionalSourceProvider::class.qualifiedName} should have flag `isAdditional = true`"
+            if (testModule.frontendKind != FrontendKinds.FIR ||
+                !testModule.languageVersionSettings.supportsFeature(LanguageFeature.MultiPlatformProjects) ||
+                testModule.dependsOnDependencies.isEmpty()
+            ) {
+                additionalSourceProviders.flatMapTo(filesOfCurrentModule) { additionalSourceProvider ->
+                    additionalSourceProvider.produceAdditionalFiles(
+                        globalDirectives ?: RegisteredDirectives.Empty,
+                        testModule
+                    ).also { additionalFiles ->
+                        require(additionalFiles.all { it.isAdditional }) {
+                            "Files produced by ${additionalSourceProvider::class.qualifiedName} should have flag `isAdditional = true`"
+                        }
                     }
                 }
             }

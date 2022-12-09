@@ -7,7 +7,6 @@ package org.jetbrains.kotlin.backend.common
 
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 import org.jetbrains.kotlin.ir.util.SymbolTable
-import org.jetbrains.kotlin.platform.isCommon
 
 object IrActualizer {
     fun actualize(mainFragment: IrModuleFragment, mainSymbolTable: SymbolTable, dependentFragments: List<IrModuleFragment>) {
@@ -18,13 +17,11 @@ object IrActualizer {
     private fun linkExpectToActual(mainSymbolTable: SymbolTable, dependentFragments: List<IrModuleFragment>) {
         val actualizer = IrActualizerTransformer(mainSymbolTable)
         for (dependentFragment in dependentFragments) {
-            if (dependentFragment.descriptor.platform.isCommon()) {
-                dependentFragment.transform(actualizer, null)
-            }
+            dependentFragment.transform(actualizer, null)
         }
     }
 
     private fun mergeIrFragments(mainFragment: IrModuleFragment, dependentFragments: List<IrModuleFragment>) {
-        mainFragment.files.addAll(dependentFragments.flatMap { it.files })
+        mainFragment.files.addAll(0, dependentFragments.flatMap { it.files })
     }
 }

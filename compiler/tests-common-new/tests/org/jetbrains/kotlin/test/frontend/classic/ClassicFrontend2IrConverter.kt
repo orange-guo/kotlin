@@ -81,7 +81,7 @@ class ClassicFrontend2IrConverter(
         val sourceFiles = psiFiles.values.toList()
         val icData = configuration.incrementalDataProvider?.getSerializedData(sourceFiles) ?: emptyList()
         val expectDescriptorToSymbol = mutableMapOf<DeclarationDescriptor, IrSymbol>()
-        val moduleFragment = generateIrForKlibSerialization(
+        val (moduleFragment, symbolTable) = generateIrForKlibSerialization(
             project,
             sourceFiles,
             configuration,
@@ -100,11 +100,13 @@ class ClassicFrontend2IrConverter(
         val metadataSerializer = KlibMetadataIncrementalSerializer(configuration, project, hasErrors)
 
         return IrBackendInput.JsIrBackendInput(
-            moduleFragment,
+            module,
+            listOf(moduleFragment),
             sourceFiles.map(::KtPsiSourceFile),
             icData,
             expectDescriptorToSymbol = expectDescriptorToSymbol,
-            hasErrors
+            hasErrors,
+            symbolTable
         ) { file ->
             metadataSerializer.serializeScope(file, analysisResult.bindingContext, moduleFragment.descriptor)
         }

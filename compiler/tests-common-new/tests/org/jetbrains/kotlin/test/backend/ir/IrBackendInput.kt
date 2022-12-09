@@ -12,9 +12,11 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.ir.backend.js.KotlinFileSerializedData
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 import org.jetbrains.kotlin.ir.symbols.IrSymbol
+import org.jetbrains.kotlin.ir.util.SymbolTable
 import org.jetbrains.kotlin.metadata.ProtoBuf
 import org.jetbrains.kotlin.test.model.BackendKinds
 import org.jetbrains.kotlin.test.model.ResultingArtifact
+import org.jetbrains.kotlin.test.model.TestModule
 
 // IR backend (JVM, JS, Native)
 sealed class IrBackendInput : ResultingArtifact.BackendInput<IrBackendInput>() {
@@ -24,13 +26,18 @@ sealed class IrBackendInput : ResultingArtifact.BackendInput<IrBackendInput>() {
     abstract val irModuleFragment: IrModuleFragment
 
     data class JsIrBackendInput(
-        override val irModuleFragment: IrModuleFragment,
+        val module: TestModule,
+        val irModuleFragments: List<IrModuleFragment>,
         val sourceFiles: List<KtSourceFile>,
         val icData: List<KotlinFileSerializedData>,
         val expectDescriptorToSymbol: MutableMap<DeclarationDescriptor, IrSymbol>, // TODO: abstract from descriptors
         val hasErrors: Boolean,
+        val symbolTable: SymbolTable,
         val serializeSingleFile: (KtSourceFile) -> ProtoBuf.PackageFragment
-    ) : IrBackendInput()
+    ) : IrBackendInput() {
+        override val irModuleFragment: IrModuleFragment
+            get() = irModuleFragments.last()
+    }
 
     data class JvmIrBackendInput(
         val state: GenerationState,

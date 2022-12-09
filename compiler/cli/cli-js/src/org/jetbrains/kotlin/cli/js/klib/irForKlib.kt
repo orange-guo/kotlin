@@ -53,7 +53,7 @@ fun generateIrForKlibSerialization(
     irFactory: IrFactory,
     verifySignatures: Boolean = true,
     getDescriptorByLibrary: (KotlinLibrary) -> ModuleDescriptor,
-): IrModuleFragment {
+): Pair<IrModuleFragment, SymbolTable> {
     val errorPolicy = configuration.get(JSConfigurationKeys.ERROR_TOLERANCE_POLICY) ?: ErrorTolerancePolicy.DEFAULT
     val messageLogger = configuration.get(IrMessageLogger.IR_MESSAGE_LOGGER) ?: IrMessageLogger.None
     val allowUnboundSymbols = configuration[JSConfigurationKeys.PARTIAL_LINKAGE] ?: false
@@ -95,6 +95,6 @@ fun generateIrForKlibSerialization(
         moduleFragment.transform(ExpectDeclarationRemover(psi2IrContext.symbolTable, false), null)
     }
 
-    return moduleFragment
+    return moduleFragment to symbolTable
 }
 
