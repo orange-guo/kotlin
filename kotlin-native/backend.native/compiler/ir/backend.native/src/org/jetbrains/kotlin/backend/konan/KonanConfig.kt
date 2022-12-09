@@ -415,9 +415,10 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
             append("-freezing=${freezing.name}")
     }
 
-    private val systemRootCacheDirectory = File(distribution.konanHome).child("klib").child("cache")
-    internal val systemCacheDirectory = systemRootCacheDirectory.child(systemCacheFlavorString)
-    internal val autoCacheDirectory = systemRootCacheDirectory.child(userCacheFlavorString)
+    private val systemCacheRootDirectory = File(distribution.konanHome).child("klib").child("cache")
+    internal val systemCacheDirectory = systemCacheRootDirectory.child(systemCacheFlavorString)
+    private val autoCacheRootDirectory = configuration.get(KonanConfigKeys.AUTO_CACHE_DIR)?.let { File(it) } ?: systemCacheRootDirectory
+    internal val autoCacheDirectory = autoCacheRootDirectory.child(userCacheFlavorString)
 
     internal val ignoreCacheReason = when {
         optimizationsEnabled -> "for optimized compilation"

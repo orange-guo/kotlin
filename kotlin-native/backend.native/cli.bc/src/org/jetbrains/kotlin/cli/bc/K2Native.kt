@@ -315,6 +315,7 @@ class K2Native : CLICompiler<K2NativeCompilerArguments>() {
                 put(CACHED_LIBRARIES, parseCachedLibraries(arguments, configuration))
                 put(CACHE_DIRECTORIES, arguments.cacheDirectories.toNonNullList())
                 put(AUTO_CACHEABLE_FROM, arguments.autoCacheableFrom.toNonNullList())
+                arguments.autoCacheDir?.let { put(AUTO_CACHE_DIR, it) }
                 arguments.filesToCache?.let { put(FILES_TO_CACHE, it.toList()) }
                 put(MAKE_PER_FILE_CACHE, arguments.makePerFileCache)
 
