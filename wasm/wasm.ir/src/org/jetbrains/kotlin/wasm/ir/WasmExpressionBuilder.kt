@@ -36,8 +36,8 @@ abstract class WasmExpressionBuilder {
         buildInstr(WasmOp.I32_CONST, location, WasmImmediate.SymbolI32(value))
     }
 
-    fun buildUnreachable() {
-        buildInstr(WasmOp.UNREACHABLE)
+    fun buildUnreachable(location: SourceLocation) {
+        buildInstr(WasmOp.UNREACHABLE, location)
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -178,4 +178,17 @@ abstract class WasmExpressionBuilder {
     fun buildDrop() {
         buildInstr(WasmOp.DROP)
     }
+}
+
+fun WasmExpressionBuilder.buildUnreachableForVerifier() {
+    buildUnreachable(SourceLocation.NoLocation("This instruction should never be reached, but required for wasm verifier"))
+}
+
+fun WasmExpressionBuilder.buildUnreachableAfterNothingType() {
+    buildUnreachable(
+        SourceLocation.NoLocation(
+            "The unreachable instruction after an expression with Nothing type to make sure that " +
+                    "execution doesn't come here (or it fails fast if so). It also might be required for wasm verifier."
+        )
+    )
 }
