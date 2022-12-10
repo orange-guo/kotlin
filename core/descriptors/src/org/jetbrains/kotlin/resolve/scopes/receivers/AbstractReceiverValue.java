@@ -40,4 +40,16 @@ public abstract class AbstractReceiverValue implements ReceiverValue {
     public ReceiverValue getOriginal() {
         return original;
     }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        return original == ((AbstractReceiverValue) o).original;
+    }
+
+    @Override
+    public final int hashCode() {
+        return System.identityHashCode(original);
+    }
 }
