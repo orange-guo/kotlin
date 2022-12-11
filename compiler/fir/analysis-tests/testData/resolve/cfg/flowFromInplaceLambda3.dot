@@ -80,27 +80,27 @@ digraph flowFromInplaceLambda3_kt {
             27 [label="Postponed enter to lambda"];
             subgraph cluster_10 {
                 color=blue
-                38 [label="Enter function anonymousFunction" style="filled" fillcolor=red];
+                28 [label="Enter function anonymousFunction" style="filled" fillcolor=red];
                 subgraph cluster_11 {
                     color=blue
-                    39 [label="Enter block"];
-                    40 [label="Const: Int(1)"];
-                    41 [label="Assignment: R|<local>/x|"];
-                    42 [label="Exit block"];
+                    29 [label="Enter block"];
+                    30 [label="Const: Int(1)"];
+                    31 [label="Assignment: R|<local>/x|"];
+                    32 [label="Exit block"];
                 }
-                43 [label="Exit function anonymousFunction" style="filled" fillcolor=red];
+                33 [label="Exit function anonymousFunction" style="filled" fillcolor=red];
             }
-            28 [label="Postponed exit from lambda"];
-            29 [label="Function call: R|/unknown|(...)" style="filled" fillcolor=yellow];
-            30 [label="Access variable R|<local>/x|"];
-            31 [label="Smart cast: R|<local>/x|"];
-            32 [label="Access variable <Unresolved name: length>#"];
-            33 [label="Access variable R|<local>/x|"];
-            34 [label="Smart cast: R|<local>/x|"];
-            35 [label="Function call: R|<local>/x|.<Unresolved name: inc>#()" style="filled" fillcolor=yellow];
-            36 [label="Exit block"];
+            34 [label="Postponed exit from lambda"];
+            35 [label="Function call: R|/unknown|(...)" style="filled" fillcolor=yellow];
+            36 [label="Access variable R|<local>/x|"];
+            37 [label="Smart cast: R|<local>/x|"];
+            38 [label="Access variable <Unresolved name: length>#"];
+            39 [label="Access variable R|<local>/x|"];
+            40 [label="Smart cast: R|<local>/x|"];
+            41 [label="Function call: R|<local>/x|.<Unresolved name: inc>#()" style="filled" fillcolor=yellow];
+            42 [label="Exit block"];
         }
-        37 [label="Exit function test1" style="filled" fillcolor=red];
+        43 [label="Exit function test1" style="filled" fillcolor=red];
     }
     19 -> {20};
     20 -> {21};
@@ -110,24 +110,24 @@ digraph flowFromInplaceLambda3_kt {
     24 -> {25};
     25 -> {26};
     26 -> {27};
-    27 -> {28 29 38};
-    27 -> {38} [style=dashed];
+    27 -> {28 34 35};
+    27 -> {28} [style=dashed];
     28 -> {29};
-    28 -> {27} [color=green style=dashed];
     29 -> {30};
     30 -> {31};
     31 -> {32};
     32 -> {33};
     33 -> {34};
     34 -> {35};
+    34 -> {27} [color=green style=dashed];
     35 -> {36};
     36 -> {37};
+    37 -> {38};
     38 -> {39};
     39 -> {40};
     40 -> {41};
     41 -> {42};
     42 -> {43};
-    43 -> {28};
 
     subgraph cluster_12 {
         color=red
@@ -144,24 +144,24 @@ digraph flowFromInplaceLambda3_kt {
             52 [label="Postponed enter to lambda"];
             subgraph cluster_14 {
                 color=blue
-                60 [label="Enter function anonymousFunction" style="filled" fillcolor=red];
+                53 [label="Enter function anonymousFunction" style="filled" fillcolor=red];
                 subgraph cluster_15 {
                     color=blue
-                    61 [label="Enter block"];
-                    62 [label="Const: String()"];
-                    63 [label="Assignment: R|<local>/x|"];
-                    64 [label="Exit block"];
+                    54 [label="Enter block"];
+                    55 [label="Const: String()"];
+                    56 [label="Assignment: R|<local>/x|"];
+                    57 [label="Exit block"];
                 }
-                65 [label="Exit function anonymousFunction" style="filled" fillcolor=red];
+                58 [label="Exit function anonymousFunction" style="filled" fillcolor=red];
             }
-            53 [label="Postponed exit from lambda"];
-            54 [label="Function call: R|/unknown|(...)" style="filled" fillcolor=yellow];
-            55 [label="Access variable R|<local>/x|"];
-            56 [label="Smart cast: R|<local>/x|"];
-            57 [label="Access variable R|kotlin/String.length|"];
-            58 [label="Exit block"];
+            59 [label="Postponed exit from lambda"];
+            60 [label="Function call: R|/unknown|(...)" style="filled" fillcolor=yellow];
+            61 [label="Access variable R|<local>/x|"];
+            62 [label="Smart cast: R|<local>/x|"];
+            63 [label="Access variable R|kotlin/String.length|"];
+            64 [label="Exit block"];
         }
-        59 [label="Exit function test1m" style="filled" fillcolor=red];
+        65 [label="Exit function test1m" style="filled" fillcolor=red];
     }
     44 -> {45};
     45 -> {46};
@@ -171,21 +171,21 @@ digraph flowFromInplaceLambda3_kt {
     49 -> {50};
     50 -> {51};
     51 -> {52};
-    52 -> {53 54 60};
-    52 -> {60} [style=dashed];
+    52 -> {53 59 60};
+    52 -> {53} [style=dashed];
     53 -> {54};
-    53 -> {52} [color=green style=dashed];
     54 -> {55};
     55 -> {56};
     56 -> {57};
     57 -> {58};
     58 -> {59};
+    59 -> {60};
+    59 -> {52} [color=green style=dashed];
     60 -> {61};
     61 -> {62};
     62 -> {63};
     63 -> {64};
     64 -> {65};
-    65 -> {53};
 
     subgraph cluster_16 {
         color=red
@@ -202,27 +202,27 @@ digraph flowFromInplaceLambda3_kt {
             74 [label="Postponed enter to lambda"];
             subgraph cluster_18 {
                 color=blue
-                85 [label="Enter function anonymousFunction" style="filled" fillcolor=red];
+                75 [label="Enter function anonymousFunction" style="filled" fillcolor=red];
                 subgraph cluster_19 {
                     color=blue
-                    86 [label="Enter block"];
-                    87 [label="Const: Int(1)"];
-                    88 [label="Assignment: R|<local>/x|"];
-                    89 [label="Exit block"];
+                    76 [label="Enter block"];
+                    77 [label="Const: Int(1)"];
+                    78 [label="Assignment: R|<local>/x|"];
+                    79 [label="Exit block"];
                 }
-                90 [label="Exit function anonymousFunction" style="filled" fillcolor=red];
+                80 [label="Exit function anonymousFunction" style="filled" fillcolor=red];
             }
-            75 [label="Postponed exit from lambda"];
-            76 [label="Function call: R|/atLeastOnce|(...)" style="filled" fillcolor=yellow];
-            77 [label="Access variable R|<local>/x|"];
-            78 [label="Smart cast: R|<local>/x|"];
-            79 [label="Access variable <Unresolved name: length>#"];
-            80 [label="Access variable R|<local>/x|"];
-            81 [label="Smart cast: R|<local>/x|"];
-            82 [label="Function call: R|<local>/x|.R|kotlin/Int.inc|()" style="filled" fillcolor=yellow];
-            83 [label="Exit block"];
+            81 [label="Postponed exit from lambda"];
+            82 [label="Function call: R|/atLeastOnce|(...)" style="filled" fillcolor=yellow];
+            83 [label="Access variable R|<local>/x|"];
+            84 [label="Smart cast: R|<local>/x|"];
+            85 [label="Access variable <Unresolved name: length>#"];
+            86 [label="Access variable R|<local>/x|"];
+            87 [label="Smart cast: R|<local>/x|"];
+            88 [label="Function call: R|<local>/x|.R|kotlin/Int.inc|()" style="filled" fillcolor=yellow];
+            89 [label="Exit block"];
         }
-        84 [label="Exit function test2" style="filled" fillcolor=red];
+        90 [label="Exit function test2" style="filled" fillcolor=red];
     }
     66 -> {67};
     67 -> {68};
@@ -232,25 +232,25 @@ digraph flowFromInplaceLambda3_kt {
     71 -> {72};
     72 -> {73};
     73 -> {74};
-    74 -> {76 85};
-    74 -> {75} [style=dotted];
-    74 -> {85} [style=dashed];
+    74 -> {75 82};
+    74 -> {81} [style=dotted];
+    74 -> {75} [style=dashed];
     75 -> {76};
-    75 -> {74} [color=green style=dashed];
     76 -> {77};
     77 -> {78};
     78 -> {79};
     79 -> {80};
     80 -> {81};
     81 -> {82};
+    81 -> {74} [color=green style=dashed];
     82 -> {83};
     83 -> {84};
+    84 -> {85};
     85 -> {86};
     86 -> {87};
     87 -> {88};
     88 -> {89};
     89 -> {90};
-    90 -> {75};
 
     subgraph cluster_20 {
         color=red
@@ -267,27 +267,27 @@ digraph flowFromInplaceLambda3_kt {
             99 [label="Postponed enter to lambda"];
             subgraph cluster_22 {
                 color=blue
-                110 [label="Enter function anonymousFunction" style="filled" fillcolor=red];
+                100 [label="Enter function anonymousFunction" style="filled" fillcolor=red];
                 subgraph cluster_23 {
                     color=blue
-                    111 [label="Enter block"];
-                    112 [label="Const: Int(1)"];
-                    113 [label="Assignment: R|<local>/x|"];
-                    114 [label="Exit block"];
+                    101 [label="Enter block"];
+                    102 [label="Const: Int(1)"];
+                    103 [label="Assignment: R|<local>/x|"];
+                    104 [label="Exit block"];
                 }
-                115 [label="Exit function anonymousFunction" style="filled" fillcolor=red];
+                105 [label="Exit function anonymousFunction" style="filled" fillcolor=red];
             }
-            100 [label="Postponed exit from lambda"];
-            101 [label="Function call: R|/exactlyOnce|(...)" style="filled" fillcolor=yellow];
-            102 [label="Access variable R|<local>/x|"];
-            103 [label="Smart cast: R|<local>/x|"];
-            104 [label="Access variable <Unresolved name: length>#"];
-            105 [label="Access variable R|<local>/x|"];
-            106 [label="Smart cast: R|<local>/x|"];
-            107 [label="Function call: R|<local>/x|.R|kotlin/Int.inc|()" style="filled" fillcolor=yellow];
-            108 [label="Exit block"];
+            106 [label="Postponed exit from lambda"];
+            107 [label="Function call: R|/exactlyOnce|(...)" style="filled" fillcolor=yellow];
+            108 [label="Access variable R|<local>/x|"];
+            109 [label="Smart cast: R|<local>/x|"];
+            110 [label="Access variable <Unresolved name: length>#"];
+            111 [label="Access variable R|<local>/x|"];
+            112 [label="Smart cast: R|<local>/x|"];
+            113 [label="Function call: R|<local>/x|.R|kotlin/Int.inc|()" style="filled" fillcolor=yellow];
+            114 [label="Exit block"];
         }
-        109 [label="Exit function test3" style="filled" fillcolor=red];
+        115 [label="Exit function test3" style="filled" fillcolor=red];
     }
     91 -> {92};
     92 -> {93};
@@ -297,9 +297,9 @@ digraph flowFromInplaceLambda3_kt {
     96 -> {97};
     97 -> {98};
     98 -> {99};
-    99 -> {101 110};
-    99 -> {100} [style=dotted];
-    99 -> {110} [style=dashed];
+    99 -> {100 107};
+    99 -> {106} [style=dotted];
+    99 -> {100} [style=dashed];
     100 -> {101};
     101 -> {102};
     102 -> {103};
@@ -309,12 +309,12 @@ digraph flowFromInplaceLambda3_kt {
     106 -> {107};
     107 -> {108};
     108 -> {109};
+    109 -> {110};
     110 -> {111};
     111 -> {112};
     112 -> {113};
     113 -> {114};
     114 -> {115};
-    115 -> {100};
 
     subgraph cluster_24 {
         color=red
@@ -331,27 +331,27 @@ digraph flowFromInplaceLambda3_kt {
             124 [label="Postponed enter to lambda"];
             subgraph cluster_26 {
                 color=blue
-                135 [label="Enter function anonymousFunction" style="filled" fillcolor=red];
+                125 [label="Enter function anonymousFunction" style="filled" fillcolor=red];
                 subgraph cluster_27 {
                     color=blue
-                    136 [label="Enter block"];
-                    137 [label="Const: Int(1)"];
-                    138 [label="Assignment: R|<local>/x|"];
-                    139 [label="Exit block"];
+                    126 [label="Enter block"];
+                    127 [label="Const: Int(1)"];
+                    128 [label="Assignment: R|<local>/x|"];
+                    129 [label="Exit block"];
                 }
-                140 [label="Exit function anonymousFunction" style="filled" fillcolor=red];
+                130 [label="Exit function anonymousFunction" style="filled" fillcolor=red];
             }
-            125 [label="Postponed exit from lambda"];
-            126 [label="Function call: R|/atMostOnce|(...)" style="filled" fillcolor=yellow];
-            127 [label="Access variable R|<local>/x|"];
-            128 [label="Smart cast: R|<local>/x|"];
-            129 [label="Access variable <Unresolved name: length>#"];
-            130 [label="Access variable R|<local>/x|"];
-            131 [label="Smart cast: R|<local>/x|"];
-            132 [label="Function call: R|<local>/x|.<Unresolved name: inc>#()" style="filled" fillcolor=yellow];
-            133 [label="Exit block"];
+            131 [label="Postponed exit from lambda"];
+            132 [label="Function call: R|/atMostOnce|(...)" style="filled" fillcolor=yellow];
+            133 [label="Access variable R|<local>/x|"];
+            134 [label="Smart cast: R|<local>/x|"];
+            135 [label="Access variable <Unresolved name: length>#"];
+            136 [label="Access variable R|<local>/x|"];
+            137 [label="Smart cast: R|<local>/x|"];
+            138 [label="Function call: R|<local>/x|.<Unresolved name: inc>#()" style="filled" fillcolor=yellow];
+            139 [label="Exit block"];
         }
-        134 [label="Exit function test4" style="filled" fillcolor=red];
+        140 [label="Exit function test4" style="filled" fillcolor=red];
     }
     116 -> {117};
     117 -> {118};
@@ -361,8 +361,8 @@ digraph flowFromInplaceLambda3_kt {
     121 -> {122};
     122 -> {123};
     123 -> {124};
-    124 -> {125 126 135};
-    124 -> {135} [style=dashed];
+    124 -> {125 131 132};
+    124 -> {125} [style=dashed];
     125 -> {126};
     126 -> {127};
     127 -> {128};
@@ -372,11 +372,11 @@ digraph flowFromInplaceLambda3_kt {
     131 -> {132};
     132 -> {133};
     133 -> {134};
+    134 -> {135};
     135 -> {136};
     136 -> {137};
     137 -> {138};
     138 -> {139};
     139 -> {140};
-    140 -> {125};
 
 }
