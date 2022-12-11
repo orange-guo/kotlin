@@ -20,50 +20,48 @@ digraph inLocalClass_kt {
     subgraph cluster_2 {
         color=blue
         8 [label="Enter class LocalClass" style="filled" fillcolor=red];
-        9 [label="Part of class initialization"];
         subgraph cluster_3 {
             color=blue
-            10 [label="Enter property" style="filled" fillcolor=red];
-            11 [label="Access variable R|<local>/a|"];
-            12 [label="Exit property" style="filled" fillcolor=red];
+            9 [label="Enter property" style="filled" fillcolor=red];
+            10 [label="Access variable R|<local>/a|"];
+            11 [label="Exit property" style="filled" fillcolor=red];
         }
-        13 [label="Part of class initialization"];
         subgraph cluster_4 {
             color=blue
-            14 [label="Enter init block" style="filled" fillcolor=red];
+            12 [label="Enter init block" style="filled" fillcolor=red];
             subgraph cluster_5 {
                 color=blue
-                15 [label="Enter block"];
-                16 [label="Access variable R|<local>/c|"];
-                17 [label="Assignment: R|<local>/leaked|"];
-                18 [label="Exit block"];
+                13 [label="Enter block"];
+                14 [label="Access variable R|<local>/c|"];
+                15 [label="Assignment: R|<local>/leaked|"];
+                16 [label="Exit block"];
             }
-            19 [label="Exit init block" style="filled" fillcolor=red];
+            17 [label="Exit init block" style="filled" fillcolor=red];
         }
-        20 [label="Exit class LocalClass" style="filled" fillcolor=red];
+        18 [label="Exit class LocalClass" style="filled" fillcolor=red];
     }
     subgraph cluster_6 {
         color=blue
-        21 [label="Enter function run" style="filled" fillcolor=red];
+        19 [label="Enter function run" style="filled" fillcolor=red];
         subgraph cluster_7 {
             color=blue
-            22 [label="Enter block"];
-            23 [label="Function call: R|<local>/d|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()" style="filled" fillcolor=yellow];
-            24 [label="Exit block"];
+            20 [label="Enter block"];
+            21 [label="Function call: R|<local>/d|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()" style="filled" fillcolor=yellow];
+            22 [label="Exit block"];
         }
-        25 [label="Exit function run" style="filled" fillcolor=red];
+        23 [label="Exit function run" style="filled" fillcolor=red];
     }
     subgraph cluster_8 {
         color=blue
-        26 [label="Enter function <init>" style="filled" fillcolor=red];
-        27 [label="Delegated constructor call: super<R|kotlin/Any|>()" style="filled" fillcolor=yellow];
+        24 [label="Enter function <init>" style="filled" fillcolor=red];
+        25 [label="Delegated constructor call: super<R|kotlin/Any|>()" style="filled" fillcolor=yellow];
         subgraph cluster_9 {
             color=blue
-            28 [label="Enter block"];
-            29 [label="Function call: R|<local>/b|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()" style="filled" fillcolor=yellow];
-            30 [label="Exit block"];
+            26 [label="Enter block"];
+            27 [label="Function call: R|<local>/b|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()" style="filled" fillcolor=yellow];
+            28 [label="Exit block"];
         }
-        31 [label="Exit function <init>" style="filled" fillcolor=red];
+        29 [label="Exit function <init>" style="filled" fillcolor=red];
     }
     0 -> {1};
     1 -> {2};
@@ -73,33 +71,29 @@ digraph inLocalClass_kt {
     4 -> {5};
     5 -> {6};
     6 -> {7};
-    8 -> {9} [color=green];
-    8 -> {10 14 21 26} [color=red];
-    9 -> {10} [color=green];
-    9 -> {13} [style=dotted];
-    9 -> {10} [style=dashed];
+    8 -> {9};
+    8 -> {12 19 24} [color=red];
+    8 -> {18} [style=dotted];
+    8 -> {9 12} [style=dashed];
+    9 -> {10};
     10 -> {11};
-    11 -> {12};
-    12 -> {13} [color=green];
-    13 -> {14} [color=green];
-    13 -> {20} [style=dotted];
-    13 -> {14} [style=dashed];
+    11 -> {12} [color=green];
+    12 -> {13};
+    13 -> {14};
     14 -> {15};
     15 -> {16};
     16 -> {17};
-    17 -> {18};
-    18 -> {19};
-    19 -> {20} [color=green];
-    20 -> {21 26} [color=green];
-    20 -> {21 26} [style=dashed];
+    17 -> {18} [color=green];
+    18 -> {19 24} [color=green];
+    18 -> {19 24} [style=dashed];
+    19 -> {20};
+    20 -> {21};
     21 -> {22};
     22 -> {23};
-    23 -> {24};
     24 -> {25};
+    25 -> {26};
     26 -> {27};
     27 -> {28};
     28 -> {29};
-    29 -> {30};
-    30 -> {31};
 
 }
