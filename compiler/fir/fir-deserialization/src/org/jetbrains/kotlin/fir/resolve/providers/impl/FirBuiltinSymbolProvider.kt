@@ -185,165 +185,171 @@ private data class BinaryVersionAndPackageFragment(
     }
 }
 
-private class SyntheticFunctionalInterfaceCache(private val moduleData: FirModuleData, private val kotlinScopeProvider: FirKotlinScopeProvider) {
+private class SyntheticFunctionalInterfaceCache(
+    private val moduleData: FirModuleData,
+    private val kotlinScopeProvider: FirKotlinScopeProvider
+) {
     private val syntheticFunctionalInterfaceCache =
         moduleData.session.firCachesFactory.createCache(::createSyntheticFunctionalInterface)
 
     fun tryGetSyntheticFunctionalInterface(classId: ClassId): FirRegularClassSymbol? {
-        return syntheticFunctionalInterfaceCache.getValue(classId)
-    }
-
-    private fun createSyntheticFunctionalInterface(classId: ClassId): FirRegularClassSymbol? {
         return with(classId) {
             val className = relativeClassName.asString()
             val kind = FunctionClassKind.byClassNamePrefix(packageFqName, className) ?: return@with null
             val prefix = kind.classNamePrefix
             val arity = className.substring(prefix.length).toIntOrNull() ?: return null
-            FirRegularClassSymbol(classId).apply symbol@{
-                buildRegularClass klass@{
-                    moduleData = this@SyntheticFunctionalInterfaceCache.moduleData
-                    origin = FirDeclarationOrigin.BuiltIns
-                    name = relativeClassName.shortName()
-                    status = FirResolvedDeclarationStatusImpl(
-                        Visibilities.Public,
-                        Modality.ABSTRACT,
-                        EffectiveVisibility.Public
-                    ).apply {
-                        isExpect = false
-                        isActual = false
-                        isInner = false
-                        isCompanion = false
-                        isData = false
-                        isInline = false
-                    }
-                    classKind = ClassKind.INTERFACE
-                    scopeProvider = kotlinScopeProvider
-                    symbol = this@symbol
-                    resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
-                    typeParameters.addAll(
-                        (1..arity).map {
-                            buildTypeParameter {
-                                moduleData = this@SyntheticFunctionalInterfaceCache.moduleData
-                                resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
-                                origin = FirDeclarationOrigin.BuiltIns
-                                name = Name.identifier("P$it")
-                                symbol = FirTypeParameterSymbol()
-                                containingDeclarationSymbol = this@symbol
-                                variance = Variance.IN_VARIANCE
-                                isReified = false
-                                bounds += moduleData.session.builtinTypes.nullableAnyType
-                            }
-                        },
-                    )
-                    typeParameters.add(
+            syntheticFunctionalInterfaceCache.getValue(SyntheticFunctionalInterfaceKey(classId, arity, kind))
+        }
+    }
+
+    private data class SyntheticFunctionalInterfaceKey(val classId: ClassId, val arity: Int, val kind: FunctionClassKind)
+
+    private fun createSyntheticFunctionalInterface(key: SyntheticFunctionalInterfaceKey): FirRegularClassSymbol {
+        val (classId, arity, kind) = key
+        return FirRegularClassSymbol(classId).apply symbol@{
+            buildRegularClass klass@{
+                moduleData = this@SyntheticFunctionalInterfaceCache.moduleData
+                origin = FirDeclarationOrigin.BuiltIns
+                name = classId.relativeClassName.shortName()
+                status = FirResolvedDeclarationStatusImpl(
+                    Visibilities.Public,
+                    Modality.ABSTRACT,
+                    EffectiveVisibility.Public
+                ).apply {
+                    isExpect = false
+                    isActual = false
+                    isInner = false
+                    isCompanion = false
+                    isData = false
+                    isInline = false
+                }
+                classKind = ClassKind.INTERFACE
+                scopeProvider = kotlinScopeProvider
+                symbol = this@symbol
+                resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
+                typeParameters.addAll(
+                    (1..arity).map {
                         buildTypeParameter {
                             moduleData = this@SyntheticFunctionalInterfaceCache.moduleData
                             resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
                             origin = FirDeclarationOrigin.BuiltIns
-                            name = Name.identifier("R")
+                            name = Name.identifier("P$it")
                             symbol = FirTypeParameterSymbol()
                             containingDeclarationSymbol = this@symbol
-                            variance = Variance.OUT_VARIANCE
+                            variance = Variance.IN_VARIANCE
                             isReified = false
                             bounds += moduleData.session.builtinTypes.nullableAnyType
-                        },
-                    )
-                    val name = OperatorNameConventions.INVOKE
-                    val functionStatus = FirResolvedDeclarationStatusImpl(
-                        Visibilities.Public,
-                        Modality.ABSTRACT,
-                        EffectiveVisibility.Public
-                    ).apply {
-                        isExpect = false
-                        isActual = false
-                        isOverride = false
-                        isOperator = true
-                        isInfix = false
-                        isInline = false
-                        isTailRec = false
-                        isExternal = false
-                        isSuspend =
-                            kind == FunctionClassKind.SuspendFunction ||
-                                    kind == FunctionClassKind.KSuspendFunction
+                        }
+                    },
+                )
+                typeParameters.add(
+                    buildTypeParameter {
+                        moduleData = this@SyntheticFunctionalInterfaceCache.moduleData
+                        resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
+                        origin = FirDeclarationOrigin.BuiltIns
+                        name = Name.identifier("R")
+                        symbol = FirTypeParameterSymbol()
+                        containingDeclarationSymbol = this@symbol
+                        variance = Variance.OUT_VARIANCE
+                        isReified = false
+                        bounds += moduleData.session.builtinTypes.nullableAnyType
+                    },
+                )
+                val name = OperatorNameConventions.INVOKE
+                val functionStatus = FirResolvedDeclarationStatusImpl(
+                    Visibilities.Public,
+                    Modality.ABSTRACT,
+                    EffectiveVisibility.Public
+                ).apply {
+                    isExpect = false
+                    isActual = false
+                    isOverride = false
+                    isOperator = true
+                    isInfix = false
+                    isInline = false
+                    isTailRec = false
+                    isExternal = false
+                    isSuspend =
+                        kind == FunctionClassKind.SuspendFunction ||
+                                kind == FunctionClassKind.KSuspendFunction
+                }
+                val typeArguments = typeParameters.map {
+                    buildResolvedTypeRef {
+                        type = ConeTypeParameterTypeImpl(it.symbol.toLookupTag(), false)
                     }
-                    val typeArguments = typeParameters.map {
+                }
+
+                fun createSuperType(
+                    kind: FunctionClassKind,
+                ): FirResolvedTypeRef {
+                    return buildResolvedTypeRef {
+                        type = ConeClassLikeLookupTagImpl(kind.classId(arity))
+                            .constructClassType(typeArguments.map { it.type }.toTypedArray(), isNullable = false)
+                    }
+                }
+
+                superTypeRefs += when (kind) {
+                    FunctionClassKind.Function -> listOf(
                         buildResolvedTypeRef {
-                            type = ConeTypeParameterTypeImpl(it.symbol.toLookupTag(), false)
+                            type = ConeClassLikeLookupTagImpl(StandardClassIds.Function)
+                                .constructClassType(arrayOf(typeArguments.last().type), isNullable = false)
                         }
-                    }
+                    )
 
-                    fun createSuperType(
-                        kind: FunctionClassKind,
-                    ): FirResolvedTypeRef {
-                        return buildResolvedTypeRef {
-                            type = ConeClassLikeLookupTagImpl(kind.classId(arity))
-                                .constructClassType(typeArguments.map { it.type }.toTypedArray(), isNullable = false)
+                    FunctionClassKind.SuspendFunction -> listOf(
+                        buildResolvedTypeRef {
+                            type = ConeClassLikeLookupTagImpl(StandardClassIds.Function)
+                                .constructClassType(arrayOf(typeArguments.last().type), isNullable = false)
                         }
-                    }
+                    )
 
-                    superTypeRefs += when (kind) {
-                        FunctionClassKind.Function -> listOf(
-                            buildResolvedTypeRef {
-                                type = ConeClassLikeLookupTagImpl(StandardClassIds.Function)
-                                    .constructClassType(arrayOf(typeArguments.last().type), isNullable = false)
-                            }
-                        )
+                    FunctionClassKind.KFunction -> listOf(
+                        buildResolvedTypeRef {
+                            type = ConeClassLikeLookupTagImpl(StandardClassIds.KFunction)
+                                .constructClassType(arrayOf(typeArguments.last().type), isNullable = false)
+                        },
+                        createSuperType(FunctionClassKind.Function)
+                    )
 
-                        FunctionClassKind.SuspendFunction -> listOf(
-                            buildResolvedTypeRef {
-                                type = ConeClassLikeLookupTagImpl(StandardClassIds.Function)
-                                    .constructClassType(arrayOf(typeArguments.last().type), isNullable = false)
-                            }
-                        )
-
-                        FunctionClassKind.KFunction -> listOf(
-                            buildResolvedTypeRef {
-                                type = ConeClassLikeLookupTagImpl(StandardClassIds.KFunction)
-                                    .constructClassType(arrayOf(typeArguments.last().type), isNullable = false)
-                            },
-                            createSuperType(FunctionClassKind.Function)
-                        )
-
-                        FunctionClassKind.KSuspendFunction -> listOf(
-                            buildResolvedTypeRef {
-                                type = ConeClassLikeLookupTagImpl(StandardClassIds.KFunction)
-                                    .constructClassType(arrayOf(typeArguments.last().type), isNullable = false)
-                            },
-                            createSuperType(FunctionClassKind.SuspendFunction)
-                        )
-                    }
-                    addDeclaration(
-                        buildSimpleFunction {
-                            moduleData = this@SyntheticFunctionalInterfaceCache.moduleData
-                            resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
-                            origin = FirDeclarationOrigin.BuiltIns
-                            returnTypeRef = typeArguments.last()
-                            this.name = name
-                            status = functionStatus
-                            symbol = FirNamedFunctionSymbol(
-                                CallableId(packageFqName, relativeClassName, name)
-                            )
-                            resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
-                            valueParameters += typeArguments.dropLast(1).mapIndexed { index, typeArgument ->
-                                val parameterName = Name.identifier("p${index + 1}")
-                                buildValueParameter {
-                                    moduleData = this@SyntheticFunctionalInterfaceCache.moduleData
-                                    containingFunctionSymbol = this@buildSimpleFunction.symbol
-                                    origin = FirDeclarationOrigin.BuiltIns
-                                    resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
-                                    returnTypeRef = typeArgument
-                                    this.name = parameterName
-                                    symbol = FirValueParameterSymbol(parameterName)
-                                    defaultValue = null
-                                    isCrossinline = false
-                                    isNoinline = false
-                                    isVararg = false
-                                }
-                            }
-                            dispatchReceiverType = classId.defaultType(this@klass.typeParameters.map { it.symbol })
-                        }
+                    FunctionClassKind.KSuspendFunction -> listOf(
+                        buildResolvedTypeRef {
+                            type = ConeClassLikeLookupTagImpl(StandardClassIds.KFunction)
+                                .constructClassType(arrayOf(typeArguments.last().type), isNullable = false)
+                        },
+                        createSuperType(FunctionClassKind.SuspendFunction)
                     )
                 }
+                addDeclaration(
+                    buildSimpleFunction {
+                        moduleData = this@SyntheticFunctionalInterfaceCache.moduleData
+                        resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
+                        origin = FirDeclarationOrigin.BuiltIns
+                        returnTypeRef = typeArguments.last()
+                        this.name = name
+                        status = functionStatus
+                        symbol = FirNamedFunctionSymbol(
+                            CallableId(classId, name)
+                        )
+                        resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
+                        valueParameters += typeArguments.dropLast(1).mapIndexed { index, typeArgument ->
+                            val parameterName = Name.identifier("p${index + 1}")
+                            buildValueParameter {
+                                moduleData = this@SyntheticFunctionalInterfaceCache.moduleData
+                                containingFunctionSymbol = this@buildSimpleFunction.symbol
+                                origin = FirDeclarationOrigin.BuiltIns
+                                resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
+                                returnTypeRef = typeArgument
+                                this.name = parameterName
+                                symbol = FirValueParameterSymbol(parameterName)
+                                defaultValue = null
+                                isCrossinline = false
+                                isNoinline = false
+                                isVararg = false
+                            }
+                        }
+                        dispatchReceiverType = classId.defaultType(this@klass.typeParameters.map { it.symbol })
+                    }
+                )
             }
         }
     }
