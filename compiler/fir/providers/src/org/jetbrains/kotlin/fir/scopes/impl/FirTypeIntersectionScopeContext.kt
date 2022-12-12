@@ -111,7 +111,6 @@ class FirTypeIntersectionScopeContext(
         return collectIntersectionResultsForCallables(name, FirScope::processFunctionsByName)
     }
 
-    @OptIn(PrivateForInline::class)
     inline fun <D : FirCallableSymbol<*>> collectMembersGroupedByScope(
         name: Name,
         processCallables: FirScope.(Name, (D) -> Unit) -> Unit
@@ -130,7 +129,6 @@ class FirTypeIntersectionScopeContext(
         }
     }
 
-    @OptIn(PrivateForInline::class)
     inline fun <D : FirCallableSymbol<*>> collectIntersectionResultsForCallables(
         name: Name,
         processCallables: FirScope.(Name, (D) -> Unit) -> Unit

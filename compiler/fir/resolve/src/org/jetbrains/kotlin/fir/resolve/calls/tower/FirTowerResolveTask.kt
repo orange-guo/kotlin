@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.fir.resolve.calls.tower
 
 import org.jetbrains.kotlin.fir.declarations.ContextReceiverGroup
 import org.jetbrains.kotlin.fir.declarations.FirTowerDataContext
+import org.jetbrains.kotlin.fir.declarations.FirTowerDataElement
 import org.jetbrains.kotlin.fir.expressions.FirExpression
 import org.jetbrains.kotlin.fir.expressions.FirQualifiedAccessExpression
 import org.jetbrains.kotlin.fir.expressions.FirResolvedQualifier
@@ -16,18 +17,51 @@ import org.jetbrains.kotlin.fir.resolve.DoubleColonLHS
 import org.jetbrains.kotlin.fir.resolve.calls.*
 import org.jetbrains.kotlin.fir.scopes.FirScope
 import org.jetbrains.kotlin.fir.scopes.impl.FirWhenSubjectImportingScope
+import org.jetbrains.kotlin.fir.scopes.processClassifiersByName
 import org.jetbrains.kotlin.fir.types.builder.buildResolvedTypeRef
 import org.jetbrains.kotlin.fir.types.impl.FirImplicitBuiltinTypeRef
-import org.jetbrains.kotlin.fir.util.asReversedFrozen
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.calls.tasks.ExplicitReceiverKind
 import org.jetbrains.kotlin.resolve.descriptorUtil.HIDES_MEMBERS_NAME_LIST
 
 internal class TowerDataElementsForName(
-    name: Name,
+    private val callInfo: CallInfo,
     towerDataContext: FirTowerDataContext
 ) {
-    val nonLocalTowerDataElements = towerDataContext.nonLocalTowerDataElements.asReversedFrozen()
+    val nonLocalTowerDataElements: List<FirTowerDataElement> by lazy(LazyThreadSafetyMode.NONE) {
+        buildList {
+            val nonLocal = towerDataContext.nonLocalTowerDataElements
+            for (i in nonLocal.lastIndex downTo 0) {
+                val t = nonLocal[i]
+
+                if (t.scope != null && !mayContainName(t.scope!!, callInfo.name) && callInfo.callKind != CallKind.CallableReference) {
+                    continue
+                }
+
+                add(t)
+            }
+        }
+    }
+
+    private fun mayContainName(scope: FirScope, name: Name): Boolean {
+        var result = false
+
+        scope.processFunctionsByName(name) {
+            result = true
+        }
+        if (result) return true
+
+        scope.processPropertiesByName(name) {
+            result = true
+        }
+        if (result) return true
+
+        scope.processClassifiersByName(name) {
+            result = true
+        }
+
+        return result
+    }
 
     val reversedFilteredLocalScopes by lazy(LazyThreadSafetyMode.NONE) {
         buildList {
@@ -35,7 +69,7 @@ internal class TowerDataElementsForName(
             val lastIndex = localScopesBase.lastIndex
             for (i in lastIndex downTo 0) {
                 val localScope = localScopesBase[i]
-                if (localScope.mayContainName(name)) {
+                if (localScope.mayContainName(callInfo.name)) {
                     add(IndexedValue(lastIndex - i, localScope))
                 }
             }
@@ -52,9 +86,6 @@ internal class TowerDataElementsForName(
             towerDataElement.contextReceiverGroup?.let { receiver -> IndexedValue(index, receiver) }
         }
     }
-
-    val emptyScopes = mutableSetOf<FirScope>()
-    val implicitReceiverValuesWithEmptyScopes = mutableSetOf<ImplicitReceiverValue<*>>()
 }
 
 internal abstract class FirBaseTowerResolveTask(

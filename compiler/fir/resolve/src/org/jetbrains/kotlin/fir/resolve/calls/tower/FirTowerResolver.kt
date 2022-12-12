@@ -57,7 +57,7 @@ class FirTowerResolver(
         val mainTask = FirTowerResolveTask(
             components,
             manager,
-            TowerDataElementsForName(info.name, components.towerDataContext),
+            TowerDataElementsForName(info, components.towerDataContext),
             candidateFactoriesAndCollectors.resultCollector,
             candidateFactoriesAndCollectors.candidateFactory,
         )
