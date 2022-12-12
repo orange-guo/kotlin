@@ -117,13 +117,10 @@ abstract class AbstractFirDeserializedSymbolProvider(
         return computePackagePartsInfos(packageFqName)
     }
 
-    private fun findAndDeserializeTypeAlias(classId: ClassId): FirTypeAliasSymbol? {
-        return getPackageParts(classId.packageFqName).firstNotNullOfOrNull { part ->
-            val ids = part.typeAliasNameIndex[classId.shortClassName]
-            if (ids == null || ids.isEmpty()) return@firstNotNullOfOrNull null
-            val aliasProto = part.proto.getTypeAlias(ids.single())
-            part.context.memberDeserializer.loadTypeAlias(aliasProto).symbol
-        }
+    private fun findAndDeserializeTypeAlias(typeAliasKey: TypeAliasKey): FirTypeAliasSymbol {
+        val part = typeAliasKey.partsCacheData
+        val aliasProto = part.proto.getTypeAlias(typeAliasKey.id)
+        return part.context.memberDeserializer.loadTypeAlias(aliasProto).symbol
     }
 
     private fun findAndDeserializeClass(
@@ -197,8 +194,28 @@ abstract class AbstractFirDeserializedSymbolProvider(
         return classCache.getValue(classId, parentContext)
     }
 
-    private fun getTypeAlias(classId: ClassId): FirTypeAliasSymbol? =
-        if (classId.relativeClassName.isOneSegmentFQN()) typeAliasCache.getValue(classId) else null
+    private class TypeAliasKey(val classId: ClassId, val partsCacheData: PackagePartsCacheData, val id: Int) {
+        override fun equals(other: Any?): Boolean {
+            return other is TypeAliasKey && classId == other.classId
+        }
+
+        override fun hashCode(): Int {
+            return classId.hashCode()
+        }
+    }
+
+    private fun getTypeAlias(classId: ClassId): FirTypeAliasSymbol? {
+        if (!classId.relativeClassName.isOneSegmentFQN()) return null
+
+        val packageParts = getPackageParts(classId.packageFqName)
+        val key = packageParts.firstNotNullOfOrNull { part ->
+            val ids = part.typeAliasNameIndex[classId.shortClassName]
+            if (ids.isNullOrEmpty()) return@firstNotNullOfOrNull null
+            TypeAliasKey(classId, part, ids.single())
+        } ?: return null
+
+        return typeAliasCache.getValue(key)
+    }
 
     // ------------------------ SymbolProvider methods ------------------------
 
