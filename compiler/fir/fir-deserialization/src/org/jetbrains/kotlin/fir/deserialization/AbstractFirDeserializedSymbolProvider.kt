@@ -85,9 +85,6 @@ abstract class AbstractFirDeserializedSymbolProvider(
             }
         )
 
-    private val functionCache = session.firCachesFactory.createCache(::loadFunctionsByCallableId)
-    private val propertyCache = session.firCachesFactory.createCache(::loadPropertiesByCallableId)
-
     // ------------------------ Abstract members ------------------------
 
     protected abstract fun computePackagePartsInfos(packageFqName: FqName): List<PackagePartsCacheData>
@@ -208,18 +205,18 @@ abstract class AbstractFirDeserializedSymbolProvider(
     @FirSymbolProviderInternals
     override fun getTopLevelCallableSymbolsTo(destination: MutableList<FirCallableSymbol<*>>, packageFqName: FqName, name: Name) {
         val callableId = CallableId(packageFqName, name)
-        destination += functionCache.getValue(callableId)
-        destination += propertyCache.getValue(callableId)
+        destination += loadFunctionsByCallableId(callableId)
+        destination += loadPropertiesByCallableId(callableId)
     }
 
     @FirSymbolProviderInternals
     override fun getTopLevelFunctionSymbolsTo(destination: MutableList<FirNamedFunctionSymbol>, packageFqName: FqName, name: Name) {
-        destination += functionCache.getValue(CallableId(packageFqName, name))
+        destination += loadFunctionsByCallableId(CallableId(packageFqName, name))
     }
 
     @FirSymbolProviderInternals
     override fun getTopLevelPropertySymbolsTo(destination: MutableList<FirPropertySymbol>, packageFqName: FqName, name: Name) {
-        destination += propertyCache.getValue(CallableId(packageFqName, name))
+        destination += loadPropertiesByCallableId(CallableId(packageFqName, name))
     }
 
     override fun getClassLikeSymbolByClassId(classId: ClassId): FirClassLikeSymbol<*>? {
