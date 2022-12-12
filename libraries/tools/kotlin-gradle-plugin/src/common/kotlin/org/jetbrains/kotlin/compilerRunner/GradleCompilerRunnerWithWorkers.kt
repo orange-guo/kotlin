@@ -10,6 +10,7 @@ import org.gradle.api.file.FileSystemOperations
 import org.gradle.api.logging.Logging
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkQueue
@@ -29,16 +30,17 @@ internal class GradleCompilerRunnerWithWorkers(
     jdkToolsJar: File?,
     compilerExecutionSettings: CompilerExecutionSettings,
     buildMetrics: BuildMetricsReporter,
-    private val workerExecutor: WorkerExecutor
+    private val workerExecutor: WorkerExecutor,
+    private val compilerCache: Provider<KotlinCompilerCacheService>,
 ) : GradleCompilerRunner(taskProvider, jdkToolsJar, compilerExecutionSettings, buildMetrics) {
     override fun runCompilerAsync(
         workArgs: GradleKotlinCompilerWorkArguments,
         taskOutputsBackup: TaskOutputsBackup?
     ): WorkQueue {
-
         val workQueue = workerExecutor.noIsolation()
         workQueue.submit(GradleKotlinCompilerWorkAction::class.java) { params ->
             params.compilerWorkArguments.set(workArgs)
+            params.compilerCache.set(compilerCache)
             if (taskOutputsBackup != null) {
                 params.taskOutputsToRestore.set(taskOutputsBackup.outputsToRestore)
                 params.buildDir.set(taskOutputsBackup.buildDirectory)
@@ -70,7 +72,8 @@ internal class GradleCompilerRunnerWithWorkers(
 
             try {
                 GradleKotlinCompilerWork(
-                    parameters.compilerWorkArguments.get()
+                    parameters.compilerWorkArguments.get(),
+                    parameters.compilerCache.get()
                 ).run()
             } catch (e: FailedCompilationException) {
                 // Restore outputs only in cases where we expect that the user will make some changes to their project:
@@ -99,5 +102,6 @@ internal class GradleCompilerRunnerWithWorkers(
         val snapshotsDir: DirectoryProperty
         val buildDir: DirectoryProperty
         val metricsReporter: Property<BuildMetricsReporter>
+        val compilerCache: Property<KotlinCompilerCacheService>
     }
 }
