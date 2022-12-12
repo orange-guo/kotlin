@@ -17,17 +17,12 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.mpp.MetadataDependencyResolution.ChooseVisibleSourceSets.MetadataProvider.ArtifactMetadataProvider
-import org.jetbrains.kotlin.gradle.plugin.sources.KotlinDependencyScope
-import org.jetbrains.kotlin.gradle.plugin.sources.sourceSetDependencyConfigurationByScope
 import org.jetbrains.kotlin.gradle.targets.metadata.ALL_COMPILE_METADATA_CONFIGURATION_NAME
 import org.jetbrains.kotlin.gradle.targets.metadata.dependsOnClosureWithInterCompilationDependencies
 import java.util.*
 
 internal sealed class MetadataDependencyResolution(
-    @field:Transient // can't be used with Gradle Instant Execution, but fortunately not needed when deserialized
     val dependency: ResolvedComponentResult,
-    @field:Transient
-    val projectDependency: Project?
 ) {
     /** Evaluate and store the value, as the [dependency] will be lost during Gradle instant execution */
 //    val originalArtifactFiles: List<File> = dependency.dependents.flatMap {  it.allModuleArtifacts } .map { it.file }
@@ -42,19 +37,16 @@ internal sealed class MetadataDependencyResolution(
     }
 
     class KeepOriginalDependency(
-        dependency: ResolvedComponentResult,
-        projectDependency: Project?
-    ) : MetadataDependencyResolution(dependency, projectDependency)
+        dependency: ResolvedComponentResult
+    ) : MetadataDependencyResolution(dependency)
 
     sealed class Exclude(
-        dependency: ResolvedComponentResult,
-        projectDependency: Project?
-    ) : MetadataDependencyResolution(dependency, projectDependency) {
+        dependency: ResolvedComponentResult
+    ) : MetadataDependencyResolution(dependency) {
 
         class Unrequested(
-            dependency: ResolvedComponentResult,
-            projectDependency: Project?
-        ) : Exclude(dependency, projectDependency)
+            dependency: ResolvedComponentResult
+        ) : Exclude(dependency)
 
         /**
          * Resolution for metadata dependencies of leaf platform source sets.
@@ -65,18 +57,17 @@ internal sealed class MetadataDependencyResolution(
         class PublishedPlatformSourceSetDependency(
             dependency: ResolvedComponentResult,
             val visibleTransitiveDependencies: Set<ResolvedDependencyResult>,
-        ) : Exclude(dependency, null)
+        ) : Exclude(dependency)
     }
 
     class ChooseVisibleSourceSets internal constructor(
         dependency: ResolvedComponentResult,
-        projectDependency: Project?,
         val projectStructureMetadata: KotlinProjectStructureMetadata,
         val allVisibleSourceSetNames: Set<String>,
         val visibleSourceSetNamesExcludingDependsOn: Set<String>,
         val visibleTransitiveDependencies: Set<ResolvedDependencyResult>,
         internal val metadataProvider: MetadataProvider
-    ) : MetadataDependencyResolution(dependency, projectDependency) {
+    ) : MetadataDependencyResolution(dependency) {
 
         internal sealed class MetadataProvider {
             class ArtifactMetadataProvider(private val compositeMetadataArtifact: CompositeMetadataArtifact) :
@@ -186,9 +177,6 @@ internal class GranularMetadataTransformation(
                 result.add(
                     MetadataDependencyResolution.Exclude.Unrequested(
                         resolvedDependency.selected,
-                        (resolvedDependency.selected.id as? ProjectComponentIdentifier)
-                            ?.takeIf { it.build.isCurrentBuild() }
-                            ?.let { project.project(it.projectPath) }
                     )
                 )
             }
@@ -224,14 +212,14 @@ internal class GranularMetadataTransformation(
         val resolvedToProject: Project? = module.toProjectOrNull(project)
 
         val projectStructureMetadata = mppDependencyMetadataExtractor?.getProjectStructureMetadata()
-            ?: return MetadataDependencyResolution.KeepOriginalDependency(module, resolvedToProject)
+            ?: return MetadataDependencyResolution.KeepOriginalDependency(module)
 
         val sourceSetVisibility =
             SourceSetVisibilityProvider(project).getVisibleSourceSets(
                 kotlinSourceSet,
                 if (projectStructureMetadata.isPublishedAsRoot) module else parent, module,
                 projectStructureMetadata,
-                resolvedToProject
+                resolvedToProject != null
             )
 
         val allVisibleSourceSets = sourceSetVisibility.visibleSourceSetNames
@@ -280,7 +268,6 @@ internal class GranularMetadataTransformation(
 
         return MetadataDependencyResolution.ChooseVisibleSourceSets(
             dependency = module,
-            projectDependency = resolvedToProject,
             projectStructureMetadata = projectStructureMetadata,
             allVisibleSourceSetNames = allVisibleSourceSets,
             visibleSourceSetNamesExcludingDependsOn = visibleSourceSetsExcludingDependsOn,
@@ -290,12 +277,20 @@ internal class GranularMetadataTransformation(
     }
 }
 
-internal fun ResolvedComponentResult.toProjectOrNull(currentProject: Project): Project? {
+internal val ResolvedComponentResult.projectIdOrNull get(): ProjectComponentIdentifier? {
     val identifier = id
     return when {
-        identifier is ProjectComponentIdentifier && identifier.build.isCurrentBuild -> currentProject.project(identifier.projectPath)
+        identifier is ProjectComponentIdentifier && identifier.build.isCurrentBuild -> identifier
         else -> null
     }
+}
+
+internal fun MetadataDependencyResolution.projectDependency(currentProject: Project): Project? =
+    dependency.toProjectOrNull(currentProject)
+
+internal fun ResolvedComponentResult.toProjectOrNull(currentProject: Project): Project? {
+    val projectId = projectIdOrNull ?: return null
+    return currentProject.project(projectId.projectPath)
 }
 
 internal fun resolvableMetadataConfigurationForSourceSets(
