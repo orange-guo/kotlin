@@ -23,7 +23,6 @@ import org.jetbrains.kotlin.name.Name
 
 @ThreadSafeMutableState
 open class FirDependenciesSymbolProviderImpl(session: FirSession) : FirDependenciesSymbolProvider(session) {
-    private val classCache = session.firCachesFactory.createCache(::computeClass)
     private val topLevelFunctionCache = session.firCachesFactory.createCache(::computeTopLevelFunctions)
     private val topLevelPropertyCache = session.firCachesFactory.createCache(::computeTopLevelProperties)
     private val packageCache = session.firCachesFactory.createCache(::computePackage)
@@ -87,9 +86,6 @@ open class FirDependenciesSymbolProviderImpl(session: FirSession) : FirDependenc
     private fun computePackage(it: FqName): FqName? =
         dependencyProviders.firstNotNullOfOrNull { provider -> provider.getPackage(it) }
 
-    private fun computeClass(classId: ClassId): FirClassLikeSymbol<*>? =
-        dependencyProviders.firstNotNullOfOrNull { provider -> provider.getClassLikeSymbolByClassId(classId) }
-
 
     @FirSymbolProviderInternals
     override fun getTopLevelFunctionSymbolsTo(destination: MutableList<FirNamedFunctionSymbol>, packageFqName: FqName, name: Name) {
@@ -113,7 +109,7 @@ open class FirDependenciesSymbolProviderImpl(session: FirSession) : FirDependenc
     }
 
     override fun getClassLikeSymbolByClassId(classId: ClassId): FirClassLikeSymbol<*>? {
-        return classCache.getValue(classId)
+        return dependencyProviders.firstNotNullOfOrNull { provider -> provider.getClassLikeSymbolByClassId(classId) }
     }
 
     override fun getPackage(fqName: FqName): FqName? {
