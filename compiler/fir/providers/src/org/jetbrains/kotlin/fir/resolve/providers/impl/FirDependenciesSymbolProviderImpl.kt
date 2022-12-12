@@ -24,7 +24,6 @@ import org.jetbrains.kotlin.name.Name
 @ThreadSafeMutableState
 open class FirDependenciesSymbolProviderImpl(session: FirSession) : FirDependenciesSymbolProvider(session) {
     private val classCache = session.firCachesFactory.createCache(::computeClass)
-    private val topLevelCallableCache = session.firCachesFactory.createCache(::computeTopLevelCallables)
     private val topLevelFunctionCache = session.firCachesFactory.createCache(::computeTopLevelFunctions)
     private val topLevelPropertyCache = session.firCachesFactory.createCache(::computeTopLevelProperties)
     private val packageCache = session.firCachesFactory.createCache(::computePackage)
@@ -76,11 +75,6 @@ open class FirDependenciesSymbolProviderImpl(session: FirSession) : FirDependenc
     }
 
     @OptIn(FirSymbolProviderInternals::class)
-    private fun computeTopLevelCallables(callableId: CallableId): List<FirCallableSymbol<*>> = buildList {
-        dependencyProviders.forEach { it.getTopLevelCallableSymbolsTo(this, callableId.packageName, callableId.callableName) }
-    }
-
-    @OptIn(FirSymbolProviderInternals::class)
     private fun computeTopLevelFunctions(callableId: CallableId): List<FirNamedFunctionSymbol> = buildList {
         dependencyProviders.forEach { it.getTopLevelFunctionSymbolsTo(this, callableId.packageName, callableId.callableName) }
     }
@@ -112,8 +106,10 @@ open class FirDependenciesSymbolProviderImpl(session: FirSession) : FirDependenc
         destination += getTopLevelCallableSymbols(packageFqName, name)
     }
 
-    override fun getTopLevelCallableSymbols(packageFqName: FqName, name: Name): List<FirCallableSymbol<*>> {
-        return topLevelCallableCache.getValue(CallableId(packageFqName, name))
+    override fun getTopLevelCallableSymbols(packageFqName: FqName, name: Name): List<FirCallableSymbol<*>> = buildList {
+        val callableId = CallableId(packageFqName, name)
+        addAll(topLevelFunctionCache.getValue(callableId))
+        addAll(topLevelPropertyCache.getValue(callableId))
     }
 
     override fun getClassLikeSymbolByClassId(classId: ClassId): FirClassLikeSymbol<*>? {
