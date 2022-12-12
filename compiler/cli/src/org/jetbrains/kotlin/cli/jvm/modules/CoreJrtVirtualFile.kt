@@ -29,7 +29,11 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 
-internal class CoreJrtVirtualFile(private val handler: CoreJrtHandler, private val path: Path) : VirtualFile() {
+internal class CoreJrtVirtualFile(
+    private val handler: CoreJrtHandler,
+    private val path: Path,
+    private val parent: CoreJrtVirtualFile?,
+) : VirtualFile() {
     // TODO: catch IOException?
     private val attributes: BasicFileAttributes get() = Files.readAttributes(path, BasicFileAttributes::class.java)
 
@@ -47,20 +51,21 @@ internal class CoreJrtVirtualFile(private val handler: CoreJrtHandler, private v
 
     override fun isValid(): Boolean = true
 
-    override fun getParent(): VirtualFile? {
-        val parentPath = path.parent
-        return if (parentPath != null) CoreJrtVirtualFile(handler, parentPath) else null
-    }
+    override fun getParent(): VirtualFile? = parent
 
-    override fun getChildren(): Array<out VirtualFile> {
+    private val children_ by lazy { computeChildren() }
+
+    override fun getChildren(): Array<out VirtualFile> = children_
+
+    private fun computeChildren(): Array<out VirtualFile> {
         val paths = try {
             Files.newDirectoryStream(path).use(Iterable<Path>::toList)
         } catch (e: IOException) {
             emptyList<Path>()
         }
         return when {
-            paths.isEmpty() -> VirtualFile.EMPTY_ARRAY
-            else -> paths.map { path -> CoreJrtVirtualFile(handler, path) }.toTypedArray()
+            paths.isEmpty() -> EMPTY_ARRAY
+            else -> paths.map { path -> CoreJrtVirtualFile(handler, path, parent = this) }.toTypedArray()
         }
     }
 

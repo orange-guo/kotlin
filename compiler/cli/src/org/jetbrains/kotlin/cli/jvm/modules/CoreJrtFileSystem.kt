@@ -26,7 +26,6 @@ import java.io.File
 import java.net.URI
 import java.net.URLClassLoader
 import java.nio.file.FileSystems
-import java.nio.file.Files
 import java.nio.file.Path
 
 // There's JrtFileSystem in idea-full which we can't use in the compiler because it depends on NewVirtualFileSystem, absent in intellij-core
@@ -58,9 +57,10 @@ class CoreJrtFileSystem : DeprecatedVirtualFileSystem() {
         val jdkHomePath: String,
         private val root: Path
     ) {
+        private val rootFile = CoreJrtVirtualFile(this, root, parent = null)
         fun findFile(fileName: String): VirtualFile? {
-            val path = root.resolve(fileName)
-            return if (Files.exists(path)) CoreJrtVirtualFile(this, path) else null
+            if (fileName.length == 0) return rootFile
+            error("Unexpected filename: $fileName")
         }
     }
 
