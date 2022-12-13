@@ -218,16 +218,19 @@ class BodyGenerator(
         val field = expression.symbol.owner
         val receiver = expression.receiver
 
+        val location = expression.getSourceLocation()
+
         if (receiver != null) {
             generateExpression(receiver)
             generateExpression(expression.value)
             body.buildStructSet(
                 struct = context.referenceGcType(field.parentAsClass.symbol),
                 fieldId = context.getStructFieldRef(field),
+                location
             )
         } else {
             generateExpression(expression.value)
-            body.buildSetGlobal(context.referenceGlobalField(expression.symbol), expression.getSourceLocation())
+            body.buildSetGlobal(context.referenceGlobalField(expression.symbol), location)
         }
 
         body.buildGetUnit()
