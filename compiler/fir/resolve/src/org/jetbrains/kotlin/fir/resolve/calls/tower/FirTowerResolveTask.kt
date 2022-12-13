@@ -234,7 +234,9 @@ internal open class FirTowerResolveTask(
 
                 val stubReceiverInfo = info.replaceExplicitReceiver(stubReceiver)
 
-                runResolverForExpressionReceiver(stubReceiverInfo, stubReceiver, parentGroup = TowerGroup.QualifierValue)
+                runResolverForExpressionReceiver(
+                    stubReceiverInfo, stubReceiver, parentGroup = TowerGroup.MembersForLHSTypeCallableReference
+                )
             }
 
             // NB: yet built-in Unit is used for "no-value" type
@@ -398,7 +400,6 @@ internal open class FirTowerResolveTask(
             scope.toScopeTowerLevel(extensionReceiver = explicitReceiverValue),
             info, towerGroup, ExplicitReceiverKind.EXTENSION_RECEIVER
         )
-
     }
 
     private suspend fun processCandidatesWithGivenImplicitReceiverAsValue(

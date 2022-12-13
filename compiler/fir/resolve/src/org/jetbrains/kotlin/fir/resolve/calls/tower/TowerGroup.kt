@@ -44,9 +44,11 @@ sealed class TowerGroupKind(val index: Byte) : Comparable<TowerGroupKind> {
 
     object InvokeExtension : TowerGroupKind(8)
 
-    object QualifierValue : TowerGroupKind(9)
+    object MembersForLHSTypeCallableReference : TowerGroupKind(9)
 
-    class UnqualifiedEnum(depth: Int) : WithDepth(9, depth)
+    object QualifierValue : TowerGroupKind(10)
+
+    class UnqualifiedEnum(depth: Int) : WithDepth(11, depth)
 
     object Last : TowerGroupKind(0b1111)
 
@@ -156,6 +158,8 @@ private constructor(
         val Qualifier = kindOf(TowerGroupKind.Qualifier)
 
         val Classifier = kindOf(TowerGroupKind.Classifier)
+
+        val MembersForLHSTypeCallableReference = kindOf(TowerGroupKind.MembersForLHSTypeCallableReference)
 
         val QualifierValue = kindOf(TowerGroupKind.QualifierValue)
 
