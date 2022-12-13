@@ -8,6 +8,9 @@ package org.jetbrains.kotlin.analysis.low.level.api.fir.providers
 import org.jetbrains.kotlin.analysis.low.level.api.fir.sessions.LLFirSession
 import org.jetbrains.kotlin.analysis.utils.collections.buildSmartList
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.caches.createCache
+import org.jetbrains.kotlin.fir.caches.firCachesFactory
+import org.jetbrains.kotlin.fir.caches.getValue
 import org.jetbrains.kotlin.fir.resolve.providers.FirDependenciesSymbolProvider
 import org.jetbrains.kotlin.fir.resolve.providers.FirSymbolProvider
 import org.jetbrains.kotlin.fir.resolve.providers.FirSymbolProviderInternals
@@ -17,6 +20,7 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.load.kotlin.JvmPackagePartSource
+import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
@@ -60,18 +64,35 @@ internal class LLFirModuleWithDependenciesSymbolProvider(
         dependencyProvider.getTopLevelPropertySymbolsTo(destination, packageFqName, name)
     }
 
+    private val functionCacheWithoutDependencies = session.firCachesFactory.createCache(::computeTopLevelFunctionsByCallableId)
+    private val propertyCacheWithoutDependencies = session.firCachesFactory.createCache(::computeTopLevelPropertiesByCallableId)
+
     @FirSymbolProviderInternals
     fun getTopLevelFunctionSymbolsToWithoutDependencies(
         destination: MutableList<FirNamedFunctionSymbol>,
         packageFqName: FqName,
         name: Name
     ) {
-        providers.forEach { it.getTopLevelFunctionSymbolsTo(destination, packageFqName, name) }
+        destination.addAll(functionCacheWithoutDependencies.getValue(CallableId(packageFqName, name)))
     }
 
     @FirSymbolProviderInternals
     fun getTopLevelPropertySymbolsToWithoutDependencies(destination: MutableList<FirPropertySymbol>, packageFqName: FqName, name: Name) {
-        providers.forEach { it.getTopLevelPropertySymbolsTo(destination, packageFqName, name) }
+        destination.addAll(propertyCacheWithoutDependencies.getValue(CallableId(packageFqName, name)))
+    }
+
+    @OptIn(FirSymbolProviderInternals::class)
+    private fun computeTopLevelFunctionsByCallableId(callableId: CallableId): List<FirNamedFunctionSymbol> {
+        val result = mutableListOf<FirNamedFunctionSymbol>()
+        providers.forEach { it.getTopLevelFunctionSymbolsTo(result, callableId.packageName, callableId.callableName) }
+        return result
+    }
+
+    @OptIn(FirSymbolProviderInternals::class)
+    private fun computeTopLevelPropertiesByCallableId(callableId: CallableId): List<FirPropertySymbol> {
+        val result = mutableListOf<FirPropertySymbol>()
+        providers.forEach { it.getTopLevelPropertySymbolsTo(result, callableId.packageName, callableId.callableName) }
+        return result
     }
 
     override fun getPackage(fqName: FqName): FqName? =
