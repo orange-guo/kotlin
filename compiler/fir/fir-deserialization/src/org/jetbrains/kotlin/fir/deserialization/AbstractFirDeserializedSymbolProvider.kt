@@ -37,6 +37,7 @@ class PackagePartsCacheData(
         proto.propertyList.withIndex()
             .groupBy({ context.nameResolver.getName(it.value.name) }) { (index) -> index }
     }
+    val hasTypeAliases get() = proto.typeAliasList.isNotEmpty()
     val typeAliasNameIndex by lazy {
         proto.typeAliasList.withIndex()
             .groupBy({ context.nameResolver.getName(it.value.name) }) { (index) -> index }
@@ -117,10 +118,10 @@ abstract class AbstractFirDeserializedSymbolProvider(
         return computePackagePartsInfos(packageFqName)
     }
 
-    private fun findAndDeserializeTypeAlias(classId: ClassId): FirTypeAliasSymbol? {
-        return getPackageParts(classId.packageFqName).firstNotNullOfOrNull { part ->
-            val ids = part.typeAliasNameIndex[classId.shortClassName]
-            if (ids == null || ids.isEmpty()) return@firstNotNullOfOrNull null
+    private fun findAndDeserializeTypeAlias(key: TypeAliasKey): FirTypeAliasSymbol? {
+        return key.parts.firstNotNullOfOrNull { part ->
+            val ids = part.typeAliasNameIndex[key.classId.shortClassName]
+            if (ids.isNullOrEmpty()) return@firstNotNullOfOrNull null
             val aliasProto = part.proto.getTypeAlias(ids.single())
             part.context.memberDeserializer.loadTypeAlias(aliasProto).symbol
         }
@@ -197,8 +198,23 @@ abstract class AbstractFirDeserializedSymbolProvider(
         return classCache.getValue(classId, parentContext)
     }
 
-    private fun getTypeAlias(classId: ClassId): FirTypeAliasSymbol? =
-        if (classId.relativeClassName.isOneSegmentFQN()) typeAliasCache.getValue(classId) else null
+    private class TypeAliasKey(val classId: ClassId, val parts: List<PackagePartsCacheData>) {
+        override fun equals(other: Any?): Boolean {
+            return other is TypeAliasKey && classId == other.classId
+        }
+
+        override fun hashCode(): Int {
+            return classId.hashCode()
+        }
+    }
+
+    private fun getTypeAlias(classId: ClassId): FirTypeAliasSymbol? {
+        if (!classId.relativeClassName.isOneSegmentFQN()) return null
+        val partsWithTypeAliases = getPackageParts(classId.packageFqName).filter { it.hasTypeAliases }
+        if (partsWithTypeAliases.isEmpty()) return null
+        val key = TypeAliasKey(classId, partsWithTypeAliases)
+        return typeAliasCache.getValue(key)
+    }
 
     // ------------------------ SymbolProvider methods ------------------------
 
