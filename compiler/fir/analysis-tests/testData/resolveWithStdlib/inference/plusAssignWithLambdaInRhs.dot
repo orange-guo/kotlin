@@ -66,6 +66,7 @@ digraph plusAssignWithLambdaInRhs_kt {
         }
         24 [label="Exit class A" style="filled" fillcolor=red];
     }
+    17 -> {18} [color=green];
     17 -> {24} [style=dotted];
     17 -> {18 21} [style=dashed];
     18 -> {19};

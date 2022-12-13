@@ -43,6 +43,7 @@ digraph assignSafeCall_kt {
         }
         18 [label="Exit function foo" style="filled" fillcolor=red];
     }
+    0 -> {1} [color=green];
     0 -> {7} [style=dotted];
     0 -> {1 4} [style=dashed];
     1 -> {2};

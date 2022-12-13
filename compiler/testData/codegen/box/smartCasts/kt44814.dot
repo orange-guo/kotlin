@@ -14,6 +14,7 @@ digraph kt44814_kt {
         }
         4 [label="Exit class FlyweightCapableTreeStructure [1]" style="filled" fillcolor=red];
     }
+    0 -> {1} [color=green];
     0 -> {4} [style=dotted];
     0 -> {1} [style=dashed];
     1 -> {2};
@@ -31,6 +32,7 @@ digraph kt44814_kt {
         }
         9 [label="Exit class FirSourceElement [1]" style="filled" fillcolor=red];
     }
+    5 -> {6} [color=green];
     5 -> {9} [style=dotted];
     5 -> {6} [style=dashed];
     6 -> {7};
@@ -66,6 +68,7 @@ digraph kt44814_kt {
         }
         23 [label="Exit class FirPsiSourceElement [1]" style="filled" fillcolor=red];
     }
+    10 -> {11} [color=green];
     10 -> {23} [style=dotted];
     10 -> {11 14 17 20} [style=dashed];
     11 -> {12};
@@ -104,6 +107,7 @@ digraph kt44814_kt {
         }
         34 [label="Exit class FirLightSourceElement [1]" style="filled" fillcolor=red];
     }
+    24 -> {25} [color=green];
     24 -> {34} [style=dotted];
     24 -> {25 28 31} [style=dashed];
     25 -> {26};
@@ -127,6 +131,7 @@ digraph kt44814_kt {
         }
         39 [label="Exit class PsiElement [1]" style="filled" fillcolor=red];
     }
+    35 -> {36} [color=green];
     35 -> {39} [style=dotted];
     35 -> {36} [style=dashed];
     36 -> {37};
@@ -144,6 +149,7 @@ digraph kt44814_kt {
         }
         44 [label="Exit class ASTNode [1]" style="filled" fillcolor=red];
     }
+    40 -> {41} [color=green];
     40 -> {44} [style=dotted];
     40 -> {41} [style=dashed];
     41 -> {42};
@@ -195,6 +201,7 @@ digraph kt44814_kt {
         }
         68 [label="Exit function getChildren [2]" style="filled" fillcolor=red];
     }
+    45 -> {46} [color=green];
     45 -> {61} [style=dotted];
     45 -> {46 54 57} [style=dashed];
     46 -> {47};
@@ -251,6 +258,7 @@ digraph kt44814_kt {
         }
         81 [label="Exit class Companion [2]" style="filled" fillcolor=red];
     }
+    69 -> {70} [color=green];
     69 -> {73} [style=dotted];
     69 -> {70} [style=dashed];
     70 -> {71};
@@ -258,6 +266,7 @@ digraph kt44814_kt {
     72 -> {73} [color=green];
     73 -> {74} [color=green];
     73 -> {74} [style=dashed];
+    74 -> {75} [color=green];
     74 -> {81} [style=dotted];
     74 -> {75 78} [style=dashed];
     75 -> {76};
@@ -278,6 +287,7 @@ digraph kt44814_kt {
         }
         86 [label="Exit class KtModifierKeywordToken [1]" style="filled" fillcolor=red];
     }
+    82 -> {83} [color=green];
     82 -> {86} [style=dotted];
     82 -> {83} [style=dashed];
     83 -> {84};
@@ -295,6 +305,7 @@ digraph kt44814_kt {
         }
         91 [label="Exit class KtModifierList [1]" style="filled" fillcolor=red];
     }
+    87 -> {88} [color=green];
     87 -> {91} [style=dotted];
     87 -> {88} [style=dashed];
     88 -> {89};
@@ -318,6 +329,7 @@ digraph kt44814_kt {
         }
         99 [label="Exit class KtModifierListOwner [1]" style="filled" fillcolor=red];
     }
+    92 -> {93} [color=green];
     92 -> {99} [style=dotted];
     92 -> {93 96} [style=dashed];
     93 -> {94};
@@ -382,6 +394,7 @@ digraph kt44814_kt {
         }
         127 [label="Exit class FirPsiModifier [2]" style="filled" fillcolor=red];
     }
+    100 -> {101} [color=green];
     100 -> {110} [style=dotted];
     100 -> {101 104 107} [style=dashed];
     101 -> {102};
@@ -395,6 +408,7 @@ digraph kt44814_kt {
     109 -> {110} [color=green];
     110 -> {111 121} [color=green];
     110 -> {111 121} [style=dashed];
+    111 -> {112} [color=green];
     111 -> {120} [style=dotted];
     111 -> {112 117} [style=dashed];
     112 -> {113};
@@ -405,6 +419,7 @@ digraph kt44814_kt {
     117 -> {118};
     118 -> {119};
     119 -> {120} [color=green];
+    121 -> {122} [color=green];
     121 -> {127} [style=dotted];
     121 -> {122} [style=dashed];
     122 -> {123};
@@ -680,6 +695,7 @@ digraph kt44814_kt {
         }
         272 [label="Exit class FirPsiModifierList [2]" style="filled" fillcolor=red];
     }
+    128 -> {129} [color=green];
     128 -> {135} [style=dotted];
     128 -> {129 132} [style=dashed];
     129 -> {130};
@@ -690,6 +706,7 @@ digraph kt44814_kt {
     134 -> {135} [color=green];
     135 -> {136 254 265} [color=green];
     135 -> {136 254 265} [style=dashed];
+    136 -> {137} [color=green];
     136 -> {140} [style=dotted];
     136 -> {137} [style=dashed];
     137 -> {138};
@@ -816,6 +833,7 @@ digraph kt44814_kt {
     250 -> {251} [style=dotted];
     251 -> {252} [style=dotted];
     252 -> {253} [style=dotted];
+    254 -> {255} [color=green];
     254 -> {264} [style=dotted];
     254 -> {255 258 261} [style=dashed];
     255 -> {256};
@@ -827,6 +845,7 @@ digraph kt44814_kt {
     261 -> {262};
     262 -> {263};
     263 -> {264} [color=green];
+    265 -> {266} [color=green];
     265 -> {272} [style=dotted];
     265 -> {266 269} [style=dashed];
     266 -> {267};

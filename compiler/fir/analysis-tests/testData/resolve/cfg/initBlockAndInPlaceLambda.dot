@@ -59,6 +59,7 @@ digraph initBlockAndInPlaceLambda_kt {
         }
         27 [label="Exit class C" style="filled" fillcolor=red];
     }
+    4 -> {5} [color=green];
     4 -> {27} [style=dotted];
     4 -> {5 8} [style=dashed];
     5 -> {6};

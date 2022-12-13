@@ -137,6 +137,7 @@ digraph smartcastToNothing_kt {
         }
         49 [label="Exit class A" style="filled" fillcolor=red];
     }
+    39 -> {40} [color=green];
     39 -> {49} [style=dotted];
     39 -> {40 43 46} [style=dashed];
     40 -> {41};

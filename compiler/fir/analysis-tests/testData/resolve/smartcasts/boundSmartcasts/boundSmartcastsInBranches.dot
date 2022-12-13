@@ -20,6 +20,7 @@ digraph boundSmartcastsInBranches_kt {
         }
         7 [label="Exit class A" style="filled" fillcolor=red];
     }
+    0 -> {1} [color=green];
     0 -> {7} [style=dotted];
     0 -> {1 4} [style=dashed];
     1 -> {2};

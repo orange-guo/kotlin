@@ -14,6 +14,7 @@ digraph delegateWithAnonymousObject_kt {
         }
         4 [label="Exit class DelegateProvider" style="filled" fillcolor=red];
     }
+    0 -> {1} [color=green];
     0 -> {4} [style=dotted];
     0 -> {1} [style=dashed];
     1 -> {2};
@@ -65,6 +66,7 @@ digraph delegateWithAnonymousObject_kt {
         }
         22 [label="Exit function updateFrom" style="filled" fillcolor=red];
     }
+    14 -> {15} [color=green];
     14 -> {18} [style=dotted];
     14 -> {15} [style=dashed];
     15 -> {16};
@@ -178,6 +180,7 @@ digraph delegateWithAnonymousObject_kt {
         }
         79 [label="Exit function <getter>" style="filled" fillcolor=red];
     }
+    23 -> {24} [color=green];
     23 -> {62} [style=dotted];
     23 -> {24 27} [style=dashed];
     24 -> {25};

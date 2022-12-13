@@ -21,6 +21,7 @@ digraph returnValuesFromLambda_kt {
         }
         6 [label="Exit class B" style="filled" fillcolor=red];
     }
+    2 -> {3} [color=green];
     2 -> {6} [style=dotted];
     2 -> {3} [style=dashed];
     3 -> {4};
@@ -38,6 +39,7 @@ digraph returnValuesFromLambda_kt {
         }
         11 [label="Exit class C" style="filled" fillcolor=red];
     }
+    7 -> {8} [color=green];
     7 -> {11} [style=dotted];
     7 -> {8} [style=dashed];
     8 -> {9};

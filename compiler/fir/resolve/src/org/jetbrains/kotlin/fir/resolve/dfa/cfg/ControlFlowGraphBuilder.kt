@@ -449,23 +449,22 @@ class ControlFlowGraphBuilder {
             if (isInPlace) calledInPlace.add(graph) else calledLater.add(graph)
         }
 
-        val lastInPlaceExit = calledInPlace.fold(enterNode) { previous: CFGNode<*>, graph ->
-            // Should already have an edge from `enterNode` to first initializer.
-            if (previous !== enterNode) {
-                if (mergeDataFlow) {
-                    addEdge(previous, exitNode, preferredKind = EdgeKind.DfgForward)
-                }
-                addEdge(previous, graph.enterNode, preferredKind = EdgeKind.CfgForward)
-                // If one initializer does not terminate, then all initializers after it are dead.
-                // (If the entire class is dead, then all nodes in all initializers are already marked as such.)
-                if (!enterNode.isDead) {
-                    propagateDeadnessForward(enterNode)
-                }
+        val exitKind = if (mergeDataFlow) EdgeKind.Forward else EdgeKind.CfgForward
+        if (calledInPlace.isEmpty()) {
+            addEdge(enterNode, exitNode, preferredKind = exitKind)
+        } else {
+            if (enterNode.previousNodes.isEmpty()) {
+                // Control flow edge to first initializer was only added for local classes.
+                addEdge(enterNode, calledInPlace[0].enterNode, preferredKind = EdgeKind.CfgForward)
             }
-            graph.exitNode
-        }
-        addEdge(lastInPlaceExit, exitNode, preferredKind = if (mergeDataFlow) EdgeKind.Forward else EdgeKind.CfgForward)
-        if (lastInPlaceExit !== enterNode) {
+            val lastInPlace = calledInPlace.reduce { a, b ->
+                if (mergeDataFlow) {
+                    addEdge(a.exitNode, exitNode, preferredKind = EdgeKind.DfgForward)
+                }
+                addEdgeToSubGraph(a.exitNode, b.enterNode)
+                b
+            }
+            addEdge(lastInPlace.exitNode, exitNode, preferredKind = exitKind)
             // Fake edge to enforce ordering.
             addEdge(enterNode, exitNode, preferredKind = EdgeKind.DeadForward, propagateDeadness = false)
         }
@@ -478,10 +477,7 @@ class ControlFlowGraphBuilder {
         //     }
         //     println(x)
         for (graph in calledLater) {
-            addEdge(exitNode, graph.enterNode, preferredKind = EdgeKind.CfgForward)
-            if (!enterNode.isDead) {
-                propagateDeadnessForward(graph.enterNode)
-            }
+            addEdgeToSubGraph(exitNode, graph.enterNode)
         }
 
         enterNode.subGraphs = calledInPlace
@@ -1283,6 +1279,16 @@ class ControlFlowGraphBuilder {
             if (preferredKind.isBack) EdgeKind.DeadBackward else EdgeKind.DeadForward
         } else preferredKind
         CFGNode.addEdge(from, to, kind, propagateDeadness, label)
+    }
+
+    private fun addEdgeToSubGraph(from: CFGNode<*>, to: CFGNode<*>) {
+        val wasDead = to.isDead
+        val isDead = wasDead || from.isDead
+        // Can only add control flow since data flow for every node that follows `to` has already been computed.
+        CFGNode.addEdge(from, to, if (isDead) EdgeKind.DeadForward else EdgeKind.CfgForward, propagateDeadness = true)
+        if (isDead && !wasDead) {
+            propagateDeadnessForward(to)
+        }
     }
 
     private fun addBackEdge(from: CFGNode<*>, to: CFGNode<*>, isDead: Boolean = false, label: EdgeLabel = LoopBackPath) {

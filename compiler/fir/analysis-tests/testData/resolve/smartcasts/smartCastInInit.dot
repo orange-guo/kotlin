@@ -73,6 +73,7 @@ digraph smartCastInInit_kt {
         }
         27 [label="Exit class Main" style="filled" fillcolor=red];
     }
+    14 -> {15} [color=green];
     14 -> {27} [style=dotted];
     14 -> {15 18} [style=dashed];
     15 -> {16};

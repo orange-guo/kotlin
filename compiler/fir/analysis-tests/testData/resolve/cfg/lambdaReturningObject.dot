@@ -42,6 +42,7 @@ digraph lambdaReturningObject_kt {
         }
         12 [label="Exit class IrStarProjectionImpl" style="filled" fillcolor=red];
     }
+    8 -> {9} [color=green];
     8 -> {12} [style=dotted];
     8 -> {9} [style=dashed];
     9 -> {10};

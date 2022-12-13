@@ -26,6 +26,7 @@ digraph smartcastInByClause_kt {
         }
         10 [label="Exit class A" style="filled" fillcolor=red];
     }
+    0 -> {1} [color=green];
     0 -> {10} [style=dotted];
     0 -> {1 4 7} [style=dashed];
     1 -> {2};
@@ -62,6 +63,7 @@ digraph smartcastInByClause_kt {
         }
         20 [label="Exit class Derived" style="filled" fillcolor=red];
     }
+    13 -> {14} [color=green];
     13 -> {20} [style=dotted];
     13 -> {14 17} [style=dashed];
     14 -> {15};

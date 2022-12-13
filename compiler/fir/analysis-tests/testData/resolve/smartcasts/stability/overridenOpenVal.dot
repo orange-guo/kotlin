@@ -20,6 +20,7 @@ digraph overridenOpenVal_kt {
         }
         7 [label="Exit class A" style="filled" fillcolor=red];
     }
+    0 -> {1} [color=green];
     0 -> {7} [style=dotted];
     0 -> {1 4} [style=dashed];
     1 -> {2};
@@ -74,6 +75,7 @@ digraph overridenOpenVal_kt {
         }
         31 [label="Exit function test_1" style="filled" fillcolor=red];
     }
+    8 -> {9} [color=green];
     8 -> {13} [style=dotted];
     8 -> {9} [style=dashed];
     9 -> {10};

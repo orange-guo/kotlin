@@ -84,6 +84,7 @@ digraph nullability_kt {
         }
         28 [label="Exit function fdata" style="filled" fillcolor=red];
     }
+    14 -> {15} [color=green];
     14 -> {21} [style=dotted];
     14 -> {15 18} [style=dashed];
     15 -> {16};
@@ -132,6 +133,7 @@ digraph nullability_kt {
         }
         43 [label="Exit function fdata" style="filled" fillcolor=red];
     }
+    29 -> {30} [color=green];
     29 -> {36} [style=dotted];
     29 -> {30 33} [style=dashed];
     30 -> {31};
@@ -187,6 +189,7 @@ digraph nullability_kt {
         }
         62 [label="Exit function <getter>" style="filled" fillcolor=red];
     }
+    44 -> {45} [color=green];
     44 -> {48} [style=dotted];
     44 -> {45} [style=dashed];
     45 -> {46};

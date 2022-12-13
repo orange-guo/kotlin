@@ -353,6 +353,7 @@ digraph boundSmartcasts_kt {
         }
         132 [label="Exit class D" style="filled" fillcolor=red];
     }
+    125 -> {126} [color=green];
     125 -> {132} [style=dotted];
     125 -> {126 129} [style=dashed];
     126 -> {127};

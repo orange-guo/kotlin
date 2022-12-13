@@ -26,6 +26,7 @@ digraph initBlock_kt {
         }
         10 [label="Exit class Foo" style="filled" fillcolor=red];
     }
+    0 -> {1} [color=green];
     0 -> {10} [style=dotted];
     0 -> {1 4} [style=dashed];
     1 -> {2};
@@ -66,6 +67,7 @@ digraph initBlock_kt {
         }
         26 [label="Exit class Bar" style="filled" fillcolor=gray];
     }
+    11 -> {12} [color=green];
     11 -> {26} [style=dotted];
     11 -> {12 15} [style=dashed];
     12 -> {13};
