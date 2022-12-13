@@ -9,7 +9,7 @@ digraph inLocalFunction_kt {
         subgraph cluster_1 {
             color=blue
             1 [label="Enter block"];
-            2 [label="Local function declaration foo"];
+            2 [label="Local function declaration"];
             3 [label="Function call: R|<local>/localFun|()" style="filled" fillcolor=yellow];
             4 [label="Function call: R|<local>/b|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()" style="filled" fillcolor=yellow];
             5 [label="Exit block"];

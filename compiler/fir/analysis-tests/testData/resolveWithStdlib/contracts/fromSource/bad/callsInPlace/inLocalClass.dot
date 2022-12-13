@@ -9,7 +9,7 @@ digraph inLocalClass_kt {
         subgraph cluster_1 {
             color=blue
             1 [label="Enter block"];
-            2 [label="Exit local class foo"];
+            2 [label="Local class declaration"];
             3 [label="Function call: R|/LocalClass.LocalClass|()" style="filled" fillcolor=yellow];
             4 [label="Function call: R|/LocalClass.LocalClass|().R|<local>/run|()" style="filled" fillcolor=yellow];
             5 [label="Function call: R|<local>/e|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()" style="filled" fillcolor=yellow];
