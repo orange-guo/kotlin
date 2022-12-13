@@ -36,6 +36,7 @@ data class BuildOptions(
     val buildReport: List<BuildReportType> = emptyList(),
     val useFir: Boolean = false,
     val usePreciseJavaTracking: Boolean? = null,
+    val usePreciseOutputsBackup: Boolean? = null,
     val freeArgs: List<String> = emptyList(),
 ) {
     data class KaptOptions(
@@ -137,6 +138,10 @@ data class BuildOptions(
 
         if (usePreciseJavaTracking != null) {
             arguments.add("-Pkotlin.incremental.usePreciseJavaTracking=$usePreciseJavaTracking")
+        }
+
+        if (usePreciseOutputsBackup != null) {
+            arguments.add("-Pkotlin.compiler.preciseCompilationResultsBackup=$usePreciseOutputsBackup")
         }
 
         arguments.addAll(freeArgs)

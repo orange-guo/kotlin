@@ -11,7 +11,7 @@ import java.nio.file.Path
 import kotlin.io.path.*
 
 @JsGradlePluginTests
-class IncrementalCompilationJsMultiProjectIT : BaseIncrementalCompilationMultiProjectIT() {
+open class IncrementalCompilationJsMultiProjectIT : BaseIncrementalCompilationMultiProjectIT() {
     override val defaultProjectName: String = "incrementalMultiproject"
 
     override fun defaultProject(
@@ -132,6 +132,10 @@ class IncrementalCompilationJsMultiProjectIT : BaseIncrementalCompilationMultiPr
             }
         }
     }
+}
+
+class IncrementalCompilationJsMultiProjectWithPreciseBackupIT : IncrementalCompilationJsMultiProjectIT() {
+    override val defaultBuildOptions = super.defaultBuildOptions.copy(usePreciseOutputsBackup = true)
 }
 
 @JvmGradlePluginTests
@@ -273,11 +277,15 @@ open class IncrementalCompilationJvmMultiProjectIT : BaseIncrementalCompilationM
     }
 }
 
+class IncrementalCompilationJvmMultiProjectWithPreciseBackupIT : IncrementalCompilationJvmMultiProjectIT() {
+    override val defaultBuildOptions = super.defaultBuildOptions.copy(usePreciseOutputsBackup = true)
+}
+
 class IncrementalCompilationFirJvmMultiProjectIT : IncrementalCompilationJvmMultiProjectIT() {
     override val defaultBuildOptions: BuildOptions = super.defaultBuildOptions.copy(useFir = true)
 }
 
-class IncrementalCompilationOldICJvmMultiProjectIT : IncrementalCompilationJvmMultiProjectIT() {
+open class IncrementalCompilationOldICJvmMultiProjectIT : IncrementalCompilationJvmMultiProjectIT() {
 
     override val defaultBuildOptions = super.defaultBuildOptions.copy(useGradleClasspathSnapshot = false)
 
@@ -408,6 +416,10 @@ class IncrementalCompilationOldICJvmMultiProjectIT : IncrementalCompilationJvmMu
             }
         }
     }
+}
+
+class IncrementalCompilationOldICJvmMultiProjectWithPreciseBackupIT : IncrementalCompilationOldICJvmMultiProjectIT() {
+    override val defaultBuildOptions = super.defaultBuildOptions.copy(usePreciseOutputsBackup = true)
 }
 
 abstract class BaseIncrementalCompilationMultiProjectIT : IncrementalCompilationBaseIT() {
