@@ -253,7 +253,7 @@ class DeclarationGenerator(
                     buildRefNull(vtableStruct.fields[i].type.getHeapType())
                 }
             }
-            buildStructNew(vTableTypeReference)
+            buildStructNew(vTableTypeReference, SourceLocation.NoLocation("Create instance of vtable struct"))
         }
         context.defineGlobalVTable(
             irClass = symbol,
@@ -262,6 +262,7 @@ class DeclarationGenerator(
     }
 
     private fun createClassITable(metadata: ClassMetadata) {
+        val location = SourceLocation.NoLocation("Create instance of itable struct")
         val klass = metadata.klass
         if (klass.isAbstractOrSealed) return
         val supportedInterface = metadata.interfaces.firstOrNull()?.symbol ?: return
@@ -297,9 +298,9 @@ class DeclarationGenerator(
                         buildRefNull(WasmHeapType.Type(context.referenceFunctionType(method.function.symbol)))
                     }
                 }
-                buildStructNew(iFaceVTableGcType)
+                buildStructNew(iFaceVTableGcType, location)
             }
-            buildStructNew(classInterfaceType)
+            buildStructNew(classInterfaceType, location)
         }
 
         val wasmClassIFaceGlobal = WasmGlobal(
