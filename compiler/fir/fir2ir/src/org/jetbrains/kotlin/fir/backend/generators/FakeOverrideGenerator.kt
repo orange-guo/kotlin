@@ -112,7 +112,13 @@ class FakeOverrideGenerator(
         useSiteOrStaticScope.processFunctionsByName(name) { functionSymbol ->
             createFakeOverriddenIfNeeded(
                 firClass, irClass, isLocal, functionSymbol,
-                declarationStorage::getCachedIrFunction,
+                { function, signatureCalculator ->
+                    declarationStorage.getCachedIrFunction(
+                        function,
+                        fakeOverrideOwnerLookupTag = null,
+                        signatureCalculator
+                    )
+                },
                 declarationStorage::createIrFunction,
                 createFakeOverrideSymbol = { firFunction, callableSymbol ->
                     val symbol = FirFakeOverrideGenerator.createSymbolForSubstitutionOverride(callableSymbol, firClass.symbol.classId)
@@ -139,7 +145,13 @@ class FakeOverrideGenerator(
                 is FirPropertySymbol -> {
                     createFakeOverriddenIfNeeded(
                         firClass, irClass, isLocal, propertyOrFieldSymbol,
-                        declarationStorage::getCachedIrProperty,
+                        { property, signatureCalculator ->
+                            declarationStorage.getCachedIrProperty(
+                                property,
+                                fakeOverrideOwnerLookupTag = null,
+                                signatureCalculator
+                            )
+                        },
                         declarationStorage::createIrProperty,
                         createFakeOverrideSymbol = { firProperty, callableSymbol ->
                             val symbolForOverride =
@@ -167,7 +179,7 @@ class FakeOverrideGenerator(
                     if (!propertyOrFieldSymbol.isStatic) return@processPropertiesByName
                     createFakeOverriddenIfNeeded(
                         firClass, irClass, isLocal, propertyOrFieldSymbol,
-                        { field, _, _ -> declarationStorage.getCachedIrFieldStaticFakeOverrideByDeclaration(field) },
+                        { field, _ -> declarationStorage.getCachedIrFieldStaticFakeOverrideByDeclaration(field) },
                         { field, irParent, _, _, _ ->
                             declarationStorage.createIrField(field, irParent)
                         },
@@ -217,7 +229,7 @@ class FakeOverrideGenerator(
         irClass: IrClass,
         isLocal: Boolean,
         originalSymbol: FirCallableSymbol<*>,
-        cachedIrDeclaration: (firDeclaration: D, dispatchReceiverLookupTag: ConeClassLikeLookupTag?, () -> IdSignature?) -> I?,
+        cachedIrDeclaration: (firDeclaration: D, () -> IdSignature?) -> I?,
         createIrDeclaration: (firDeclaration: D, irParent: IrClass, thisReceiverOwner: IrClass?, origin: IrDeclarationOrigin, isLocal: Boolean) -> I,
         createFakeOverrideSymbol: (firDeclaration: D, baseSymbol: S) -> S,
         baseSymbols: MutableMap<I, List<S>>,
@@ -259,7 +271,7 @@ class FakeOverrideGenerator(
                 return
             }
         }
-        val irDeclaration = cachedIrDeclaration(fakeOverrideFirDeclaration, null) {
+        val irDeclaration = cachedIrDeclaration(fakeOverrideFirDeclaration) {
             // Sometimes we can have clashing here when FIR substitution/intersection override
             // have the same signature.
             // Now we avoid this problem by signature caching,

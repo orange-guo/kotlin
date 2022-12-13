@@ -76,11 +76,17 @@ class Fir2IrDeclarationStorage(
 
     private val functionCache = ConcurrentHashMap<FirFunction, IrSimpleFunction>()
 
+    private val functionOverrideCache = ConcurrentHashMap<CallableOverrideKey<FirFunction>, IrSimpleFunction>()
+
     private val constructorCache = ConcurrentHashMap<FirConstructor, IrConstructor>()
 
     private val initializerCache = ConcurrentHashMap<FirAnonymousInitializer, IrAnonymousInitializer>()
 
     private val propertyCache = ConcurrentHashMap<FirProperty, IrProperty>()
+
+    private val propertyOverrideCache = ConcurrentHashMap<CallableOverrideKey<FirProperty>, IrProperty>()
+
+    private data class CallableOverrideKey<D : FirCallableDeclaration>(val lookupTag: ConeClassLikeLookupTag, val declaration: D)
 
     // interface A { /* $1 */ fun foo() }
     // interface B : A {
@@ -442,7 +448,9 @@ class Fir2IrDeclarationStorage(
         if (function.visibility == Visibilities.Local) {
             return localStorage.getLocalFunction(function)
         }
-        return getCachedIrCallable(function, fakeOverrideOwnerLookupTag, functionCache, signatureCalculator) { signature ->
+        return getCachedIrCallable(
+            function, fakeOverrideOwnerLookupTag, functionCache, functionOverrideCache, signatureCalculator
+        ) { signature ->
             symbolTable.referenceSimpleFunctionIfAny(signature)?.owner
         }
     }
@@ -515,8 +523,7 @@ class Fir2IrDeclarationStorage(
             runUnless(
                 isLocal ||
                         !generateSignatures && irParent !is Fir2IrLazyClass &&
-                        function.dispatchReceiverType?.isPrimitive != true && function.containerSource == null &&
-                        updatedOrigin != IrDeclarationOrigin.FAKE_OVERRIDE && !function.isOverride
+                        function.dispatchReceiverType?.isPrimitive != true && function.containerSource == null
             ) {
                 signatureComposer.composeSignature(function, fakeOverrideOwnerLookupTag, forceTopLevelPrivate)
             }
@@ -570,7 +577,14 @@ class Fir2IrDeclarationStorage(
                 created.overriddenSymbols += getIrFunctionSymbol(it) as IrSimpleFunctionSymbol
             }
         }
-        functionCache[function] = created
+        val fakeOverrideKey = runUnless(isLocal) {
+            getCallableFakeOverrideKey(function, fakeOverrideOwnerLookupTag ?: function.containingClassLookupTag())
+        }
+        if (fakeOverrideKey == null) {
+            functionCache[function] = created
+        } else {
+            functionOverrideCache[fakeOverrideKey] = created
+        }
         return created
     }
 
@@ -855,8 +869,7 @@ class Fir2IrDeclarationStorage(
             runUnless(
                 isLocal ||
                         !generateSignatures && irParent !is Fir2IrLazyClass &&
-                        property.dispatchReceiverType?.isPrimitive != true && property.containerSource == null &&
-                        origin != IrDeclarationOrigin.FAKE_OVERRIDE && !property.isOverride
+                        property.dispatchReceiverType?.isPrimitive != true && property.containerSource == null
             ) {
                 signatureComposer.composeSignature(property, fakeOverrideOwnerLookupTag, forceTopLevelPrivate)
             }
@@ -954,7 +967,14 @@ class Fir2IrDeclarationStorage(
                     leaveScope(this)
                 }
             }
-            propertyCache[property] = result
+            val fakeOverrideKey = runUnless(isLocal) {
+                getCallableFakeOverrideKey(property, fakeOverrideOwnerLookupTag)
+            }
+            if (fakeOverrideKey == null) {
+                propertyCache[property] = result
+            } else {
+                propertyOverrideCache[fakeOverrideKey] = result
+            }
             result
         }
     }
@@ -966,7 +986,9 @@ class Fir2IrDeclarationStorage(
         fakeOverrideOwnerLookupTag: ConeClassLikeLookupTag?,
         signatureCalculator: () -> IdSignature?
     ): IrProperty? {
-        return getCachedIrCallable(property, fakeOverrideOwnerLookupTag, propertyCache, signatureCalculator) { signature ->
+        return getCachedIrCallable(
+            property, fakeOverrideOwnerLookupTag, propertyCache, propertyOverrideCache, signatureCalculator
+        ) { signature ->
             symbolTable.referencePropertyIfAny(signature)?.owner
         }
     }
@@ -975,17 +997,24 @@ class Fir2IrDeclarationStorage(
         declaration: FC,
         fakeOverrideOwnerLookupTag: ConeClassLikeLookupTag?,
         cache: MutableMap<FC, IC>,
+        overrideCache: MutableMap<CallableOverrideKey<FC>, IC>,
         signatureCalculator: () -> IdSignature?,
         referenceIfAny: (IdSignature) -> IC?
     ): IC? {
-        val isFakeOverride = fakeOverrideOwnerLookupTag != null && fakeOverrideOwnerLookupTag != declaration.containingClassLookupTag()
-        if (!isFakeOverride) {
-            cache[declaration]?.let { return it }
+        val fakeOverrideKey = getCallableFakeOverrideKey(
+            declaration,
+            fakeOverrideOwnerLookupTag ?: declaration.containingClassLookupTag()
+        )
+        val cached = if (fakeOverrideKey == null) cache[declaration] else overrideCache[fakeOverrideKey]
+        if (cached != null) {
+            return cached
         }
         return signatureCalculator()?.let { signature ->
             referenceIfAny(signature)?.let { irDeclaration ->
-                if (!isFakeOverride) {
+                if (fakeOverrideKey == null) {
                     cache[declaration] = irDeclaration
+                } else {
+                    overrideCache[fakeOverrideKey] = irDeclaration
                 }
                 irDeclaration
             }
@@ -1112,6 +1141,16 @@ class Fir2IrDeclarationStorage(
             !field.isSubstitutionOrIntersectionOverride && ownerLookupTag == field.containingClassLookupTag()
         ) return null
         return FieldStaticOverrideKey(ownerLookupTag, field.name)
+    }
+
+    private inline fun <reified D : FirCallableDeclaration> getCallableFakeOverrideKey(
+        declaration: D,
+        ownerLookupTag: ConeClassLikeLookupTag?
+    ): CallableOverrideKey<D>? {
+        if (ownerLookupTag == null ||
+            !declaration.isSubstitutionOrIntersectionOverride && ownerLookupTag == declaration.containingClassLookupTag()
+        ) return null
+        return CallableOverrideKey(ownerLookupTag, declaration.unwrapFakeOverrides())
     }
 
     internal fun createIrParameter(
