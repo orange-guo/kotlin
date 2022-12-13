@@ -68,7 +68,7 @@ class BodyGenerator(
     private fun generateAsStatement(statement: IrExpression) {
         generateExpression(statement)
         if (statement.type != wasmSymbols.voidType) {
-            body.buildDrop()
+            body.buildDrop(statement.getSourceLocation())
         }
     }
 
@@ -471,7 +471,7 @@ class BodyGenerator(
                 location
             )
         } else {
-            body.buildDrop()
+            body.buildDrop(location)
             body.buildConstI32(1, location)
         }
     }
@@ -528,11 +528,11 @@ class BodyGenerator(
                                 body.buildInstr(WasmOp.I32_EQZ)
                                 body.buildBr(outerLabel)
                             }
-                            body.buildDrop()
+                            body.buildDrop(location)
                             body.buildConstI32(0, location)
                         }
                     } else {
-                        body.buildDrop()
+                        body.buildDrop(location)
                         body.buildConstI32(0, location)
                     }
                 }
@@ -572,7 +572,7 @@ class BodyGenerator(
 
                 wasmSymbols.unsafeGetScratchRawMemory -> {
                     // TODO: This drops size of the allocated segment. Instead we can check that it's in bounds for better error messages.
-                    body.buildDrop()
+                    body.buildDrop(location)
                     body.buildConstI32Symbol(context.scratchMemAddr, location)
                 }
 
@@ -708,7 +708,7 @@ class BodyGenerator(
         // NOTHING? -> TYPE? -> (NOTHING?)NULL
         if (actualType.isNullableNothing() && expectedType.isNullable()) {
             if (expectedType.getClass()?.isExternal == true) {
-                body.buildDrop()
+                body.buildDrop(location)
                 body.buildRefNull(WasmHeapType.Simple.NullNoExtern, location)
             }
             return
