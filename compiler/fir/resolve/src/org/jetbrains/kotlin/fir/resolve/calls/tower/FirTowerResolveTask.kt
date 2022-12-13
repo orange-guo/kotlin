@@ -34,7 +34,7 @@ internal class TowerDataElementsForName(
             for (i in nonLocal.lastIndex downTo 0) {
                 val t = nonLocal[i]
 
-                if (t.scope != null && !mayContainName(t.scope!!, callInfo.name) && callInfo.callKind != CallKind.CallableReference) {
+                if (t.scope != null && !mayContainName(t.scope!!, callInfo.name)) {
                     continue
                 }
 
@@ -46,10 +46,12 @@ internal class TowerDataElementsForName(
     private fun mayContainName(scope: FirScope, name: Name): Boolean {
         var result = false
 
-        scope.processFunctionsByName(name) {
-            result = true
+        if (callInfo.callKind != CallKind.VariableAccess) {
+            scope.processFunctionsByName(name) {
+                result = true
+            }
+            if (result) return true
         }
-        if (result) return true
 
         scope.processPropertiesByName(name) {
             result = true
