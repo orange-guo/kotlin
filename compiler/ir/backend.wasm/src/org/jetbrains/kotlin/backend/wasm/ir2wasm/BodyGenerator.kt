@@ -189,7 +189,7 @@ class BodyGenerator(
                 generateInstanceFieldAccess(field)
             }
         } else {
-            body.buildGetGlobal(context.referenceGlobalField(field.symbol))
+            body.buildGetGlobal(context.referenceGlobalField(field.symbol), expression.getSourceLocation())
         }
     }
 
@@ -291,9 +291,9 @@ class BodyGenerator(
 
     private fun generateAnyParameters(klassSymbol: IrClassSymbol, location: SourceLocation) {
         //ClassITable and VTable load
-        body.buildGetGlobal(context.referenceGlobalVTable(klassSymbol))
+        body.buildGetGlobal(context.referenceGlobalVTable(klassSymbol), location)
         if (klassSymbol.owner.hasInterfaceSuperClass()) {
-            body.buildGetGlobal(context.referenceGlobalClassITable(klassSymbol))
+            body.buildGetGlobal(context.referenceGlobalClassITable(klassSymbol), location)
         } else {
             body.buildRefNull(WasmHeapType.Simple.Data)
         }
