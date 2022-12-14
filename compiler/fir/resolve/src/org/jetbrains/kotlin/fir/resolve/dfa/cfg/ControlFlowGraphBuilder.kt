@@ -923,6 +923,8 @@ class ControlFlowGraphBuilder {
         val nextExitLevel = levelOfNextExceptionCatchingGraph()
         val nextFinally = finallyEnterNodes.topOrNull()?.takeIf { it.level > nextExitLevel }
         if (nextFinally != null) {
+            // `PathAwareControlFlowGraphVisitor` has a special case that this path matches any label
+            // that is not otherwise matched by the edges below.
             addEdge(exitNode, nextFinally, label = UncaughtExceptionPath, propagateDeadness = false)
         }
 
@@ -1291,7 +1293,7 @@ class ControlFlowGraphBuilder {
         }
     }
 
-    private fun addBackEdge(from: CFGNode<*>, to: CFGNode<*>, isDead: Boolean = false, label: EdgeLabel = LoopBackPath) {
+    private fun addBackEdge(from: CFGNode<*>, to: CFGNode<*>, isDead: Boolean = false, label: EdgeLabel = NormalPath) {
         val kind = if (isDead || from.isDead || to.isDead) EdgeKind.DeadBackward else EdgeKind.CfgBackward
         CFGNode.addEdge(from, to, kind, propagateDeadness = false, label = label)
     }
