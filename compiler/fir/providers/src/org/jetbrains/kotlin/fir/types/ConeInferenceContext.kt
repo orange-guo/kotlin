@@ -175,7 +175,10 @@ interface ConeInferenceContext : TypeSystemInferenceExtensionContext, ConeTypeCo
         visited: HashSet<KotlinTypeMarker> = hashSetOf()
     ): Boolean {
         if (this == null) return false
-        if (!visited.add(this)) return false
+
+        if (this !is ConeLookupTagBasedType) {
+            if (!visited.add(this)) return false
+        }
 
         if (predicate(this)) return true
 
