@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.fir.java
 
+import org.jetbrains.kotlin.fir.FirAnnotationContainer
 import org.jetbrains.kotlin.fir.FirModuleData
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
@@ -14,7 +15,6 @@ import org.jetbrains.kotlin.fir.diagnostics.ConeSimpleDiagnostic
 import org.jetbrains.kotlin.fir.diagnostics.DiagnosticKind
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.builder.*
-import org.jetbrains.kotlin.fir.java.declarations.FirJavaMethod
 import org.jetbrains.kotlin.fir.java.declarations.buildJavaValueParameter
 import org.jetbrains.kotlin.fir.references.builder.buildErrorNamedReference
 import org.jetbrains.kotlin.fir.references.builder.buildResolvedNamedReference
@@ -46,12 +46,14 @@ internal fun JavaAnnotationOwner.convertAnnotationsToFir(
     session: FirSession, javaTypeParameterStack: JavaTypeParameterStack
 ): List<FirAnnotation> = annotations.convertAnnotationsToFir(session, javaTypeParameterStack)
 
-internal fun MutableList<FirAnnotation>.addFromJava(
+internal fun FirAnnotationContainer.addAnnotationsFromJava(
     session: FirSession,
     javaAnnotationOwner: JavaAnnotationOwner,
     javaTypeParameterStack: JavaTypeParameterStack
 ) {
-    javaAnnotationOwner.annotations.mapTo(this) { it.toFirAnnotationCall(session, javaTypeParameterStack) }
+    val annotations = mutableListOf<FirAnnotation>()
+    javaAnnotationOwner.annotations.mapTo(annotations) { it.toFirAnnotationCall(session, javaTypeParameterStack) }
+    replaceAnnotations(annotations)
 }
 
 internal fun JavaValueParameter.toFirValueParameter(

@@ -224,8 +224,9 @@ fun deserializeClassToSymbol(
                 (member as FirProperty?)?.returnTypeRef?.coneTypeSafe()
             } ?: computeValueClassRepresentation(this, session)
 
-        (annotations as MutableList<FirAnnotation>) +=
+        replaceAnnotations(
             context.annotationDeserializer.loadClassAnnotations(classProto, context.nameResolver)
+        )
 
         versionRequirementsTable = context.versionRequirementTable
 
