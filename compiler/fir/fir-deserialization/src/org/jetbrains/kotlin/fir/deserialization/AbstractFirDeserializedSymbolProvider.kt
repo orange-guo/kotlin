@@ -23,6 +23,7 @@ import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlin.serialization.SerializerExtensionProtocol
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedContainerSource
 import org.jetbrains.kotlin.serialization.deserialization.getName
+import org.jetbrains.kotlin.utils.addToStdlib.plusAssign
 import java.nio.file.Path
 
 class PackagePartsCacheData(

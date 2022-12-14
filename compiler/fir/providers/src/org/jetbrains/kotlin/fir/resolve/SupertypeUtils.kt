@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.types.model.CaptureStatus
 import org.jetbrains.kotlin.utils.SmartList
 import org.jetbrains.kotlin.utils.SmartSet
 import org.jetbrains.kotlin.utils.addIfNotNull
+import org.jetbrains.kotlin.utils.addToStdlib.plusAssign
 
 abstract class SupertypeSupplier {
     abstract fun forClass(firClass: FirClass, useSiteSession: FirSession): List<ConeClassLikeType>

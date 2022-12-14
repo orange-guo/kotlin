@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.fir.resolve.typeResolver
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.types.builder.buildErrorTypeRef
 import org.jetbrains.kotlin.fir.types.builder.buildResolvedTypeRef
+import org.jetbrains.kotlin.utils.addToStdlib.plusAssign
 
 class FirSpecificTypeResolverTransformer(
     override val session: FirSession,

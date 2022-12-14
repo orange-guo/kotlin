@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.types.builder.buildResolvedTypeRef
 import org.jetbrains.kotlin.fir.visitors.FirDefaultTransformer
 import org.jetbrains.kotlin.fir.visitors.FirTransformer
+import org.jetbrains.kotlin.utils.addToStdlib.plusAssign
 
 internal object StoreType : FirDefaultTransformer<FirTypeRef>() {
     override fun <E : FirElement> transformElement(element: E, data: FirTypeRef): E {

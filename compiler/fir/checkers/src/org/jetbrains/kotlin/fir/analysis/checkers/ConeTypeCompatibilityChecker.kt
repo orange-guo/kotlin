@@ -19,6 +19,7 @@ import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.types.Variance
+import org.jetbrains.kotlin.utils.addToStdlib.plusAssign
 
 /**
  * Checks if a given collection of [ConeKotlinType] are compatible. In other words, the types are compatible if it's possible at all to

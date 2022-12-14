@@ -35,6 +35,7 @@ import org.jetbrains.kotlin.serialization.deserialization.getClassId
 import org.jetbrains.kotlin.serialization.deserialization.getName
 import org.jetbrains.kotlin.types.Variance
 import org.jetbrains.kotlin.util.shouldIjPlatformExceptionBeRethrown
+import org.jetbrains.kotlin.utils.addToStdlib.plusAssign
 
 class FirTypeDeserializer(
     val moduleData: FirModuleData,

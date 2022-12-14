@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.fir.declarations.utils.isLocal
 import org.jetbrains.kotlin.fir.render
 import org.jetbrains.kotlin.fir.resolve.providers.firProvider
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
+import org.jetbrains.kotlin.utils.addToStdlib.plusAssign
 
 class DesignationState private constructor(
     val firstDeclaration: FirDeclaration,

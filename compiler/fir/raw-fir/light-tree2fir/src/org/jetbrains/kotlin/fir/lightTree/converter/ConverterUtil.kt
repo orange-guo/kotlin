@@ -29,6 +29,7 @@ import org.jetbrains.kotlin.fir.types.FirUserTypeRef
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 import org.jetbrains.kotlin.psi.KtPsiUtil
+import org.jetbrains.kotlin.utils.addToStdlib.plusAssign
 
 fun String?.nameAsSafeName(defaultName: String = ""): Name {
     return when {

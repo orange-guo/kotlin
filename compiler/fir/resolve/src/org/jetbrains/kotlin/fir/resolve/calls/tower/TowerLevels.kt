@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.name.StandardClassIds.Annotations.HidesMembers
 import org.jetbrains.kotlin.types.AbstractTypeChecker
 import org.jetbrains.kotlin.utils.SmartList
+import org.jetbrains.kotlin.utils.addToStdlib.plusAssign
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 
 enum class ProcessResult {

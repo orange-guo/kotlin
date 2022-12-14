@@ -44,6 +44,7 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.types.AbstractTypeChecker
 import org.jetbrains.kotlin.utils.addIfNotNull
+import org.jetbrains.kotlin.utils.addToStdlib.plusAssign
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 
 class JavaClassUseSiteMemberScope(

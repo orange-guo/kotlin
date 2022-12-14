@@ -26,6 +26,7 @@ import org.jetbrains.kotlin.fir.visibilityChecker
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.deprecation.DeprecationLevelValue
 import org.jetbrains.kotlin.util.shouldIjPlatformExceptionBeRethrown
+import org.jetbrains.kotlin.utils.addToStdlib.plusAssign
 
 private operator fun <T> Pair<T, *>?.component1() = this?.first
 private operator fun <T> Pair<*, T>?.component2() = this?.second

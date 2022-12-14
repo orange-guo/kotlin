@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.fir.caches.getValue
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.extensions.predicate.AbstractPredicate
 import org.jetbrains.kotlin.fir.extensions.predicate.DeclarationPredicate
+import org.jetbrains.kotlin.utils.addToStdlib.plusAssign
 import org.jetbrains.kotlin.utils.addToStdlib.shouldNotBeCalled
 
 abstract class FirRegisteredPluginAnnotations : FirSessionComponent {

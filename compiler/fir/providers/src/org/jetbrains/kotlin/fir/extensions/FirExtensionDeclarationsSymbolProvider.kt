@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.utils.addToStdlib.flatGroupBy
+import org.jetbrains.kotlin.utils.addToStdlib.plusAssign
 
 @OptIn(FirExtensionApiInternals::class)
 class FirExtensionDeclarationsSymbolProvider private constructor(

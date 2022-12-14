@@ -300,3 +300,9 @@ fun <T : Enum<T>> enumSetOf(element: T, vararg elements: T): EnumSet<T> = EnumSe
 fun shouldNotBeCalled(message: String = "should not be called"): Nothing {
     error(message)
 }
+
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@kotlin.internal.InlineOnly
+inline operator fun <T> MutableCollection<in T>.plusAssign(elements: Collection<T>) {
+    this.addAll(elements)
+}
