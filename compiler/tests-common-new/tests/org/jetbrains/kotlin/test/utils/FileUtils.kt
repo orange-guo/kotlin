@@ -36,9 +36,9 @@ val File.firTestDataFile: File
     get() = getCustomTestDataFileWithPrefix(FIR_PREFIX)
 
 /**
- * An LL FIR test data file allows tailoring the expected output of a test to the LL FIR case. In very rare cases, LL FIR may legally
- * diverge from the output of the K2 compiler, such as when the compiler's error behavior is deliberately unspecified. (For an example, see
- * `kotlinJavaKotlinCycle.ll.kt`.)
+ * An LL FIR test data file (`.ll.kt`) allows tailoring the expected output of a test to the LL FIR case. In very rare cases, LL FIR may
+ * legally diverge from the output of the K2 compiler, such as when the compiler's error behavior is deliberately unspecified. (For an
+ * example, see `kotlinJavaKotlinCycle.ll.kt`.)
  */
 val File.llFirTestDataFile: File
     get() = getCustomTestDataFileWithPrefix(LL_FIR_PREFIX)

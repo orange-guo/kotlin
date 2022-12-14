@@ -15,6 +15,9 @@ import java.io.File
 class FirOldFrontendMetaConfigurator(testServices: TestServices) : MetaTestConfigurator(testServices) {
     override fun transformTestDataPath(testDataFileName: String): String {
         val originalFile = File(testDataFileName)
+
+        // Skip `.ll.kt` tests, whose path is provided by `LLFirMetaTestConfigurator`. Because `FirOldFrontendMetaConfigurator` is usually
+        // configured with `forTestsMatching`, it'll be executed after `LLFirMetaTestConfigurator`, which is configured generally.
         if (originalFile.isLLFirTestData) return testDataFileName
 
         val isFirIdentical = originalFile.useLines { lines -> lines.any { it == "// ${FirDiagnosticsDirectives.FIR_IDENTICAL.name}" } }

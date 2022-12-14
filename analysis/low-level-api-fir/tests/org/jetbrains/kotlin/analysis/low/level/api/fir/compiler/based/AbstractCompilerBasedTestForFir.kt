@@ -29,8 +29,6 @@ import org.jetbrains.kotlin.test.model.FrontendFacade
 import org.jetbrains.kotlin.test.model.FrontendKinds
 import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.services.*
-import org.jetbrains.kotlin.test.utils.llFirTestDataFile
-import java.io.File
 
 abstract class AbstractCompilerBasedTestForFir : AbstractCompilerBasedTest() {
     @OptIn(TestInfrastructureInternals::class)
@@ -51,6 +49,7 @@ abstract class AbstractCompilerBasedTestForFir : AbstractCompilerBasedTest() {
             useHandlers(::LLDiagnosticParameterChecker)
         }
 
+        useMetaTestConfigurators(::LLFirMetaTestConfigurator)
         useAfterAnalysisCheckers(::LLFirIdenticalChecker)
     }
 
@@ -92,14 +91,10 @@ abstract class AbstractCompilerBasedTestForFir : AbstractCompilerBasedTest() {
         if (ignoreTest(filePath, configuration)) {
             return
         }
-
-        val llFirFile = File(filePath).llFirTestDataFile
-        val actualFilePath = if (llFirFile.exists()) llFirFile.path else filePath
-
         val oldEnableDeepEnsure = LLFirLazyTransformer.needCheckingIfClassMembersAreResolved
         try {
             LLFirLazyTransformer.needCheckingIfClassMembersAreResolved = true
-            super.runTest(actualFilePath)
+            super.runTest(filePath)
         } finally {
             LLFirLazyTransformer.needCheckingIfClassMembersAreResolved = oldEnableDeepEnsure
         }
