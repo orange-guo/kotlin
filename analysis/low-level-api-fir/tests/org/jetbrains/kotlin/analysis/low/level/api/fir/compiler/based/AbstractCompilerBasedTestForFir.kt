@@ -51,6 +51,7 @@ abstract class AbstractCompilerBasedTestForFir : AbstractCompilerBasedTest() {
 
         useMetaTestConfigurators(::LLFirMetaTestConfigurator)
         useAfterAnalysisCheckers(::LLFirIdenticalChecker)
+        useAfterAnalysisCheckers(::LLFirDivergenceCommentChecker)
     }
 
     open fun TestConfigurationBuilder.configureTest() {}

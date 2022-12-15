@@ -1,5 +1,7 @@
-// LL FIR divergence: The compiler doesn't specify which declaration of `B` is chosen in supertype resolution given that `B` is declared
-// both as a class and as an object.
+// LL_FIR_DIVERGENCE
+// The compiler doesn't specify which declaration of `B` is chosen in supertype resolution given that `B` is declared both as a class and
+// as an object.
+// LL_FIR_DIVERGENCE
 
 sealed class A
 

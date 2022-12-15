@@ -5,33 +5,32 @@
 
 package org.jetbrains.kotlin.analysis.low.level.api.fir.compiler.based
 
-import org.jetbrains.kotlin.test.WrappedException
-import org.jetbrains.kotlin.test.model.AfterAnalysisChecker
+import org.jetbrains.kotlin.test.frontend.fir.handlers.AbstractFirIdenticalChecker
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.assertions
-import org.jetbrains.kotlin.test.services.moduleStructure
-import org.jetbrains.kotlin.test.utils.FirIdenticalCheckerHelper
-import org.jetbrains.kotlin.test.utils.firTestDataFile
 import org.jetbrains.kotlin.test.utils.isLLFirTestData
-import org.jetbrains.kotlin.test.utils.originalTestDataFile
 import java.io.File
 
-class LLFirIdenticalChecker(testServices: TestServices) : AfterAnalysisChecker(testServices) {
-    private val helper = object : FirIdenticalCheckerHelper(testServices) {
-        override fun getClassicFileToCompare(testDataFile: File): File = testDataFile.originalTestDataFile
-        override fun getFirFileToCompare(testDataFile: File): File = testDataFile.firTestDataFile
-    }
-
-    override fun check(failedAssertions: List<WrappedException>) {
-        if (failedAssertions.isNotEmpty()) return
-        val testDataFile = testServices.moduleStructure.originalTestDataFiles.first()
+/**
+ * `.ll.kt` test data should not be identical to its base `.fir.kt`/`.kt` test data. If a base `.fir.kt` file does not exist, the base file
+ * is the `.kt` file.
+ *
+ * As the `LL_FIR_DIVERGENCE` directive only exists in `.ll.kt` files, [LLFirIdenticalChecker] ignores this directive when comparing the
+ * LL FIR file's content to the base file's content.
+ */
+class LLFirIdenticalChecker(testServices: TestServices) : AbstractFirIdenticalChecker(testServices) {
+    override fun checkTestDataFile(testDataFile: File) {
         if (!testDataFile.isLLFirTestData) return
 
-        // `.ll.kt` test data should not be identical to its base `.fir.kt`/`.kt` test data. If a base `.fir.kt` file does not exist, the
-        // base file is the `.kt` file.
         val originalFile = helper.getClassicFileToCompare(testDataFile)
         val baseFile = helper.getFirFileToCompare(originalFile).takeIf { it.exists() } ?: originalFile
-        if (helper.contentsAreEquals(baseFile, testDataFile, trimLines = true)) {
+
+        // `readContentIgnoringLlFirDivergenceDirective` trims whitespace after the `LL_FIR_DIVERGENCE` directive to allow blank lines
+        // after the directive. Hence, the base content's starting whitespace needs to be trimmed as well, otherwise file contents might
+        // differ in their starting whitespace.
+        val baseContent = helper.readContent(baseFile, trimLines = true).trimStart()
+        val llContent = testDataFile.readContentIgnoringLlFirDivergenceDirective(trimLines = true)
+        if (baseContent == llContent) {
             testServices.assertions.fail {
                 "`${testDataFile.name}` and `${baseFile.name}` are identical. Remove `$testDataFile`."
             }

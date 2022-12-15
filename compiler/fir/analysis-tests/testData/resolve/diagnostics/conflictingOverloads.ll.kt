@@ -1,5 +1,6 @@
-// LL FIR divergence: The compiler doesn't specify which declaration of `A` is chosen in supertype resolution given that `A` has multiple
-// redeclarations.
+// LL_FIR_DIVERGENCE
+// The compiler doesn't specify which declaration of `A` is chosen in supertype resolution given that `A` has multiple redeclarations.
+// LL_FIR_DIVERGENCE
 
 <!CONFLICTING_OVERLOADS!>fun test(x: Int)<!> {}
 
