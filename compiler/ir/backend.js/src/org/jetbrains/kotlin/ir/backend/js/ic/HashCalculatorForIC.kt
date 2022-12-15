@@ -20,6 +20,7 @@ import org.jetbrains.kotlin.library.KotlinLibrary
 import org.jetbrains.kotlin.protobuf.CodedInputStream
 import org.jetbrains.kotlin.protobuf.CodedOutputStream
 import java.io.File
+import java.io.OutputStream
 import java.security.MessageDigest
 
 @JvmInline
@@ -76,27 +77,50 @@ private class HashCalculatorForIC {
         return hash
     }
 
+    fun outputStream(): OutputStream {
+        return object : OutputStream() {
+            override fun write(b: Int) = update(b)
+            override fun write(b: ByteArray, off: Int, len: Int) = md5.update(b, off, len)
+            override fun write(b: ByteArray) = md5.update(b)
+        }
+    }
+
     fun finalize(): ICHash {
         val d = md5.digest()
         return ICHash(bytesToULong(d, 0)).combineWith(ICHash(bytesToULong(d, 8)))
     }
 }
 
-internal fun File.fileHashForIC(): ICHash {
-    val md5 = HashCalculatorForIC()
-    fun File.process(prefix: String = "") {
+private class FileHashCalculatorForIC(private val file: File) {
+    private val hashCalculator = HashCalculatorForIC()
+
+    val icHash = run {
+        file.update("")
+        hashCalculator.finalize()
+    }
+
+    private fun File.update(prefix: String) {
         if (isDirectory) {
-            this.listFiles()!!.sortedBy { it.name }.forEach {
-                md5.update(prefix + it.name)
-                it.process(prefix + it.name + "/")
-            }
+            updateDir(prefix)
         } else {
-            md5.update(readBytes())
+            updateRegularFile()
         }
     }
-    this.process()
-    return md5.finalize()
+
+    private fun File.updateDir(prefix: String) {
+        listFiles()!!.sortedBy { it.name }.forEach { f ->
+            val filePrefix = "$prefix${f.name}/"
+            hashCalculator.update(filePrefix)
+            f.update(filePrefix)
+        }
+    }
+
+    private fun File.updateRegularFile() {
+        inputStream().use { stream -> stream.copyTo(hashCalculator.outputStream()) }
+    }
 }
+
+internal fun File.fileHashForIC() = FileHashCalculatorForIC(this).icHash
 
 internal fun CompilerConfiguration.configHashForIC() = HashCalculatorForIC().apply {
     val importantSettings = listOf(
