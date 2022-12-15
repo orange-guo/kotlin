@@ -39661,6 +39661,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
             }
 
             @Test
+            @TestMetadata("intrinsicsOnGlobal.kt")
+            public void testIntrinsicsOnGlobal() throws Exception {
+                runTest("compiler/testData/codegen/box/volatile/intrinsicsOnGlobal.kt");
+            }
+
+            @Test
             @TestMetadata("messagePassing.kt")
             public void testMessagePassing() throws Exception {
                 runTest("compiler/testData/codegen/box/volatile/messagePassing.kt");
