@@ -2,39 +2,47 @@
 // FILE: Base.java
 
 public class Base {
-    public String a = "a";
+    public String regular = "a";
 
-    public String b = "b";
+    public String withGetter = "b";
 
-    public String c = "c";
+    public String lateInit = "c";
 
-    public String d = "d";
+    public String lazyProp = "d";
 
-    public String e = "e";
+    public String withSetter = "e";
+
+    public String openProp = "f";
 }
 
 // FILE: test.kt
 
-class Derived : Base() {
-    val a = "aa"
+open class Derived : Base() {
+    val regular = "aa"
 
-    val b get() = "bb"
+    val withGetter get() = "bb"
 
-    lateinit var c: String
+    lateinit var lateInit: String
 
-    val d by lazy { "dd" }
+    val lazyProp by lazy { "dd" }
 
-    var e: String = "ee"
+    var withSetter: String = "ee"
         set(value) {
             println(value)
             field = value
         }
+
+    open val openProp = "ff"
 }
 
 fun test(d: Derived) {
-    d.a
-    d.<!BASE_CLASS_FIELD_SHADOWS_DERIVED_CLASS_PROPERTY("Base; with custom getter")!>b<!>
-    d.<!BASE_CLASS_FIELD_SHADOWS_DERIVED_CLASS_PROPERTY("Base; with lateinit")!>c<!>
-    d.<!BASE_CLASS_FIELD_SHADOWS_DERIVED_CLASS_PROPERTY("Base; with custom getter")!>d<!>
-    d.<!BASE_CLASS_FIELD_SHADOWS_DERIVED_CLASS_PROPERTY("Base; with custom setter")!>e<!> = ""
+    d.regular
+    d.<!BASE_CLASS_FIELD_SHADOWS_DERIVED_CLASS_PROPERTY("Base; Derived")!>withGetter<!>
+    d.<!BACKING_FIELD_ACCESSED_DUE_TO_PROPERTY_FIELD_CONFLICT("Base; Derived")!>lateInit<!>
+    d.<!BASE_CLASS_FIELD_SHADOWS_DERIVED_CLASS_PROPERTY("Base; Derived")!>lazyProp<!>
+    d.<!BACKING_FIELD_ACCESSED_DUE_TO_PROPERTY_FIELD_CONFLICT("Base; Derived")!>withSetter<!> = ""
+    d.<!BASE_CLASS_FIELD_MAY_SHADOW_DERIVED_CLASS_PROPERTY("Base; Derived")!>openProp<!>
+
+    d::<!BASE_CLASS_FIELD_SHADOWS_DERIVED_CLASS_PROPERTY!>withGetter<!>
+    Derived::<!BASE_CLASS_FIELD_SHADOWS_DERIVED_CLASS_PROPERTY!>withGetter<!>
 }

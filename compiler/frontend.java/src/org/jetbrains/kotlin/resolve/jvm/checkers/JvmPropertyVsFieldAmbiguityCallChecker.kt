@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
+import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.load.java.lazy.descriptors.isJavaField
@@ -38,7 +39,8 @@ object JvmPropertyVsFieldAmbiguityCallChecker : CallChecker {
                 val hasLateInit = alternativePropertyDescriptor.isLateInit
                 if (!hasLateInit &&
                     alternativePropertyDescriptor.getter?.isDefault != false &&
-                    alternativePropertyDescriptor.setter?.isDefault != false
+                    alternativePropertyDescriptor.setter?.isDefault != false &&
+                    alternativePropertyDescriptor.modality == Modality.FINAL
                 ) return@forEach
                 val propertyClassDescriptor =
                     DescriptorUtils.unwrapFakeOverride(alternativePropertyDescriptor).containingDeclaration as? ClassDescriptor
@@ -52,16 +54,19 @@ object JvmPropertyVsFieldAmbiguityCallChecker : CallChecker {
                         /* useSpecialRulesForPrivateSealedConstructors = */ false
                     )
                 ) {
-
+                    val factory = when {
+                        alternativePropertyDescriptor.getter?.isDefault == false ->
+                            ErrorsJvm.BASE_CLASS_FIELD_SHADOWS_DERIVED_CLASS_PROPERTY
+                        hasLateInit || alternativePropertyDescriptor.setter?.isDefault == false ->
+                            ErrorsJvm.BACKING_FIELD_ACCESSED_DUE_TO_PROPERTY_FIELD_CONFLICT
+                        else ->
+                            ErrorsJvm.BASE_CLASS_FIELD_MAY_SHADOW_DERIVED_CLASS_PROPERTY
+                    }
                     context.trace.report(
-                        ErrorsJvm.BASE_CLASS_FIELD_SHADOWS_DERIVED_CLASS_PROPERTY.on(
+                        factory.on(
                             reportOn,
                             fieldClassDescriptor?.fqNameSafe?.asString() ?: "unknown class",
-                            when {
-                                hasLateInit -> "with lateinit"
-                                alternativePropertyDescriptor.getter?.isDefault == false -> "with custom getter"
-                                else -> "with custom setter"
-                            }
+                            propertyClassDescriptor?.fqNameSafe?.asString() ?: "unknown class"
                         )
                     )
                     return
