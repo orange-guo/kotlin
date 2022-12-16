@@ -122,7 +122,7 @@ fun FirClass.isSubclassOf(
         supertypeSupplier
     ).any { superType ->
         // Note: We check just classId here, so type substitution isn't needed
-        superType.fullyExpandedType(session).lookupTag.classId.isSame(ownerLookupTag.classId)
+        superType.lookupTag.classId.isSame(ownerLookupTag.classId)
     }
 }
 
