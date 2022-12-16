@@ -51,11 +51,13 @@ class JvmPlatformOverloadsConflictResolver(
         for (otherCandidate in candidates) {
             val field = otherCandidate.symbol.fir as? FirField ?: continue
             val fieldContainingClassLookupTag = field.unwrapFakeOverrides().symbol.containingClassLookupTag()
-            if (fieldContainingClassLookupTag != null) {
-                // NB: FE 1.0 does class equivalence check here
+            if (fieldContainingClassLookupTag != null &&
+                !propertyContainingClassLookupTag.strictlyDerivedFrom(fieldContainingClassLookupTag)
+            ) {
+                // NB: FE 1.0 does class equivalence check here ^^^
                 // However, in FIR container classes aren't the same for our samples (see fieldPropertyOverloads.kt)
                 // E.g. we can have SomeConcreteJavaEnum for field and kotlin.Enum for static property 'name'
-                return !propertyContainingClassLookupTag.strictlyDerivedFrom(fieldContainingClassLookupTag)
+                return true
             }
         }
         return false
@@ -66,11 +68,13 @@ class JvmPlatformOverloadsConflictResolver(
         for (otherCandidate in candidates) {
             val property = otherCandidate.symbol.fir as? FirProperty ?: continue
             val propertyContainingClassLookupTag = property.unwrapFakeOverrides().symbol.containingClassLookupTag()
-            if (propertyContainingClassLookupTag != null) {
-                // NB: FE 1.0 does class equivalence check here
+            if (propertyContainingClassLookupTag != null &&
+                propertyContainingClassLookupTag.strictlyDerivedFrom(fieldContainingClassLookupTag)
+            ) {
+                // NB: FE 1.0 does class equivalence check here ^^^
                 // However, in FIR container classes aren't the same for our samples (see fieldPropertyOverloads.kt)
                 // E.g. we can have SomeConcreteJavaEnum for field and kotlin.Enum for static property 'name'
-                return propertyContainingClassLookupTag.strictlyDerivedFrom(fieldContainingClassLookupTag)
+                return true
             }
         }
         return false

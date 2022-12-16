@@ -3480,12 +3480,6 @@ public class DiagnosisCompilerFirTestdataTestGenerated extends AbstractDiagnosis
             }
 
             @Test
-            @TestMetadata("propertyFieldShadow.kt")
-            public void testPropertyFieldShadow() throws Exception {
-                runTest("compiler/fir/analysis-tests/testData/resolve/problems/propertyFieldShadow.kt");
-            }
-
-            @Test
             @TestMetadata("questionableSmartCast.kt")
             public void testQuestionableSmartCast() throws Exception {
                 runTest("compiler/fir/analysis-tests/testData/resolve/problems/questionableSmartCast.kt");
@@ -3577,6 +3571,34 @@ public class DiagnosisCompilerFirTestdataTestGenerated extends AbstractDiagnosis
             @TestMetadata("syntheticPropertiesForJavaAnnotations.kt")
             public void testSyntheticPropertiesForJavaAnnotations() throws Exception {
                 runTest("compiler/fir/analysis-tests/testData/resolve/properties/syntheticPropertiesForJavaAnnotations.kt");
+            }
+        }
+
+        @Nested
+        @TestMetadata("compiler/fir/analysis-tests/testData/resolve/propertyVsField")
+        @TestDataPath("$PROJECT_ROOT")
+        public class PropertyVsField {
+            @Test
+            public void testAllFilesPresentInPropertyVsField() throws Exception {
+                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/fir/analysis-tests/testData/resolve/propertyVsField"), Pattern.compile("^([^.]+)\\.kt$"), null, true);
+            }
+
+            @Test
+            @TestMetadata("fieldPropertyShadow.kt")
+            public void testFieldPropertyShadow() throws Exception {
+                runTest("compiler/fir/analysis-tests/testData/resolve/propertyVsField/fieldPropertyShadow.kt");
+            }
+
+            @Test
+            @TestMetadata("propertyAndTwoFields.kt")
+            public void testPropertyAndTwoFields() throws Exception {
+                runTest("compiler/fir/analysis-tests/testData/resolve/propertyVsField/propertyAndTwoFields.kt");
+            }
+
+            @Test
+            @TestMetadata("propertyFieldShadow.kt")
+            public void testPropertyFieldShadow() throws Exception {
+                runTest("compiler/fir/analysis-tests/testData/resolve/propertyVsField/propertyFieldShadow.kt");
             }
         }
 
