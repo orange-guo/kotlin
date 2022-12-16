@@ -259,6 +259,12 @@ public class SymbolLightClassesLoadingForSourceTestGenerated extends AbstractSym
     }
 
     @Test
+    @TestMetadata("unresolvedWithAliasedImport.kt")
+    public void testUnresolvedWithAliasedImport() throws Exception {
+        runTest("compiler/testData/asJava/ultraLightClasses/unresolvedWithAliasedImport.kt");
+    }
+
+    @Test
     @TestMetadata("wildcardOptimization.kt")
     public void testWildcardOptimization() throws Exception {
         runTest("compiler/testData/asJava/ultraLightClasses/wildcardOptimization.kt");
