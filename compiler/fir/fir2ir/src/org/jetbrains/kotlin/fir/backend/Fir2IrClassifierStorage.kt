@@ -69,7 +69,11 @@ class Fir2IrClassifierStorage(
             val firClass = ConeClassLikeLookupTagImpl(classId).toSymbol(session)!!.fir as FirRegularClass
             val irClass = irBuiltinSymbol.owner
             classCache[firClass] = irClass
-            processClassHeader(firClass, irClass)
+            preCacheTypeParameters(firClass, irClass.symbol)
+            // Without this line, Array has T with uninitialized parent
+            irClass.setTypeParameters(firClass)
+            // Without this line, Int has Number & Any supertypes, instead of Number, Comparable, Serializable
+            irClass.declareSupertypes(firClass)
             declarationStorage.preCacheBuiltinClassMembers(firClass, irClass)
         }
         for ((primitiveClassId, primitiveArrayId) in StandardClassIds.primitiveArrayTypeByElementType) {
@@ -77,7 +81,6 @@ class Fir2IrClassifierStorage(
             val irType = typeConverter.classIdToTypeMap[primitiveClassId]
             val irClass = irBuiltIns.primitiveArrayForType[irType]!!.owner
             classCache[firClass] = irClass
-            processClassHeader(firClass, irClass)
             declarationStorage.preCacheBuiltinClassMembers(firClass, irClass)
         }
     }

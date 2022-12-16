@@ -169,6 +169,7 @@ class Fir2IrDeclarationStorage(
                 else -> {}
             }
         }
+        // Fake overrides for Any members are generated here
         val scope = firClass.unsubstitutedScope(session, scopeSession, withForcedTypeCalculator = false)
         scope.getCallableNames().forEach { callableName ->
             buildList {
