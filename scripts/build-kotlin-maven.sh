@@ -35,7 +35,7 @@ mvn -DnewVersion=$DEPLOY_VERSION -DgenerateBackupPoms=false -DprocessAllModules=
   -Pversions.kotlin-native=$KOTLIN_NATIVE_VERSION \
   -Pteamcity=true \
   --info \
-  publish
+  publishToMavenLocal
 
 # Build maven part and publish it to the same build/repo
 mvn \
