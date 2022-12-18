@@ -116,6 +116,8 @@ where advanced options include:
                              If it's not on the classpath, the compiler will attempt to load async-profiler.jar from the containing directory of profilerPath.
                              Example: -Xprofile=<PATH_TO_ASYNC_PROFILER>/async-profiler/build/libasyncProfiler.so:event=cpu,interval=1ms,threads,start:<SNAPSHOT_DIR_PATH>
   -Xrepeat=<number>          Debug option: Repeats modules compilation <number> times
+  -Xrewrite-jvm-static-in-companion
+                             If JvmStatic methods should be generated as static methods without a companion declaration, or as a static method that acts as a proxy to a companion method.
   -Xsam-conversions={class|indy} Select code generation scheme for SAM conversions.
                              -Xsam-conversions=indy              Generate SAM conversions using `invokedynamic` with `LambdaMetafactory.metafactory`. Requires `-jvm-target 1.8` or greater.
                              -Xsam-conversions=class             Generate SAM conversions as explicit classes

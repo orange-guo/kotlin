@@ -3,6 +3,7 @@ public final class TestClassCompanion$Companion {
     // source: 'jvmStaticExternalWithDeclarationRewrite.kt'
     private method <init>(): void
     public synthetic method <init>(p0: kotlin.jvm.internal.DefaultConstructorMarker): void
+    public final @kotlin.jvm.JvmStatic method foo(): void
     public final inner class TestClassCompanion$Companion
 }
 
