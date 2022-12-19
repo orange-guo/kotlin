@@ -10,21 +10,19 @@ import java.io.File
 private const val LL_FIR_DIVERGENCE_DIRECTIVE = "LL_FIR_DIVERGENCE"
 private const val LL_FIR_DIVERGENCE_DIRECTIVE_COMMENT = "// $LL_FIR_DIVERGENCE_DIRECTIVE"
 
+/**
+ * Checks whether the [File] contains a legal `LL_FIR_DIVERGENCE` directive without reading the whole file.
+ */
 fun File.hasLlFirDivergenceDirective(): Boolean = useLines { findDirectiveInLines(it.iterator()) }
 
-fun File.readContentIgnoringLlFirDivergenceDirective(trimLines: Boolean): String =
-    useLines { lines ->
-        // To ignore `LL_FIR_DIVERGENCE`, we advance `iterator` with `findDirectiveInLines` and then concatenate the rest of the lines.
-        val iterator = lines.iterator()
-        if (findDirectiveInLines(iterator)) {
-            // `trimStart` ensures that the `LL_FIR_DIVERGENCE` directive can be separated from the rest of the file by blank lines.
-            iterator.asSequence().concatLines(trimLines).trimStart()
-        } else null
-    } ?: useLines { lines ->
-        // If the directive isn't found, we must read the whole file instead. We have to start another `useLines` because the previous
-        // `findDirectiveInLines` might have advanced the iterator past the first line.
-        lines.concatLines(trimLines)
-    }
+fun String.removeLlFirDivergenceDirective(trimLines: Boolean): String {
+    // To ignore `LL_FIR_DIVERGENCE`, we advance `iterator` with `findDirectiveInLines` and then concatenate the rest of the lines.
+    val iterator = this.lineSequence().iterator()
+    return if (findDirectiveInLines(iterator)) {
+        // `trimStart` ensures that the `LL_FIR_DIVERGENCE` directive can be separated from the rest of the file by blank lines.
+        iterator.asSequence().concatLines(trimLines).trimStart()
+    } else this
+}
 
 private fun Sequence<String>.concatLines(trimLines: Boolean): String =
     if (trimLines) joinToString("\n") { it.trimEnd() }.trimEnd()

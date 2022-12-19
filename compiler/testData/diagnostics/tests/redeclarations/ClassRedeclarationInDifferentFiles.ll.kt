@@ -3,6 +3,7 @@
 // issue is already reported: KTIJ-23371.
 // LL_FIR_DIVERGENCE
 
+// FIR_IDENTICAL
 // FILE: f1.kt
 package test
 
