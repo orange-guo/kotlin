@@ -12,7 +12,7 @@ import org.jetbrains.kotlin.protobuf.CodedOutputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 
-internal class IncrementalCache(private val library: KotlinLibraryHeader, val cacheDir: File) {
+internal class IncrementalCache(private val library: KotlinLibraryHeader, val cacheDir: File, private val icHasher: ICHasher) {
     companion object {
         private const val CACHE_HEADER = "ic.header.bin"
 
@@ -76,7 +76,10 @@ internal class IncrementalCache(private val library: KotlinLibraryHeader, val ca
         override val directDependencies: KotlinSourceFileMap<Map<IdSignature, ICHash>>,
     ) : KotlinSourceFileMetadata()
 
-    private fun KotlinSourceFile.getCacheFile(suffix: String) = File(cacheDir, "${File(path).name}.${path.stringHashForIC()}.$suffix")
+    private fun KotlinSourceFile.getCacheFile(suffix: String): File {
+        val pathHash = icHasher.calculateStringHash(path)
+        return File(cacheDir, "${File(path).name}.$pathHash.$suffix")
+    }
 
     fun buildIncrementalCacheArtifact(signatureToIndexMapping: Map<KotlinSourceFile, Map<IdSignature, Int>>): IncrementalCacheArtifact {
         val klibSrcFiles = if (cacheHeaderShouldBeUpdated) {

@@ -11,7 +11,6 @@ import org.jetbrains.kotlin.ir.backend.js.transformers.irToJs.CrossModuleReferen
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.declarations.IrAnnotationContainer
 import org.jetbrains.kotlin.ir.declarations.IrFunction
-import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.IrTypeParametersContainer
 import org.jetbrains.kotlin.ir.symbols.IrSymbol
 import org.jetbrains.kotlin.ir.util.DumpIrTreeVisitor
@@ -87,91 +86,102 @@ private class HashCalculatorForIC {
 
     fun finalize(): ICHash {
         val d = md5.digest()
+        md5.reset()
         return ICHash(bytesToULong(d, 0)).combineWith(ICHash(bytesToULong(d, 8)))
     }
 }
 
-private class FileHashCalculatorForIC(private val file: File) {
+internal class ICHasher {
     private val hashCalculator = HashCalculatorForIC()
 
-    val icHash = run {
-        file.update("")
-        hashCalculator.finalize()
+    fun calculateStringHash(data: String): ICHash {
+        hashCalculator.update(data)
+        return hashCalculator.finalize()
     }
 
-    private fun File.update(prefix: String) {
-        if (isDirectory) {
-            updateDir(prefix)
-        } else {
-            updateRegularFile()
+    fun calculateConfigHash(config: CompilerConfiguration): ICHash {
+        val importantSettings = listOf(
+            JSConfigurationKeys.GENERATE_DTS,
+            JSConfigurationKeys.MODULE_KIND,
+            JSConfigurationKeys.PROPERTY_LAZY_INITIALIZATION
+        )
+        hashCalculator.updateForEach(importantSettings) { key ->
+            hashCalculator.update(key.toString())
+            hashCalculator.update(config.get(key).toString())
         }
+
+        hashCalculator.update(config.languageVersionSettings.toString())
+        return hashCalculator.finalize()
     }
 
-    private fun File.updateDir(prefix: String) {
-        listFiles()!!.sortedBy { it.name }.forEach { f ->
-            val filePrefix = "$prefix${f.name}/"
-            hashCalculator.update(filePrefix)
-            f.update(filePrefix)
+    fun calculateIrFunctionHash(function: IrFunction): ICHash {
+        hashCalculator.update(function)
+        return hashCalculator.finalize()
+    }
+
+    fun calculateIrAnnotationContainerHash(container: IrAnnotationContainer): ICHash {
+        hashCalculator.updateAnnotationContainer(container)
+        return hashCalculator.finalize()
+    }
+
+    fun calculateIrSymbolHash(symbol: IrSymbol): ICHash {
+        hashCalculator.update(symbol.toString())
+        // symbol rendering prints very little information about type parameters
+        // TODO may be it make sense to update rendering?
+        (symbol.owner as? IrTypeParametersContainer)?.let { typeParameters ->
+            hashCalculator.updateForEach(typeParameters.typeParameters) { typeParameter ->
+                hashCalculator.update(typeParameter.symbol.toString())
+            }
         }
+        (symbol.owner as? IrFunction)?.let { irFunction ->
+            hashCalculator.updateForEach(irFunction.valueParameters) { functionParam ->
+                // symbol rendering doesn't print default params information
+                // it is important to understand if default params were added or removed
+                hashCalculator.update(functionParam.defaultValue?.let { 1 } ?: 0)
+            }
+        }
+        (symbol.owner as? IrAnnotationContainer)?.let(hashCalculator::updateAnnotationContainer)
+        return hashCalculator.finalize()
     }
 
-    private fun File.updateRegularFile() {
-        inputStream().use { stream -> stream.copyTo(hashCalculator.outputStream()) }
+    fun calculateLibrarySrcFileHash(lib: KotlinLibrary, fileIndex: Int): ICHash {
+        hashCalculator.update(lib.types(fileIndex))
+        hashCalculator.update(lib.signatures(fileIndex))
+        hashCalculator.update(lib.strings(fileIndex))
+        hashCalculator.update(lib.declarations(fileIndex))
+        hashCalculator.update(lib.bodies(fileIndex))
+        return hashCalculator.finalize()
+    }
+
+    fun calculateFileHash(file: File): ICHash = FileHashCalculatorForIC(file, hashCalculator).icHash
+
+    private class FileHashCalculatorForIC(private val file: File, private val hashCalculator: HashCalculatorForIC) {
+        val icHash = run {
+            file.update("")
+            hashCalculator.finalize()
+        }
+
+        private fun File.update(prefix: String) {
+            if (isDirectory) {
+                updateDir(prefix)
+            } else {
+                updateRegularFile()
+            }
+        }
+
+        private fun File.updateDir(prefix: String) {
+            listFiles()!!.sortedBy { it.name }.forEach { f ->
+                val filePrefix = "$prefix${f.name}/"
+                hashCalculator.update(filePrefix)
+                f.update(filePrefix)
+            }
+        }
+
+        private fun File.updateRegularFile() {
+            inputStream().use { stream -> stream.copyTo(hashCalculator.outputStream()) }
+        }
     }
 }
-
-internal fun File.fileHashForIC() = FileHashCalculatorForIC(this).icHash
-
-internal fun CompilerConfiguration.configHashForIC() = HashCalculatorForIC().apply {
-    val importantSettings = listOf(
-        JSConfigurationKeys.GENERATE_DTS,
-        JSConfigurationKeys.MODULE_KIND,
-        JSConfigurationKeys.PROPERTY_LAZY_INITIALIZATION
-    )
-    updateForEach(importantSettings) { key ->
-        update(key.toString())
-        update(get(key).toString())
-    }
-
-    update(languageVersionSettings.toString())
-}.finalize()
-
-internal fun IrFunction.irFunctionHashForIC() = HashCalculatorForIC().also {
-    it.update(this)
-}.finalize()
-
-internal fun IrAnnotationContainer.irAnnotationContainerHashForIC() = HashCalculatorForIC().also {
-    it.updateAnnotationContainer(this)
-}.finalize()
-
-internal fun IrSymbol.irSymbolHashForIC() = HashCalculatorForIC().also {
-    it.update(toString())
-    // symbol rendering prints very little information about type parameters
-    // TODO may be it make sense to update rendering?
-    (owner as? IrTypeParametersContainer)?.let { typeParameters ->
-        it.updateForEach(typeParameters.typeParameters) { typeParameter ->
-            it.update(typeParameter.symbol.toString())
-        }
-    }
-    (owner as? IrFunction)?.let { irFunction ->
-        it.updateForEach(irFunction.valueParameters) { functionParam ->
-            // symbol rendering doesn't print default params information
-            // it is important to understand if default params were added or removed
-            it.update(functionParam.defaultValue?.let { 1 } ?: 0)
-        }
-    }
-    (owner as? IrAnnotationContainer)?.let(it::updateAnnotationContainer)
-}.finalize()
-
-internal fun String.stringHashForIC() = HashCalculatorForIC().also { it.update(this) }.finalize()
-
-internal fun KotlinLibrary.fingerprint(fileIndex: Int) = HashCalculatorForIC().apply {
-    update(types(fileIndex))
-    update(signatures(fileIndex))
-    update(strings(fileIndex))
-    update(declarations(fileIndex))
-    update(bodies(fileIndex))
-}.finalize()
 
 internal fun CrossModuleReferences.crossModuleReferencesHashForIC() = HashCalculatorForIC().apply {
     update(moduleKind.ordinal)

@@ -63,7 +63,9 @@ class CacheUpdater(
 
     private val mainLibraryFile = KotlinLibraryFile(File(mainModule).canonicalPath)
 
-    private val cacheRootDir = File(cacheDir, "version.${compilerConfiguration.configHashForIC()}")
+    private val icHasher = ICHasher()
+
+    private val cacheRootDir = File(cacheDir, "version.${icHasher.calculateConfigHash(compilerConfiguration)}")
 
     fun getDirtyFileLastStats(): KotlinSourceFileMap<EnumSet<DirtyFileState>> = dirtyFileStats
 
@@ -77,7 +79,7 @@ class CacheUpdater(
     }
 
     private inner class CacheUpdaterInternal {
-        val signatureHashCalculator = IdSignatureHashCalculator()
+        val signatureHashCalculator = IdSignatureHashCalculator(icHasher)
 
         // libraries in topological order: [stdlib, ..., main]
         val libraryDependencies = stopwatch.measure("Resolving and loading klib dependencies") {
@@ -114,8 +116,9 @@ class CacheUpdater(
         private val incrementalCaches = libraryDependencies.keys.associate { lib ->
             val libFile = KotlinLibraryFile(lib)
             val file = File(libFile.path)
-            val libraryCacheDir = File(cacheRootDir, "${file.name}.${file.absolutePath.stringHashForIC()}")
-            libFile to IncrementalCache(KotlinLoadedLibraryHeader(lib), libraryCacheDir)
+            val pathHash = icHasher.calculateStringHash(file.absolutePath)
+            val libraryCacheDir = File(cacheRootDir, "${file.name}.$pathHash")
+            libFile to IncrementalCache(KotlinLoadedLibraryHeader(lib, icHasher), libraryCacheDir, icHasher)
         }
 
         private val removedIncrementalCaches = buildList {
@@ -123,7 +126,7 @@ class CacheUpdater(
                 val availableCaches = incrementalCaches.values.mapTo(HashSet(incrementalCaches.size)) { it.cacheDir }
                 val allDirs = Files.walk(cacheRootDir.toPath(), 1).map { it.toFile() }
                 allDirs.filter { it != cacheRootDir && it !in availableCaches }.forEach { removedCacheDir ->
-                    add(IncrementalCache(KotlinRemovedLibraryHeader(removedCacheDir), removedCacheDir))
+                    add(IncrementalCache(KotlinRemovedLibraryHeader(removedCacheDir), removedCacheDir, icHasher))
                 }
             }
         }
@@ -733,7 +736,10 @@ fun rebuildCacheForDirtyFiles(
     }
 
     val libFile = KotlinLibraryFile(library)
-    val dirtySrcFiles = dirtyFiles?.map { KotlinSourceFile(it) } ?: KotlinLoadedLibraryHeader(library).sourceFileFingerprints.keys
+    val dirtySrcFiles = dirtyFiles?.map {
+        KotlinSourceFile(it)
+    } ?: KotlinLoadedLibraryHeader(library, ICHasher()).sourceFileFingerprints.keys
+
     val modifiedFiles = mapOf(libFile to dirtySrcFiles.associateWith { emptyMetadata })
 
     val jsIrLoader = JsIrLinkerLoader(configuration, dependencyGraph, emptyList(), irFactory)

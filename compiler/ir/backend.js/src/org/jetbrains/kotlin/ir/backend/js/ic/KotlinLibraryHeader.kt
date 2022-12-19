@@ -26,10 +26,10 @@ internal interface KotlinLibraryHeader {
     val jsOutputName: String?
 }
 
-internal class KotlinLoadedLibraryHeader(private val library: KotlinLibrary) : KotlinLibraryHeader {
+internal class KotlinLoadedLibraryHeader(private val library: KotlinLibrary, private val icHasher: ICHasher) : KotlinLibraryHeader {
     override val libraryFile: KotlinLibraryFile = KotlinLibraryFile(library)
 
-    override val libraryFingerprint: ICHash by lazy { File(libraryFile.path).fileHashForIC() }
+    override val libraryFingerprint: ICHash by lazy { icHasher.calculateFileHash(File(libraryFile.path)) }
 
     override val sourceFileDeserializers: Map<KotlinSourceFile, IdSignatureDeserializer> by lazy {
         buildMapUntil(sourceFiles.size) {
@@ -49,7 +49,7 @@ internal class KotlinLoadedLibraryHeader(private val library: KotlinLibrary) : K
 
     override val sourceFileFingerprints: Map<KotlinSourceFile, ICHash> by lazy {
         buildMapUntil(sourceFiles.size) {
-            put(sourceFiles[it], library.fingerprint(it))
+            put(sourceFiles[it], icHasher.calculateLibrarySrcFileHash(library, it))
         }
     }
 

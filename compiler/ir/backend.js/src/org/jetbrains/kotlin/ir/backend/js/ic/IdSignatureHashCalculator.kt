@@ -19,7 +19,7 @@ import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.ir.visitors.acceptVoid
 import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
 
-internal class IdSignatureHashCalculator {
+internal class IdSignatureHashCalculator(private val icHasher: ICHasher) {
     private val idSignatureSources = hashMapOf<IdSignature, IdSignatureSource>()
     private val idSignatureHashes = hashMapOf<IdSignature, ICHash>()
 
@@ -29,15 +29,17 @@ internal class IdSignatureHashCalculator {
     private val inlineFunctionDepends = hashMapOf<IrFunction, LinkedHashSet<IrFunction>>()
 
     private val IrFile.annotationsHash: ICHash
-        get() = fileAnnotationHashes.getOrPut(this, ::irAnnotationContainerHashForIC)
+        get() = fileAnnotationHashes.getOrPut(this) {
+            icHasher.calculateIrAnnotationContainerHash(this)
+        }
 
     private val IrFunction.inlineFunctionFlatHash: ICHash
         get() = inlineFunctionFlatHashes.getOrPut(this) {
             val flatHash = if (isFakeOverride && this is IrSimpleFunction) {
-                resolveFakeOverride()?.irFunctionHashForIC()
+                resolveFakeOverride()?.let { icHasher.calculateIrFunctionHash(it) }
                     ?: icError("can not resolve fake override for ${render()}")
             } else {
-                irFunctionHashForIC()
+                icHasher.calculateIrFunctionHash(this)
             }
             symbol.calculateSymbolHash().combineWith(flatHash)
         }
@@ -85,7 +87,7 @@ internal class IdSignatureHashCalculator {
         }
 
         val fileAnnotationsHash = srcIrFile?.annotationsHash ?: ICHash()
-        return fileAnnotationsHash.combineWith(irSymbolHashForIC())
+        return fileAnnotationsHash.combineWith(icHasher.calculateIrSymbolHash(this))
     }
 
     private fun IrFunction.calculateInlineFunctionTransitiveHash(): ICHash {
