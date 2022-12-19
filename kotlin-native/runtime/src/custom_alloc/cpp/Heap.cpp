@@ -82,11 +82,9 @@ LargePage* Heap::GetLargePage(uint64_t cellCount) noexcept {
 ExtraObjectPage* Heap::GetExtraObjectPage() noexcept {
     CustomAllocInfo("CustomAllocator::GetExtraObjectPage()");
     ExtraObjectPage* page = extraObjectPages_.Pop();
-    if (page) {
-        usedExtraObjectPages_.Push(page);
-        return page;
+    if (page == nullptr) {
+        page = ExtraObjectPage::Create();
     }
-    page = ExtraObjectPage::Create();
     usedExtraObjectPages_.Push(page);
     return page;
 }
