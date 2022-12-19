@@ -1090,6 +1090,12 @@ public class LightTreeFir2IrTextTestGenerated extends AbstractLightTreeFir2IrTex
             public void testTypeParameterBoundedBySubclass() throws Exception {
                 runTest("compiler/testData/ir/irText/declarations/parameters/typeParameterBoundedBySubclass.kt");
             }
+
+            @Test
+            @TestMetadata("useNextParamInLambda.kt")
+            public void testUseNextParamInLambda() throws Exception {
+                runTest("compiler/testData/ir/irText/declarations/parameters/useNextParamInLambda.kt");
+            }
         }
 
         @Nested

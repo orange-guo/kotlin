@@ -1090,6 +1090,12 @@ public class Fir2IrTextTestGenerated extends AbstractFir2IrTextTest {
             public void testTypeParameterBoundedBySubclass() throws Exception {
                 runTest("compiler/testData/ir/irText/declarations/parameters/typeParameterBoundedBySubclass.kt");
             }
+
+            @Test
+            @TestMetadata("useNextParamInLambda.kt")
+            public void testUseNextParamInLambda() throws Exception {
+                runTest("compiler/testData/ir/irText/declarations/parameters/useNextParamInLambda.kt");
+            }
         }
 
         @Nested
