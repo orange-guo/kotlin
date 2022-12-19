@@ -560,6 +560,7 @@ open class FirDeclarationsResolveTransformer(transformer: FirAbstractBodyResolve
             )
         }
         // TODO: why would there be a graph already?
+        require(implicitTypeOnly || anonymousObject.controlFlowGraphReference == null)
         val buildGraph = !implicitTypeOnly && anonymousObject.controlFlowGraphReference == null
         dataFlowAnalyzer.enterClass(anonymousObject, buildGraph)
         val result = context.withAnonymousObject(anonymousObject, components) {
