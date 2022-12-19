@@ -16,7 +16,7 @@ import org.jetbrains.kotlin.resolve.PlatformDependentAnalyzerServices
 
 internal class KtNotUnderContentRootModuleImpl(
     override val directRegularDependencies: List<KtModule> = emptyList(),
-    override val directRefinementDependencies: List<KtModule> = emptyList(),
+    override val directDependsOnDependencies: List<KtModule> = emptyList(),
     override val directFriendDependencies: List<KtModule> = emptyList(),
     override val platform: TargetPlatform = JvmPlatforms.defaultJvmPlatform,
     psiFile: PsiFile? = null,

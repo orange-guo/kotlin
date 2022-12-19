@@ -16,7 +16,6 @@ import org.jetbrains.kotlin.analysis.api.standalone.base.project.structure.Stand
 import org.jetbrains.kotlin.analysis.project.structure.KtBinaryModule
 import org.jetbrains.kotlin.analysis.project.structure.KtLibraryModule
 import org.jetbrains.kotlin.analysis.project.structure.KtModule
-import org.jetbrains.kotlin.analysis.project.structure.allDirectDependenciesOfType
 import org.jetbrains.kotlin.analysis.test.framework.services.environmentManager
 import org.jetbrains.kotlin.analysis.utils.errors.checkIsInstance
 import org.jetbrains.kotlin.analysis.utils.errors.requireIsInstance
@@ -131,7 +130,7 @@ object TestModuleStructureFactory {
             when (dependency.relation) {
                 DependencyRelation.RegularDependency -> ktModule.directRegularDependencies.add(dependencyKtModule)
                 DependencyRelation.FriendDependency -> ktModule.directFriendDependencies.add(dependencyKtModule)
-                DependencyRelation.DependsOnDependency -> ktModule.directRefinementDependencies.add(dependencyKtModule)
+                DependencyRelation.DependsOnDependency -> ktModule.directDependsOnDependencies.add(dependencyKtModule)
             }
         }
     }
