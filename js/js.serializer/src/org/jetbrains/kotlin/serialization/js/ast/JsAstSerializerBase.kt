@@ -258,7 +258,6 @@ abstract class JsAstSerializerBase {
                 x.modifiers.forEach { functionBuilder.addModifier(map(it)) }
                 x.name?.let { functionBuilder.nameId = serialize(it) }
                 functionBuilder.body = serialize(x.body)
-                functionBuilder.static = x.isStatic
                 if (x.isLocal) {
                     functionBuilder.local = true
                 }

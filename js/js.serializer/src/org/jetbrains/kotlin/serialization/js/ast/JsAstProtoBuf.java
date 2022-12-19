@@ -8750,7 +8750,6 @@ public final class JsAstProtoBuf {
     boolean getLocal();
 
     /**
-<<<<<<< HEAD
      * <code>repeated .org.jetbrains.kotlin.serialization.js.ast.Function.Modifier modifier = 5;</code>
      */
     java.util.List<org.jetbrains.kotlin.serialization.js.ast.JsAstProtoBuf.Function.Modifier> getModifierList();
@@ -8762,15 +8761,6 @@ public final class JsAstProtoBuf {
      * <code>repeated .org.jetbrains.kotlin.serialization.js.ast.Function.Modifier modifier = 5;</code>
      */
     org.jetbrains.kotlin.serialization.js.ast.JsAstProtoBuf.Function.Modifier getModifier(int index);
-=======
-     * <code>optional bool static = 5 [default = false];</code>
-     */
-    boolean hasStatic();
-    /**
-     * <code>optional bool static = 5 [default = false];</code>
-     */
-    boolean getStatic();
->>>>>>> b16249a990a (fix: all of the tests for a new schema of ES6 classes compilation.)
   }
   /**
    * Protobuf type {@code org.jetbrains.kotlin.serialization.js.ast.Function}
@@ -8854,7 +8844,6 @@ public final class JsAstProtoBuf {
               break;
             }
             case 40: {
-<<<<<<< HEAD
               int rawValue = input.readEnum();
               org.jetbrains.kotlin.serialization.js.ast.JsAstProtoBuf.Function.Modifier value = org.jetbrains.kotlin.serialization.js.ast.JsAstProtoBuf.Function.Modifier.valueOf(rawValue);
               if (value == null) {
@@ -8887,10 +8876,6 @@ public final class JsAstProtoBuf {
                 }
               }
               input.popLimit(oldLimit);
-=======
-              bitField0_ |= 0x00000008;
-              static_ = input.readBool();
->>>>>>> b16249a990a (fix: all of the tests for a new schema of ES6 classes compilation.)
               break;
             }
           }
@@ -9078,7 +9063,6 @@ public final class JsAstProtoBuf {
       return local_;
     }
 
-<<<<<<< HEAD
     public static final int MODIFIER_FIELD_NUMBER = 5;
     private java.util.List<org.jetbrains.kotlin.serialization.js.ast.JsAstProtoBuf.Function.Modifier> modifier_;
     /**
@@ -9098,21 +9082,6 @@ public final class JsAstProtoBuf {
      */
     public org.jetbrains.kotlin.serialization.js.ast.JsAstProtoBuf.Function.Modifier getModifier(int index) {
       return modifier_.get(index);
-=======
-    public static final int STATIC_FIELD_NUMBER = 5;
-    private boolean static_;
-    /**
-     * <code>optional bool static = 5 [default = false];</code>
-     */
-    public boolean hasStatic() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
-    }
-    /**
-     * <code>optional bool static = 5 [default = false];</code>
-     */
-    public boolean getStatic() {
-      return static_;
->>>>>>> b16249a990a (fix: all of the tests for a new schema of ES6 classes compilation.)
     }
 
     private void initFields() {
@@ -9120,11 +9089,7 @@ public final class JsAstProtoBuf {
       nameId_ = 0;
       body_ = org.jetbrains.kotlin.serialization.js.ast.JsAstProtoBuf.Statement.getDefaultInstance();
       local_ = false;
-<<<<<<< HEAD
       modifier_ = java.util.Collections.emptyList();
-=======
-      static_ = false;
->>>>>>> b16249a990a (fix: all of the tests for a new schema of ES6 classes compilation.)
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -9165,13 +9130,8 @@ public final class JsAstProtoBuf {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBool(4, local_);
       }
-<<<<<<< HEAD
       for (int i = 0; i < modifier_.size(); i++) {
         output.writeEnum(5, modifier_.get(i).getNumber());
-=======
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBool(5, static_);
->>>>>>> b16249a990a (fix: all of the tests for a new schema of ES6 classes compilation.)
       }
       output.writeRawBytes(unknownFields);
     }
@@ -9198,7 +9158,6 @@ public final class JsAstProtoBuf {
         size += org.jetbrains.kotlin.protobuf.CodedOutputStream
           .computeBoolSize(4, local_);
       }
-<<<<<<< HEAD
       {
         int dataSize = 0;
         for (int i = 0; i < modifier_.size(); i++) {
@@ -9207,11 +9166,6 @@ public final class JsAstProtoBuf {
         }
         size += dataSize;
         size += 1 * modifier_.size();
-=======
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += org.jetbrains.kotlin.protobuf.CodedOutputStream
-          .computeBoolSize(5, static_);
->>>>>>> b16249a990a (fix: all of the tests for a new schema of ES6 classes compilation.)
       }
       size += unknownFields.size();
       memoizedSerializedSize = size;
@@ -9315,11 +9269,7 @@ public final class JsAstProtoBuf {
         bitField0_ = (bitField0_ & ~0x00000004);
         local_ = false;
         bitField0_ = (bitField0_ & ~0x00000008);
-<<<<<<< HEAD
         modifier_ = java.util.Collections.emptyList();
-=======
-        static_ = false;
->>>>>>> b16249a990a (fix: all of the tests for a new schema of ES6 classes compilation.)
         bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
@@ -9361,18 +9311,11 @@ public final class JsAstProtoBuf {
           to_bitField0_ |= 0x00000004;
         }
         result.local_ = local_;
-<<<<<<< HEAD
         if (((bitField0_ & 0x00000010) == 0x00000010)) {
           modifier_ = java.util.Collections.unmodifiableList(modifier_);
           bitField0_ = (bitField0_ & ~0x00000010);
         }
         result.modifier_ = modifier_;
-=======
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
-          to_bitField0_ |= 0x00000008;
-        }
-        result.static_ = static_;
->>>>>>> b16249a990a (fix: all of the tests for a new schema of ES6 classes compilation.)
         result.bitField0_ = to_bitField0_;
         return result;
       }
@@ -9398,7 +9341,6 @@ public final class JsAstProtoBuf {
         if (other.hasLocal()) {
           setLocal(other.getLocal());
         }
-<<<<<<< HEAD
         if (!other.modifier_.isEmpty()) {
           if (modifier_.isEmpty()) {
             modifier_ = other.modifier_;
@@ -9408,10 +9350,6 @@ public final class JsAstProtoBuf {
             modifier_.addAll(other.modifier_);
           }
           
-=======
-        if (other.hasStatic()) {
-          setStatic(other.getStatic());
->>>>>>> b16249a990a (fix: all of the tests for a new schema of ES6 classes compilation.)
         }
         setUnknownFields(
             getUnknownFields().concat(other.unknownFields));
@@ -9704,7 +9642,6 @@ public final class JsAstProtoBuf {
         return this;
       }
 
-<<<<<<< HEAD
       private java.util.List<org.jetbrains.kotlin.serialization.js.ast.JsAstProtoBuf.Function.Modifier> modifier_ =
         java.util.Collections.emptyList();
       private void ensureModifierIsMutable() {
@@ -9741,32 +9678,10 @@ public final class JsAstProtoBuf {
         }
         ensureModifierIsMutable();
         modifier_.set(index, value);
-=======
-      private boolean static_ ;
-      /**
-       * <code>optional bool static = 5 [default = false];</code>
-       */
-      public boolean hasStatic() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
-      }
-      /**
-       * <code>optional bool static = 5 [default = false];</code>
-       */
-      public boolean getStatic() {
-        return static_;
-      }
-      /**
-       * <code>optional bool static = 5 [default = false];</code>
-       */
-      public Builder setStatic(boolean value) {
-        bitField0_ |= 0x00000010;
-        static_ = value;
->>>>>>> b16249a990a (fix: all of the tests for a new schema of ES6 classes compilation.)
         
         return this;
       }
       /**
-<<<<<<< HEAD
        * <code>repeated .org.jetbrains.kotlin.serialization.js.ast.Function.Modifier modifier = 5;</code>
        */
       public Builder addModifier(org.jetbrains.kotlin.serialization.js.ast.JsAstProtoBuf.Function.Modifier value) {
@@ -9795,13 +9710,6 @@ public final class JsAstProtoBuf {
       public Builder clearModifier() {
         modifier_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000010);
-=======
-       * <code>optional bool static = 5 [default = false];</code>
-       */
-      public Builder clearStatic() {
-        bitField0_ = (bitField0_ & ~0x00000010);
-        static_ = false;
->>>>>>> b16249a990a (fix: all of the tests for a new schema of ES6 classes compilation.)
         
         return this;
       }
