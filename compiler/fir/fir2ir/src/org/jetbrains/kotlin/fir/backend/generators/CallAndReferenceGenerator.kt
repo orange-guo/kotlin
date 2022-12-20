@@ -246,13 +246,20 @@ class CallAndReferenceGenerator(
 
     private fun getJavaFieldContainingClassSymbol(ownContainingClass: IrClass, originalContainingClass: IrClass): IrClassSymbol {
         var superQualifierClass = ownContainingClass
-        while (!superQualifierClass.isFromJava() && superQualifierClass !== originalContainingClass) {
+        var superQualifierClassFromJava: IrClass? = ownContainingClass.takeIf { it.isFromJava() }
+        while (superQualifierClass !== originalContainingClass) {
             superQualifierClass = superQualifierClass.superTypes.find {
                 val kind = it.getClass()?.kind
                 kind == ClassKind.CLASS || kind == ClassKind.ENUM_CLASS
             }?.getClass() ?: break
+            val isFromJava = superQualifierClass.isFromJava()
+            if (superQualifierClassFromJava == null) {
+                superQualifierClassFromJava = superQualifierClass.takeIf { isFromJava }
+            } else if (!isFromJava) {
+                superQualifierClassFromJava = null
+            }
         }
-        return superQualifierClass.symbol
+        return superQualifierClassFromJava?.symbol ?: originalContainingClass.symbol
     }
 
     private fun FirExpression.superQualifierSymbol(): IrClassSymbol? {

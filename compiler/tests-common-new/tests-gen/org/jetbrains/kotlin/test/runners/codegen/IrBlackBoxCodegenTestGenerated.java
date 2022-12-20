@@ -17994,6 +17994,12 @@ public class IrBlackBoxCodegenTestGenerated extends AbstractIrBlackBoxCodegenTes
         }
 
         @Test
+        @TestMetadata("javaFieldKotlinPropertyJavaField.kt")
+        public void testJavaFieldKotlinPropertyJavaField() throws Exception {
+            runTest("compiler/testData/codegen/box/fieldRename/javaFieldKotlinPropertyJavaField.kt");
+        }
+
+        @Test
         @TestMetadata("javaInvisibleFieldAndKotlinProperty.kt")
         public void testJavaInvisibleFieldAndKotlinProperty() throws Exception {
             runTest("compiler/testData/codegen/box/fieldRename/javaInvisibleFieldAndKotlinProperty.kt");
