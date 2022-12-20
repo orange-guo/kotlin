@@ -10,6 +10,7 @@
 #include "ConcurrentMarkAndSweep.hpp"
 #include "CustomLogging.hpp"
 #include "FinalizerHooks.hpp"
+#include "KAssert.h"
 #include "ObjectFactory.hpp"
 
 namespace kotlin::alloc {
@@ -39,10 +40,7 @@ bool TryFinalize(mm::ExtraObjectData* extraObject, AtomicStack<mm::ExtraObjectDa
         return true;
     }
     auto* baseObject = extraObject->GetBaseObject();
-    if (!baseObject->heap()) {
-        CustomAllocDebug("TryFinalize(%p): not a heap object", extraObject);
-        return false;
-    }
+    RuntimeAssert(baseObject->heap(), "TryFinalize on a non-heap object");
     if (extraObject->getFlag(mm::ExtraObjectData::FLAGS_IN_FINALIZER_QUEUE)) {
         CustomAllocDebug("TryFinalize(%p): already in finalizer queue, keep base object (%p) alive", extraObject, baseObject);
         KeepAlive(baseObject);
