@@ -12,6 +12,7 @@
 #include "Cleaner.h"
 #include "CustomLogging.hpp"
 #include "ExtraObjectData.hpp"
+#include "FinalizerHooks.hpp"
 #include "Runtime.h"
 #include "WorkerBoundReference.h"
 
@@ -52,8 +53,8 @@ void CustomFinalizerProcessor::StartFinalizerThreadIfNone() noexcept {
                     CustomAllocDebug("CustomFinalizerProcessor: finalizing %p", extraObject);
                     auto* baseObject = extraObject->GetBaseObject();
                     CustomAllocDebug("CustomFinalizerProcessor: baseObject %p", baseObject);
-                    auto* type = baseObject->type_info();
-                    if ((type->flags_ & TF_HAS_FINALIZER) != 0) {
+                    if (kotlin::HasFinalizers(baseObject)) {
+                        auto* type = baseObject->type_info();
                         if (type == theCleanerImplTypeInfo) {
                             DisposeCleaner(baseObject);
                         } else if (type == theWorkerBoundReferenceTypeInfo) {
