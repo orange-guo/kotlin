@@ -34,15 +34,15 @@ static void KeepAlive(ObjHeader* baseObject) noexcept {
     objectData.tryMark();
 }
 
-bool TryFinalize(mm::ExtraObjectData* extraObject, AtomicStack<mm::ExtraObjectData>& finalizerQueue, size_t& finalizersScheduled) noexcept {
+bool SweepIsCollectable(mm::ExtraObjectData* extraObject, AtomicStack<mm::ExtraObjectData>& finalizerQueue, size_t& finalizersScheduled) noexcept {
     if (extraObject->getFlag(mm::ExtraObjectData::FLAGS_FINALIZED)) {
-        CustomAllocDebug("TryFinalize(%p): already finalized", extraObject);
+        CustomAllocDebug("SweepIsCollectable(%p): already finalized", extraObject);
         return true;
     }
     auto* baseObject = extraObject->GetBaseObject();
-    RuntimeAssert(baseObject->heap(), "TryFinalize on a non-heap object");
+    RuntimeAssert(baseObject->heap(), "SweepIsCollectable on a non-heap object");
     if (extraObject->getFlag(mm::ExtraObjectData::FLAGS_IN_FINALIZER_QUEUE)) {
-        CustomAllocDebug("TryFinalize(%p): already in finalizer queue, keep base object (%p) alive", extraObject, baseObject);
+        CustomAllocDebug("SweepIsCollectable(%p): already in finalizer queue, keep base object (%p) alive", extraObject, baseObject);
         KeepAlive(baseObject);
         return false;
     }
@@ -53,7 +53,7 @@ bool TryFinalize(mm::ExtraObjectData* extraObject, AtomicStack<mm::ExtraObjectDa
         finalizerQueue.Push(extraObject);
         finalizersScheduled++;
         KeepAlive(baseObject);
-        CustomAllocDebug("TryFinalize(%p): add to finalizerQueue", extraObject);
+        CustomAllocDebug("SweepIsCollectable(%p): add to finalizerQueue", extraObject);
         return false;
     } else {
         if (HasFinalizers(baseObject)) {
@@ -61,11 +61,11 @@ bool TryFinalize(mm::ExtraObjectData* extraObject, AtomicStack<mm::ExtraObjectDa
             finalizerQueue.Push(extraObject);
             finalizersScheduled++;
             KeepAlive(baseObject);
-            CustomAllocDebug("TryFinalize(%p): addings to finalizerQueue, keep base object (%p) alive", extraObject, baseObject);
+            CustomAllocDebug("SweepIsCollectable(%p): addings to finalizerQueue, keep base object (%p) alive", extraObject, baseObject);
             return false;
         }
         extraObject->Uninstall();
-        CustomAllocDebug("TryFinalize(%p): uninstalled extraObject", extraObject);
+        CustomAllocDebug("SweepIsCollectable(%p): uninstalled extraObject", extraObject);
         return true;
     }
 }

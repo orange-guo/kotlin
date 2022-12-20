@@ -59,7 +59,7 @@ bool ExtraObjectPage::Sweep(AtomicStack<mm::ExtraObjectData>& finalizerQueue, si
             continue;
         }
         // If the current cell was marked, it's alive, and the whole page is alive.
-        if (!TryFinalize(cell->Data(), finalizerQueue, finalizersScheduled)) {
+        if (!SweepIsCollectable(cell->Data(), finalizerQueue, finalizersScheduled)) {
             alive = true;
             continue;
         }
