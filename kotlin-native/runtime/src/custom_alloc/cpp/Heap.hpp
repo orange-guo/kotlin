@@ -11,7 +11,6 @@
 
 #include "AtomicStack.hpp"
 #include "CustomAllocConstants.hpp"
-#include "ExtraObjectData.hpp"
 #include "ExtraObjectPage.hpp"
 #include "GCStatistics.hpp"
 #include "LargePage.hpp"
@@ -33,7 +32,7 @@ public:
     // seen by one sweeper.
     void Sweep() noexcept;
 
-    size_t SweepExtraObjects(gc::GCHandle gcHandle, AtomicStack<mm::ExtraObjectData>& finalizerQueue) noexcept;
+    size_t SweepExtraObjects(gc::GCHandle gcHandle, AtomicStack<ExtraObjectCell>& finalizerQueue) noexcept;
 
     SmallPage* GetSmallPage(uint32_t cellCount) noexcept;
     MediumPage* GetMediumPage(uint32_t cellCount) noexcept;

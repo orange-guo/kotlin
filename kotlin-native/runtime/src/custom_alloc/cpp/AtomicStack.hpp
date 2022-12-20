@@ -23,7 +23,7 @@ public:
     T* Pop() noexcept {
         T* elm = stack_.load(std::memory_order_acquire);
         while (elm && !stack_.compare_exchange_weak(elm, elm->next_, std::memory_order_acq_rel)) {}
-        CustomAllocDebug("AtomicStack(%p)::Pop() = %p", this, elm);
+        /* CustomAllocDebug("AtomicStack(%p)::Pop() = %p", this, elm); */
         return elm;
     }
 

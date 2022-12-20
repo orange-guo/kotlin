@@ -13,6 +13,7 @@
 #include "CustomLogging.hpp"
 #include "ExtraObjectData.hpp"
 #include "FinalizerHooks.hpp"
+#include "Memory.h"
 #include "Runtime.h"
 #include "WorkerBoundReference.h"
 
@@ -48,24 +49,13 @@ void CustomFinalizerProcessor::StartFinalizerThreadIfNone() noexcept {
             CustomAllocDebug("CustomFinalizerProcessor: unlock");
             if (!finalizerQueue_.isEmpty()) {
                 ThreadStateGuard guard(ThreadState::kRunnable);
-                mm::ExtraObjectData* extraObject;
-                while ((extraObject = finalizerQueue_.Pop())) {
-                    CustomAllocDebug("CustomFinalizerProcessor: finalizing %p", extraObject);
+                ExtraObjectCell* cell;
+                while ((cell = finalizerQueue_.Pop())) {
+                    auto* extraObject = cell->Data();
                     auto* baseObject = extraObject->GetBaseObject();
-                    CustomAllocDebug("CustomFinalizerProcessor: baseObject %p", baseObject);
-                    if (kotlin::HasFinalizers(baseObject)) {
-                        auto* type = baseObject->type_info();
-                        if (type == theCleanerImplTypeInfo) {
-                            DisposeCleaner(baseObject);
-                        } else if (type == theWorkerBoundReferenceTypeInfo) {
-                            DisposeWorkerBoundReference(baseObject);
-                        }
-                    }
-                    extraObject->Uninstall();
+                    RunFinalizers(baseObject);
                     extraObject->setFlag(mm::ExtraObjectData::FLAGS_FINALIZED);
                 }
-            } else {
-                CustomAllocDebug("CustomFinalizerProcessor: empty queue");
             }
             epochDoneCallback_(finalizersEpoch);
         }

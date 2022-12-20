@@ -16,8 +16,9 @@
 namespace {
 
 using Data = typename kotlin::mm::ExtraObjectData;
+using Cell = typename kotlin::alloc::ExtraObjectCell;
 using Page = typename kotlin::alloc::ExtraObjectPage;
-using Queue = typename kotlin::alloc::AtomicStack<Data>;
+using Queue = typename kotlin::alloc::AtomicStack<Cell>;
 
 Data* alloc(Page* page) {
     Data* ptr = page->TryAllocate();
@@ -29,10 +30,10 @@ Data* alloc(Page* page) {
 
 TEST(CustomAllocTest, ExtraObjectPageConsequtiveAlloc) {
     Page* page = Page::Create();
-    Data* prev = alloc(page);
-    Data* cur;
-    while ((cur = alloc(page))) {
-        EXPECT_EQ(prev + 1, cur);
+    uint8_t* prev = reinterpret_cast<uint8_t*>(alloc(page));
+    uint8_t* cur;
+    while ((cur = reinterpret_cast<uint8_t*>(alloc(page)))) {
+        EXPECT_EQ(prev + sizeof(Cell), cur);
         prev = cur;
     }
     free(page);

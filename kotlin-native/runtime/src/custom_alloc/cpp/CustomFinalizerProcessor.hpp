@@ -27,7 +27,7 @@ public:
 private:
     friend class gc::ConcurrentMarkAndSweep;
     ScopedThread finalizerThread_;
-    AtomicStack<mm::ExtraObjectData> finalizerQueue_;
+    AtomicStack<ExtraObjectCell> finalizerQueue_;
     std::condition_variable finalizerQueueCondVar_;
     std::mutex finalizerQueueMutex_;
     std::function<void(int64_t)> epochDoneCallback_;

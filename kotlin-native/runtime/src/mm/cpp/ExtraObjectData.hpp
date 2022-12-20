@@ -13,12 +13,7 @@
 #include "Memory.h"
 #include "TypeInfo.h"
 #include "Utils.hpp"
-#include "MultiSourceQueue.hpp"
 #include "Weak.h"
-
-#ifdef CUSTOM_ALLOCATOR
-#include "AtomicStack.hpp"
-#endif
 
 namespace kotlin {
 namespace mm {
@@ -90,11 +85,6 @@ public:
 private:
     // Must be first to match `TypeInfo` layout.
     const TypeInfo* typeInfo_;
-
-#ifdef CUSTOM_ALLOCATOR
-    friend alloc::AtomicStack<ExtraObjectData>;
-    ExtraObjectData* next_;
-#endif
 
     std::atomic<uint32_t> flags_ = 0;
 

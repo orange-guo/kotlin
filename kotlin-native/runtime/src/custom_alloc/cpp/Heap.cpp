@@ -14,7 +14,6 @@
 #include "CustomAllocConstants.hpp"
 #include "AtomicStack.hpp"
 #include "CustomLogging.hpp"
-#include "ExtraObjectData.hpp"
 #include "ExtraObjectPage.hpp"
 #include "ThreadRegistry.hpp"
 #include "GCImpl.hpp"
@@ -49,7 +48,7 @@ void Heap::Sweep() noexcept {
     largePages_.Sweep();
 }
 
-size_t Heap::SweepExtraObjects(gc::GCHandle gcHandle, AtomicStack<mm::ExtraObjectData>& finalizerQueue) noexcept {
+size_t Heap::SweepExtraObjects(gc::GCHandle gcHandle, AtomicStack<ExtraObjectCell>& finalizerQueue) noexcept {
     CustomAllocDebug("Heap::SweepExtraObjects()");
     size_t finalizersScheduled = 0;
     ExtraObjectPage* page;

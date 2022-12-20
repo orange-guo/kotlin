@@ -34,7 +34,8 @@ static void KeepAlive(ObjHeader* baseObject) noexcept {
     objectData.tryMark();
 }
 
-bool SweepIsCollectable(mm::ExtraObjectData* extraObject, AtomicStack<mm::ExtraObjectData>& finalizerQueue, size_t& finalizersScheduled) noexcept {
+bool SweepIsCollectable(ExtraObjectCell* extraObjectCell, AtomicStack<ExtraObjectCell>& finalizerQueue, size_t& finalizersScheduled) noexcept {
+    auto* extraObject = extraObjectCell->Data();
     if (extraObject->getFlag(mm::ExtraObjectData::FLAGS_FINALIZED)) {
         CustomAllocDebug("SweepIsCollectable(%p): already finalized", extraObject);
         return true;
@@ -50,7 +51,7 @@ bool SweepIsCollectable(mm::ExtraObjectData* extraObject, AtomicStack<mm::ExtraO
     if (extraObject->HasAssociatedObject()) {
         extraObject->DetachAssociatedObject();
         extraObject->setFlag(mm::ExtraObjectData::FLAGS_IN_FINALIZER_QUEUE);
-        finalizerQueue.Push(extraObject);
+        finalizerQueue.Push(extraObjectCell);
         finalizersScheduled++;
         KeepAlive(baseObject);
         CustomAllocDebug("SweepIsCollectable(%p): add to finalizerQueue", extraObject);
@@ -58,7 +59,7 @@ bool SweepIsCollectable(mm::ExtraObjectData* extraObject, AtomicStack<mm::ExtraO
     } else {
         if (HasFinalizers(baseObject)) {
             extraObject->setFlag(mm::ExtraObjectData::FLAGS_IN_FINALIZER_QUEUE);
-            finalizerQueue.Push(extraObject);
+            finalizerQueue.Push(extraObjectCell);
             finalizersScheduled++;
             KeepAlive(baseObject);
             CustomAllocDebug("SweepIsCollectable(%p): addings to finalizerQueue, keep base object (%p) alive", extraObject, baseObject);

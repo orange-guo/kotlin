@@ -11,13 +11,15 @@
 #include <limits>
 #include <stdlib.h>
 
+#include "AtomicStack.hpp"
 #include "ExtraObjectData.hpp"
+#include "ExtraObjectPage.hpp"
 
 namespace kotlin::alloc {
 
 bool TryResetMark(void* ptr) noexcept;
 
-bool SweepIsCollectable(mm::ExtraObjectData* extraObject, AtomicStack<mm::ExtraObjectData>& finalizerQueue, size_t& finalizersScheduled) noexcept;
+bool SweepIsCollectable(ExtraObjectCell* extraObjectCell, AtomicStack<ExtraObjectCell>& finalizerQueue, size_t& finalizersScheduled) noexcept;
 
 void* SafeAlloc(uint64_t size) noexcept;
 

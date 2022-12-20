@@ -14,14 +14,12 @@
 
 namespace kotlin::alloc {
 
-union ExtraObjectCell {
-    mm::ExtraObjectData* Data() { return reinterpret_cast<mm::ExtraObjectData*>(this); }
+struct ExtraObjectCell {
+    mm::ExtraObjectData* Data() { return reinterpret_cast<mm::ExtraObjectData*>(data_); }
 
-    ExtraObjectCell* nextFree;
-    uint8_t _[sizeof(mm::ExtraObjectData)]; //  unused, lets cell have size of ExtraObjectData
+    ExtraObjectCell* next_;
+    uint8_t data_[sizeof(mm::ExtraObjectData)];
 };
-
-static_assert(sizeof(ExtraObjectCell) == sizeof(mm::ExtraObjectData), "Cell has wrong size");
 
 class alignas(8) ExtraObjectPage {
 public:
@@ -32,7 +30,7 @@ public:
     // Tries to allocate in current page, returns null if no free block in page
     mm::ExtraObjectData* TryAllocate() noexcept;
 
-    bool Sweep(AtomicStack<mm::ExtraObjectData>& finalizerQueue, size_t& finalizersScheduled) noexcept;
+    bool Sweep(AtomicStack<ExtraObjectCell>& finalizerQueue, size_t& finalizersScheduled) noexcept;
 
 private:
     friend class AtomicStack<ExtraObjectPage>;
