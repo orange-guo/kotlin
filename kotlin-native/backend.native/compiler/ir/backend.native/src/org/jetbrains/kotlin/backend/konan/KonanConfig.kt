@@ -272,8 +272,8 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
                     AllocationMode.CUSTOM
                 } else {
                     configuration.report(CompilerMessageSeverity.STRONG_WARNING,
-                            "Custom allocator is currently only integrated with concurrent mark and sweep gc. Using standard mode.")
-                    AllocationMode.STD
+                            "Custom allocator is currently only integrated with concurrent mark and sweep gc. Using default mode.")
+                    defaultAllocationMode
                 }
             }
         }
