@@ -10,39 +10,34 @@ import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirClassChecker
-import org.jetbrains.kotlin.fir.analysis.checkers.overriddenFunctions
-import org.jetbrains.kotlin.fir.analysis.checkers.unsubstitutedScope
 import org.jetbrains.kotlin.fir.analysis.diagnostics.js.FirJsErrors
 import org.jetbrains.kotlin.fir.declarations.FirClass
-import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
+import org.jetbrains.kotlin.fir.resolve.lookupSuperTypes
+import org.jetbrains.kotlin.fir.scopes.getFunctions
+import org.jetbrains.kotlin.fir.scopes.impl.declaredMemberScope
+import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
+import org.jetbrains.kotlin.fir.types.classId
+import org.jetbrains.kotlin.fir.types.toSymbol
 import org.jetbrains.kotlin.name.Name
 
-private val fqNames = setOf(
+private val membersFqNames = setOf(
     StandardNames.FqNames.charSequence.child(Name.identifier("get")),
     StandardNames.FqNames.charIterator.toUnsafe().child(Name.identifier("nextChar")),
 )
 
-private val simpleNames = fqNames.mapTo(mutableSetOf()) { it.shortName() }
+private val memberNameByParent = membersFqNames.associate { it.parent() to it.shortName() }
 
 object FirJsMultipleInheritanceChecker : FirClassChecker() {
     override fun check(declaration: FirClass, context: CheckerContext, reporter: DiagnosticReporter) {
-        val scope = declaration.unsubstitutedScope(context)
+        @Suppress("UNUSED_VARIABLE") val supertypes = lookupSuperTypes(declaration, true, true, context.session, false)
 
-        val members = buildList {
-            for (it in simpleNames) {
-                scope.processFunctionsByName(it, this::add)
-            }
-        }
-
-        for (callable in members) {
-            val overridden = callable.overriddenFunctions(declaration.symbol, context)
-
-            if (
-                overridden.size > 1 &&
-                overridden.any { it.callableId.asSingleFqName().toUnsafe() in fqNames }
-            ) {
-                reporter.reportOn(declaration.source, FirJsErrors.WRONG_MULTIPLE_INHERITANCE, callable, context)
-            }
+        for (it in supertypes) {
+            val fqName = it.classId?.asSingleFqName()?.toUnsafe()
+            val name = memberNameByParent[fqName] ?: continue
+            val symbol = it.toSymbol(context.session) as? FirClassSymbol ?: error("Expected a class symbol")
+            val scope = context.session.declaredMemberScope(symbol)
+            val callable = scope.getFunctions(name).firstOrNull() ?: error("Expected some callable")
+            reporter.reportOn(declaration.source, FirJsErrors.WRONG_MULTIPLE_INHERITANCE, callable, context)
         }
     }
 }
