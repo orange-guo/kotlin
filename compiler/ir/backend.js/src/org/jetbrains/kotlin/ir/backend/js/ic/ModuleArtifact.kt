@@ -9,7 +9,6 @@ import org.jetbrains.kotlin.ir.backend.js.transformers.irToJs.JsIrModule
 import org.jetbrains.kotlin.ir.backend.js.transformers.irToJs.JsIrProgramFragment
 import org.jetbrains.kotlin.ir.backend.js.transformers.irToJs.safeModuleName
 import org.jetbrains.kotlin.ir.backend.js.utils.serialization.JsIrAstDeserializer
-import java.io.ByteArrayInputStream
 import java.io.File
 
 class SrcFileArtifact(val srcFilePath: String, private val fragment: JsIrProgramFragment?, private val astArtifact: File? = null) {
@@ -17,9 +16,9 @@ class SrcFileArtifact(val srcFilePath: String, private val fragment: JsIrProgram
         if (fragment != null) {
             return fragment
         }
-        return astArtifact?.ifExists { readBytes() }?.let {
-            ByteArrayInputStream(it).use { byteStream ->
-                deserializer.deserialize(byteStream)
+        return astArtifact?.ifExists { inputStream().buffered() }?.let {
+            it.use { bufferedInputStream ->
+                deserializer.deserialize(bufferedInputStream)
             }
         }
     }

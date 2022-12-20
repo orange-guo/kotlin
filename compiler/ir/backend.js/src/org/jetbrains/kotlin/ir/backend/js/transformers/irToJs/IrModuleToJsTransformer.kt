@@ -79,7 +79,7 @@ class JsCodeGenerator(
     private val moduleKind: ModuleKind,
     private val sourceMapsInfo: SourceMapsInfo?
 ) {
-    fun generateJsCode(relativeRequirePath: Boolean, outJsProgram: Boolean): CompilationOutputs {
+    fun generateJsCode(relativeRequirePath: Boolean, outJsProgram: Boolean): CompilationOutputsBuilt {
         return generateWrappedModuleBody(
             multiModule,
             mainModuleName,
@@ -374,7 +374,7 @@ private fun generateWrappedModuleBody(
     sourceMapsInfo: SourceMapsInfo?,
     relativeRequirePath: Boolean,
     outJsProgram: Boolean
-): CompilationOutputs {
+): CompilationOutputsBuilt {
     if (multiModule) {
         // mutable container allows explicitly remove elements from itself,
         // so we are able to help GC to free heavy JsIrModule objects
@@ -392,7 +392,7 @@ private fun generateWrappedModuleBody(
             )
         }
 
-        val dependencies = buildList(moduleToRef.size) {
+        mainModule.dependencies = buildList(moduleToRef.size) {
             while (moduleToRef.isNotEmpty()) {
                 moduleToRef.removeFirst().let { (module, moduleRef) ->
                     val moduleName = module.externalModuleName
@@ -410,7 +410,7 @@ private fun generateWrappedModuleBody(
             }
         }
 
-        return mainModule.addDependencies(dependencies)
+        return mainModule
     } else {
         return generateSingleWrappedModuleBody(
             mainModuleName,
@@ -431,7 +431,7 @@ fun generateSingleWrappedModuleBody(
     generateCallToMain: Boolean,
     crossModuleReferences: CrossModuleReferences = CrossModuleReferences.Empty(moduleKind),
     outJsProgram: Boolean = true
-): CompilationOutputs {
+): CompilationOutputsBuilt {
     val program = Merger(
         moduleName,
         moduleKind,
@@ -470,10 +470,10 @@ fun generateSingleWrappedModuleBody(
 
     program.accept(JsToStringGenerationVisitor(jsCode, sourceMapBuilderConsumer))
 
-    return CompilationOutputs(
+    return CompilationOutputsBuilt(
         jsCode.toString(),
+        sourceMapBuilder?.build(),
         fragments.mapNotNull { it.dts }.ifNotEmpty { joinTypeScriptFragments() },
-        program.takeIf { outJsProgram },
-        sourceMapBuilder?.build()
+        program.takeIf { outJsProgram }
     )
 }
