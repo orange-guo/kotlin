@@ -13,6 +13,8 @@ package kotlin.io.encoding
  * The companion object [Base64.Default] is the default instance of [Base64].
  * There are also [Base64.UrlSafe] and [Base64.Mime] instances.
  */
+@SinceKotlin("1.8")
+@ExperimentalStdlibApi
 public open class Base64 private constructor(
     private val encodeMap: ByteArray,
     private val decodeMap: IntArray,
