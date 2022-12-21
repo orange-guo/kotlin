@@ -191,16 +191,34 @@ class CachedLibraries(
         fun getCachedLibraryName(library: KotlinLibrary): String = getCachedLibraryName(library.uniqueName)
         fun getCachedLibraryName(libraryName: String): String = "$libraryName-cache"
 
+        private fun getAllDependencies(library: KotlinLibrary, allLibraries: List<KotlinLibrary>): List<KotlinLibrary> {
+            val uniqueNameToLibrary = allLibraries.associateBy { it.uniqueName }
+            val allDependencies = mutableSetOf<KotlinLibrary>()
+
+            fun traverseDependencies(library: KotlinLibrary) {
+                library.unresolvedDependencies.forEach {
+                    val dependency = uniqueNameToLibrary[it.path]!!
+                    if (dependency !in allDependencies) {
+                        allDependencies += dependency
+                        traverseDependencies(dependency)
+                    }
+                }
+            }
+
+            traverseDependencies(library)
+            return allDependencies.toList()
+        }
+
         @OptIn(ExperimentalUnsignedTypes::class)
         fun computeVersionedCacheDirectory(baseCacheDirectory: File, library: KotlinLibrary, allLibraries: List<KotlinLibrary>): File {
-            val uniqueNameToLibrary = allLibraries.associateBy { it.uniqueName }
-            val dependencies = library.unresolvedDependencies.map { uniqueNameToLibrary[it.path]!! }
+            val dependencies = getAllDependencies(library, allLibraries)
             val messageDigest = MessageDigest.getInstance("SHA-256")
             messageDigest.digestLibrary(library)
-            dependencies.forEach { messageDigest.digestLibrary(it) }
+            dependencies.sortedBy { it.uniqueName }.forEach { messageDigest.digestLibrary(it) }
 
             val version = library.versions.libraryVersion ?: "unspecified"
-            val hashString = messageDigest.digest().asUByteArray().joinToString("") { it.toString(radix = 16).padStart(2, '0') }
+            val hashString = messageDigest.digest().asUByteArray()
+                    .joinToString("") { it.toString(radix = 16).padStart(2, '0') }
             return baseCacheDirectory.child(library.uniqueName).child(version).child(hashString)
         }
 
