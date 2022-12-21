@@ -43,7 +43,7 @@ internal fun buildKotlinNativeKlibCompilerArgs(
     moduleName: String,
     shortModuleName: String,
     friendModule: FileCollection,
-    version: String,
+    libraryVersion: String,
     sharedCompilationData: SharedCompilationData?,
     source: FileTree,
     commonSourcesTree: FileTree
@@ -67,7 +67,7 @@ internal fun buildKotlinNativeKlibCompilerArgs(
     }
 
     // TODO: uncomment after advancing bootstrap.
-    //add("-library-version=$version")
+    //add("-library-version=libraryVersion")
 
     if (sharedCompilationData != null) {
         val refinesPaths = sharedCompilationData.refinesPaths.files
