@@ -123,7 +123,8 @@ public expect annotation class JvmRecord()
 
 /**
  * Marks the JVM backing field of the annotated property as `volatile`, meaning that writes to this field
- * are immediately made visible to other threads.
+ * are always made visible to other threads. If another thread reads the value of this field (e.g. through its accessor),
+ * it sees not only that value, but all side effects that led to writing that value.
  */
 @Target(FIELD)
 @MustBeDocumented
