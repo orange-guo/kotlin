@@ -4055,11 +4055,6 @@ internal class DelegationByDynamicImpl(
     override val token: KtLifetimeToken,
 ) : KtFirDiagnostic.DelegationByDynamic(), KtAbstractFirDiagnostic<KtElement>
 
-internal class DynamicImpl(
-    override val firDiagnostic: KtPsiDiagnostic,
-    override val token: KtLifetimeToken,
-) : KtFirDiagnostic.Dynamic(), KtAbstractFirDiagnostic<KtElement>
-
 internal class SyntaxImpl(
     override val firDiagnostic: KtPsiDiagnostic,
     override val token: KtLifetimeToken,

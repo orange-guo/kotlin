@@ -78,9 +78,6 @@ object FirJsErrors {
     // Dynamics
     val DELEGATION_BY_DYNAMIC by error0<KtElement>()
 
-    // Debug Info
-    val DYNAMIC by info0<KtElement>()
-
     init {
         RootDiagnosticRendererFactory.registerFactory(FirJsErrorsDefaultMessages)
     }
