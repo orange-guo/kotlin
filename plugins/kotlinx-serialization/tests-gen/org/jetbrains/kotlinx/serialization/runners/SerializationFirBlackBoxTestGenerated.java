@@ -242,6 +242,12 @@ public class SerializationFirBlackBoxTestGenerated extends AbstractSerialization
         }
 
         @Test
+        @TestMetadata("serializerInLocalClass.kt")
+        public void testSerializerInLocalClass() throws Exception {
+            runTest("plugins/kotlinx-serialization/testData/firMembers/serializerInLocalClass.kt");
+        }
+
+        @Test
         @TestMetadata("serializerViaCompanion.kt")
         public void testSerializerViaCompanion() throws Exception {
             runTest("plugins/kotlinx-serialization/testData/firMembers/serializerViaCompanion.kt");
