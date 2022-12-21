@@ -18,7 +18,9 @@ struct ExtraObjectCell {
     mm::ExtraObjectData* Data() { return reinterpret_cast<mm::ExtraObjectData*>(data_); }
 
     ExtraObjectCell* next_;
-    uint8_t data_[sizeof(mm::ExtraObjectData)];
+    struct alignas(mm::ExtraObjectData) {
+        uint8_t data_[sizeof(mm::ExtraObjectData)];
+    };
 };
 
 class alignas(8) ExtraObjectPage {
