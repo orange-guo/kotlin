@@ -380,15 +380,22 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
 
     internal val additionalCacheFlags by lazy { platformManager.loader(target).additionalCacheFlags }
 
-    private val systemCacheFlavorString = buildString {
+    private fun StringBuilder.appendCommonCacheFlavor() {
         append(target.toString())
         if (debug) append("-g")
         append("STATIC")
 
         if (memoryModel != defaultMemoryModel)
             append("-mm=$memoryModel")
+        if (freezing != defaultFreezing)
+            append("-freezing=${freezing.name}")
         if (propertyLazyInitialization != defaultPropertyLazyInitialization)
             append("-lazy_init=${if (propertyLazyInitialization) "enable" else "disable"}")
+    }
+
+    private val systemCacheFlavorString = buildString {
+        appendCommonCacheFlavor()
+
         if (useDebugInfoInNativeLibs)
             append("-runtime_debug")
         if (allocationMode != defaultAllocationMode)
@@ -397,22 +404,14 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
             append("-gc=${gc.name}")
         if (memoryModel == MemoryModel.EXPERIMENTAL && gcSchedulerType != defaultGCSchedulerType)
             append("-gc-scheduler=${gcSchedulerType.name}")
-        if (freezing != defaultFreezing)
-            append("-freezing=${freezing.name}")
         if (runtimeAssertsMode != RuntimeAssertsMode.IGNORE)
             append("-runtime_asserts=${runtimeAssertsMode.name}")
     }
 
     private val userCacheFlavorString = buildString {
-        append(target.toString())
-        if (debug) append("-g")
-        append("STATIC")
+        appendCommonCacheFlavor()
 
         if (partialLinkage) append("-pl")
-        if (propertyLazyInitialization != defaultPropertyLazyInitialization)
-            append("-lazy_init=${if (propertyLazyInitialization) "enable" else "disable"}")
-        if (freezing != defaultFreezing)
-            append("-freezing=${freezing.name}")
     }
 
     private val systemCacheRootDirectory = File(distribution.konanHome).child("klib").child("cache")
