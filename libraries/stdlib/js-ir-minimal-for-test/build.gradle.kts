@@ -44,6 +44,7 @@ val commonMainSources by task<Sync> {
                 "libraries/stdlib/common/src/kotlin/collections/**",
                 "libraries/stdlib/common/src/kotlin/ioH.kt",
                 "libraries/stdlib/src/kotlin/collections/**",
+                "libraries/stdlib/src/kotlin/io/**",
                 "libraries/stdlib/src/kotlin/properties/Delegates.kt",
                 "libraries/stdlib/src/kotlin/random/URandom.kt",
                 "libraries/stdlib/src/kotlin/text/**",
