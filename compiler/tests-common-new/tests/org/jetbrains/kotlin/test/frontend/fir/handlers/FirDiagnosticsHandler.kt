@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.test.frontend.fir.handlers
 
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.*
+import org.jetbrains.kotlin.checkers.diagnostics.factories.DebugInfoDiagnosticFactory0
 import org.jetbrains.kotlin.checkers.diagnostics.factories.DebugInfoDiagnosticFactory1
 import org.jetbrains.kotlin.checkers.utils.TypeOfCall
 import org.jetbrains.kotlin.diagnostics.*
@@ -14,6 +15,7 @@ import org.jetbrains.kotlin.diagnostics.rendering.Renderers
 import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors
 import org.jetbrains.kotlin.fir.builder.FirSyntaxErrors
+import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
 import org.jetbrains.kotlin.fir.declarations.FirFile
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
@@ -22,6 +24,7 @@ import org.jetbrains.kotlin.fir.psi
 import org.jetbrains.kotlin.fir.references.FirNamedReference
 import org.jetbrains.kotlin.fir.references.FirResolvedNamedReference
 import org.jetbrains.kotlin.fir.renderForDebugInfo
+import org.jetbrains.kotlin.fir.resolvedSymbol
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
@@ -103,7 +106,7 @@ class FirDiagnosticsHandler(testServices: TestServices) : FirAnalysisHandler(tes
             }
             globalMetadataInfoHandler.addMetadataInfosForFile(file, diagnosticsMetadataInfos)
             collectSyntaxDiagnostics(file, firFile, lightTreeEnabled, lightTreeComparingModeEnabled)
-            collectDebugInfoDiagnostics(file, firFile, lightTreeEnabled, lightTreeComparingModeEnabled)
+            collectDebugInfoDiagnostics(module, file, firFile, lightTreeEnabled, lightTreeComparingModeEnabled)
         }
     }
 
@@ -140,6 +143,7 @@ class FirDiagnosticsHandler(testServices: TestServices) : FirAnalysisHandler(tes
     }
 
     private fun collectDebugInfoDiagnostics(
+        module: TestModule,
         testFile: TestFile,
         firFile: FirFile,
         lightTreeEnabled: Boolean,
@@ -150,6 +154,7 @@ class FirDiagnosticsHandler(testServices: TestServices) : FirAnalysisHandler(tes
             keySelector = { it.start..it.end },
             valueTransform = { it.tag }
         ).mapValues { (_, it) -> it.toSet() }
+        val shouldRenderDynamic = DiagnosticsDirectives.MARK_DYNAMIC_CALLS in module.directives
         object : FirDefaultVisitorVoid() {
             override fun visitElement(element: FirElement) {
                 if (element is FirExpression) {
@@ -158,6 +163,14 @@ class FirDiagnosticsHandler(testServices: TestServices) : FirAnalysisHandler(tes
                             element, diagnosedRangesToDiagnosticNames
                         )
                     )
+                }
+                if (shouldRenderDynamic && element is FirResolvable) {
+                    val calleeDeclaration = element.calleeReference.resolvedSymbol as? FirCallableSymbol<*>
+                    if (calleeDeclaration?.origin is FirDeclarationOrigin.DynamicScope) {
+                        result.addIfNotNull(
+                            createDebugInfoDiagnosticIfExpected(element.calleeReference)
+                        )
+                    }
                 }
                 if (element is FirSmartCastExpression) {
                     element.originalExpression.acceptChildren(this)
@@ -228,6 +241,11 @@ class FirDiagnosticsHandler(testServices: TestServices) : FirAnalysisHandler(tes
             Renderers.renderCallInfo(fqName, getTypeOfCall(reference, resolvedSymbol))
         }
 
+    private fun createDebugInfoDiagnosticIfExpected(
+        element: FirElement,
+    ): KtSimpleDiagnostic? =
+        DebugInfoDiagnosticFactory0.DYNAMIC.createDebugInfoDiagnostic(element)
+
     private fun DebugInfoDiagnosticFactory1.getPositionedElement(sourceElement: KtSourceElement): KtSourceElement {
         val elementType = sourceElement.elementType
         return if (this === DebugInfoDiagnosticFactory1.CALL
@@ -251,6 +269,33 @@ class FirDiagnosticsHandler(testServices: TestServices) : FirAnalysisHandler(tes
             }
         } else {
             sourceElement
+        }
+    }
+
+    private fun DebugInfoDiagnosticFactory0.createDebugInfoDiagnostic(
+        element: FirElement,
+    ): KtSimpleDiagnostic? {
+        val sourceElement = element.source ?: return null
+        if (sourceElement.kind !in allowedKindsForDebugInfo) return null
+
+        // Lambda argument is always (?) duplicated by function literal
+        // Block expression is always (?) duplicated by single block expression
+        if (sourceElement.elementType == KtNodeTypes.LAMBDA_ARGUMENT || sourceElement.elementType == KtNodeTypes.BLOCK) return null
+
+        val factory = KtDiagnosticFactory0(name, severity, AbstractSourceElementPositioningStrategy.DEFAULT, PsiElement::class)
+        return when (sourceElement) {
+            is KtPsiSourceElement -> KtPsiSimpleDiagnostic(
+                sourceElement,
+                severity,
+                factory,
+                factory.defaultPositioningStrategy
+            )
+            is KtLightSourceElement -> KtLightSimpleDiagnostic(
+                sourceElement,
+                severity,
+                factory,
+                factory.defaultPositioningStrategy
+            )
         }
     }
 

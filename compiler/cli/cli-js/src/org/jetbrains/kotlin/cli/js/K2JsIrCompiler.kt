@@ -529,7 +529,6 @@ class K2JsIrCompiler : CLICompiler<K2JSCompilerArguments>() {
             configuration.languageVersionSettings,
             null,
             sessionConfigurator,
-            false,
         )
 
         val rawFirFiles = session.buildFirFromKtFiles(ktFiles)

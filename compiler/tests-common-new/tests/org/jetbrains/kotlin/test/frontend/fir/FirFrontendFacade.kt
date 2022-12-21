@@ -187,7 +187,6 @@ class FirFrontendFacade(
                     languageVersionSettings,
                     null,
                     sessionConfigurator,
-                    testServices.diagnosticsService.isSeverityAllowed(module, Severity.INFO),
                 )
             }
             module.targetPlatform.isNative() -> {

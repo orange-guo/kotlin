@@ -46,10 +46,8 @@ object TestFirJsSessionFactory {
         mainModuleData: FirModuleDataImpl, sessionProvider: FirProjectSessionProvider, extensionRegistrars: List<FirExtensionRegistrar>,
         languageVersionSettings: LanguageVersionSettings, lookupTracker: LookupTracker?,
         sessionConfigurator: FirSessionConfigurator.() -> Unit,
-        allowInfoCheckers: Boolean,
     ): FirSession =
         FirJsSessionFactory.createJsModuleBasedSession(
             mainModuleData, sessionProvider, extensionRegistrars, languageVersionSettings, lookupTracker, sessionConfigurator,
-            allowInfoCheckers,
         )
 }
