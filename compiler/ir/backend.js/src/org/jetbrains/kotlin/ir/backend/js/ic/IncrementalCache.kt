@@ -77,7 +77,7 @@ internal class IncrementalCache(private val library: KotlinLibraryHeader, val ca
     ) : KotlinSourceFileMetadata()
 
     private fun KotlinSourceFile.getCacheFile(suffix: String): File {
-        val pathHash = icHasher.calculateStringHash(path)
+        val pathHash = icHasher.calculateStringHash(path).toString(8)
         return File(cacheDir, "${File(path).name}.$pathHash.$suffix")
     }
 

@@ -16,31 +16,58 @@ import org.jetbrains.kotlin.ir.symbols.IrSymbol
 import org.jetbrains.kotlin.ir.util.DumpIrTreeVisitor
 import org.jetbrains.kotlin.js.config.JSConfigurationKeys
 import org.jetbrains.kotlin.library.KotlinLibrary
+import org.jetbrains.kotlin.library.impl.buffer
 import org.jetbrains.kotlin.protobuf.CodedInputStream
 import org.jetbrains.kotlin.protobuf.CodedOutputStream
 import java.io.File
 import java.io.OutputStream
 import java.security.MessageDigest
 
-@JvmInline
-value class ICHash(private val value: ULong = 0UL) {
-    fun combineWith(other: ICHash) = ICHash(value xor (other.value + 0x9e3779b97f4a7c15UL + (value shl 12) + (value shr 4)))
+class ICHash(private val hashBytes: ByteArray = ByteArray(HASH_BYTES)) {
+    fun copy() = ICHash(hashBytes.copyOf())
 
-    override fun toString() = value.toString(16)
+    fun combineWithAndUpdate(other: ICHash) {
+        val thisBuffer = hashBytes.buffer
+        val otherBuffer = other.hashBytes.buffer
 
-    fun toProtoStream(out: CodedOutputStream) = out.writeFixed64NoTag(value.toLong())
+        repeat(HASH_LONGS) {
+            val thisBytes = thisBuffer.getLong(it * Long.SIZE_BYTES).toULong()
+            val otherBytes = otherBuffer.getLong(it * Long.SIZE_BYTES).toULong()
+
+            val combined = thisBytes xor (otherBytes + 0x9e3779b97f4a7c15UL + (thisBytes shl 12) + (thisBytes shr 4))
+
+            thisBuffer.putLong(it * Long.SIZE_BYTES, combined.toLong())
+        }
+    }
+
+    fun toString(bytesLimit: Int) = hashBytes.joinToString("", limit = bytesLimit, truncated = "") { "%02x".format(it) }
+
+    override fun toString() = toString(HASH_BYTES)
+
+    override fun hashCode() = hashBytes.fold(0U) { acc, b -> acc + b.toUInt() }.toInt()
+
+    override fun equals(other: Any?): Boolean {
+        val otherHash = other as? ICHash ?: return false
+        return (0 until HASH_BYTES).all { hashBytes[it] == otherHash.hashBytes[it] }
+    }
+
+    fun toProtoStream(out: CodedOutputStream) = out.writeRawBytes(hashBytes)
 
     companion object {
-        fun fromProtoStream(input: CodedInputStream) = ICHash(input.readFixed64().toULong())
+        const val ALGORITHM = "SHA-256"
+        const val HASH_BYTES = 32
+        const val HASH_LONGS = HASH_BYTES / Long.SIZE_BYTES
+
+        fun fromProtoStream(input: CodedInputStream) = ICHash(input.readRawBytes(HASH_BYTES))
     }
 }
 
 private class HashCalculatorForIC {
-    private val md5 = MessageDigest.getInstance("MD5")
+    private val sha256Digest = MessageDigest.getInstance(ICHash.ALGORITHM)
 
-    fun update(data: ByteArray) = md5.update(data)
+    fun update(data: ByteArray) = sha256Digest.update(data)
 
-    fun update(data: Int) = (0..3).forEach { md5.update((data shr (it * 8)).toByte()) }
+    fun update(data: Int) = (0..3).forEach { sha256Digest.update((data shr (it * 8)).toByte()) }
 
     fun update(data: String) {
         update(data.length)
@@ -68,26 +95,18 @@ private class HashCalculatorForIC {
         collection.forEach { f(it) }
     }
 
-    private fun bytesToULong(d: ByteArray, offset: Int): ULong {
-        var hash = 0UL
-        repeat(8) {
-            hash = hash or ((d[it + offset].toULong() and 0xFFUL) shl (it * 8))
-        }
-        return hash
-    }
-
     fun outputStream(): OutputStream {
         return object : OutputStream() {
             override fun write(b: Int) = update(b)
-            override fun write(b: ByteArray, off: Int, len: Int) = md5.update(b, off, len)
-            override fun write(b: ByteArray) = md5.update(b)
+            override fun write(b: ByteArray, off: Int, len: Int) = sha256Digest.update(b, off, len)
+            override fun write(b: ByteArray) = sha256Digest.update(b)
         }
     }
 
     fun finalize(): ICHash {
-        val d = md5.digest()
-        md5.reset()
-        return ICHash(bytesToULong(d, 0)).combineWith(ICHash(bytesToULong(d, 8)))
+        val hashBytes = sha256Digest.digest()
+        sha256Digest.reset()
+        return ICHash(hashBytes)
     }
 }
 

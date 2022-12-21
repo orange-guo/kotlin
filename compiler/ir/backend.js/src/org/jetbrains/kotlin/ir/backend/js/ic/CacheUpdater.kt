@@ -65,7 +65,7 @@ class CacheUpdater(
 
     private val icHasher = ICHasher()
 
-    private val cacheRootDir = File(cacheDir, "version.${icHasher.calculateConfigHash(compilerConfiguration)}")
+    private val cacheRootDir = File(cacheDir, "version.${icHasher.calculateConfigHash(compilerConfiguration).toString(8)}")
 
     fun getDirtyFileLastStats(): KotlinSourceFileMap<EnumSet<DirtyFileState>> = dirtyFileStats
 
@@ -116,7 +116,7 @@ class CacheUpdater(
         private val incrementalCaches = libraryDependencies.keys.associate { lib ->
             val libFile = KotlinLibraryFile(lib)
             val file = File(libFile.path)
-            val pathHash = icHasher.calculateStringHash(file.absolutePath)
+            val pathHash = icHasher.calculateStringHash(file.absolutePath).toString(8)
             val libraryCacheDir = File(cacheRootDir, "${file.name}.$pathHash")
             libFile to IncrementalCache(KotlinLoadedLibraryHeader(lib, icHasher), libraryCacheDir, icHasher)
         }
