@@ -56,6 +56,8 @@ object FirJsExternalChecker : FirBasicDeclarationChecker() {
         }
 
         if (declaration is FirClass) {
+            // TODO: KT-55600: Stop generating diagnostic
+            //  messages inside checkers
             val classKind = when {
                 declaration.status.isData -> "data class"
                 declaration.status.isInner -> "inner class"
