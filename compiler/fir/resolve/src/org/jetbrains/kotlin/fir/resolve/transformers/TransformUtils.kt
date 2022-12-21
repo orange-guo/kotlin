@@ -7,10 +7,12 @@ package org.jetbrains.kotlin.fir.resolve.transformers
 
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.fir.FirElement
+import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.copyWithNewSourceKind
 import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
+import org.jetbrains.kotlin.fir.declarations.isInlineOrValueClass
 import org.jetbrains.kotlin.fir.expressions.FirExpression
 import org.jetbrains.kotlin.fir.references.*
 import org.jetbrains.kotlin.fir.types.*
@@ -93,13 +95,13 @@ internal object StoreReceiver : FirTransformer<FirExpression>() {
     }
 }
 
-internal fun FirValueParameter.transformVarargTypeToArrayType() {
+internal fun FirValueParameter.transformVarargTypeToArrayType(session: FirSession) {
     if (isVararg) {
-        this.transformTypeToArrayType()
+        this.transformTypeToArrayOrVArrayType(session)
     }
 }
 
-internal fun FirCallableDeclaration.transformTypeToArrayType() {
+internal fun FirCallableDeclaration.transformTypeToArrayOrVArrayType(session: FirSession) {
     val returnTypeRef = this.returnTypeRef
     require(returnTypeRef is FirResolvedTypeRef)
     // If the delegated type is already resolved, it means we have already created a resolved array type for this vararg type declaration.
@@ -113,7 +115,9 @@ internal fun FirCallableDeclaration.transformTypeToArrayType() {
         StoreType,
         buildResolvedTypeRef {
             source = returnTypeRef.source
-            type = ConeKotlinTypeProjectionOut(returnType).createArrayType()
+            val outProjection = ConeKotlinTypeProjectionOut(returnType)
+            type = if (returnType.toRegularClassSymbol(session)?.isInlineOrValueClass() == true)
+                outProjection.createVArrayType() else outProjection.createArrayType()
             annotations += returnTypeRef.annotations
             // ? do we really need replacing source of nested delegatedTypeRef ?
             delegatedTypeRef = returnTypeRef.copyWithNewSourceKind(KtFakeSourceElementKind.ArrayTypeFromVarargParameter)

@@ -23076,6 +23076,12 @@ public class FirBlackBoxCodegenTestGenerated extends AbstractFirBlackBoxCodegenT
         }
 
         @Test
+        @TestMetadata("varargParameterOfInlineType.kt")
+        public void testVarargParameterOfInlineType() throws Exception {
+            runTest("compiler/testData/codegen/box/inlineClasses/varargParameterOfInlineType.kt");
+        }
+
+        @Test
         @TestMetadata("whenWithSubject.kt")
         public void testWhenWithSubject() throws Exception {
             runTest("compiler/testData/codegen/box/inlineClasses/whenWithSubject.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithReal());
