@@ -6,12 +6,14 @@
 package test.io
 
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.wrapForDecoding
 import kotlin.io.encoding.wrapForEncoding
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class Base64IOStreamTest {
 
@@ -110,5 +112,166 @@ class Base64IOStreamTest {
         }
 
         assertEquals(expected, underlying.toString())
+    }
+
+
+    @Test
+    fun correctPadding() {
+        val inputStream = "Zg==Zg==".byteInputStream()
+        val wrapper = inputStream.wrapForDecoding(Base64)
+
+        wrapper.use {
+            assertEquals('f'.code, it.read())
+            assertEquals(-1, it.read())
+            assertEquals(-1, it.read())
+        }
+
+        assertFailsWith<IOException> {
+            wrapper.read()
+        }
+    }
+
+
+    @Test
+    fun correctPaddingMime() {
+        val inputStream = "Zg==Zg==".byteInputStream()
+        val wrapper = inputStream.wrapForDecoding(Base64.Mime)
+
+        wrapper.use {
+            assertEquals('f'.code, it.read())
+            assertEquals(-1, it.read())
+            assertEquals(-1, it.read())
+        }
+
+        // closed
+        assertFailsWith<IOException> {
+            wrapper.read()
+        }
+    }
+
+    @Test
+    fun illegalSymbol() {
+        val inputStream = "Zm\u00FF9vYg==".byteInputStream()
+        val wrapper = inputStream.wrapForDecoding(Base64)
+
+        wrapper.use {
+            // one group of 4 symbols is read for decoding, that group includes illegal '\u00FF'
+            assertFailsWith<IllegalArgumentException> {
+                it.read()
+            }
+        }
+
+        // closed
+        assertFailsWith<IOException> {
+            wrapper.read()
+        }
+    }
+
+    @Test
+    fun illegalSymbolMime() {
+        val inputStream = "Zm\u00FF9vYg==".byteInputStream()
+        val wrapper = inputStream.wrapForDecoding(Base64.Mime)
+
+        wrapper.use {
+            assertEquals('f'.code, it.read())
+            assertEquals('o'.code, it.read())
+            assertEquals('o'.code, it.read())
+            assertEquals('b'.code, it.read())
+            assertEquals(-1, it.read())
+            assertEquals(-1, it.read())
+        }
+
+        // closed
+        assertFailsWith<IOException> {
+            wrapper.read()
+        }
+    }
+
+    @Test
+    fun incorrectPadding() {
+        for (base64 in listOf(Base64, Base64.Mime)) {
+            val inputStream = "Zm9vZm=9v".byteInputStream()
+            val wrapper = inputStream.wrapForDecoding(base64)
+
+            wrapper.use {
+                assertEquals('f'.code, it.read())
+                assertEquals('o'.code, it.read())
+                assertEquals('o'.code, it.read())
+
+                // the second group is incorrectly padded
+                assertFailsWith<IllegalArgumentException> {
+                    it.read()
+                }
+            }
+
+            // closed
+            assertFailsWith<IOException> {
+                wrapper.read()
+            }
+        }
+    }
+
+    @Test
+    fun withoutPadding() {
+        for (base64 in listOf(Base64, Base64.Mime)) {
+            val inputStream = "Zm9vYg".byteInputStream()
+            val wrapper = inputStream.wrapForDecoding(base64)
+
+            wrapper.use {
+                assertEquals('f'.code, it.read())
+                assertEquals('o'.code, it.read())
+                assertEquals('o'.code, it.read())
+                assertEquals('b'.code, it.read())
+                assertEquals(-1, it.read())
+                assertEquals(-1, it.read())
+            }
+
+            // closed
+            assertFailsWith<IOException> {
+                wrapper.read()
+            }
+        }
+    }
+
+    @Test
+    fun separatedPadSymbols() {
+        val inputStream = "Zm9vYg=[,.|^&*@#]=".byteInputStream()
+        val wrapper = inputStream.wrapForDecoding(Base64)
+
+        wrapper.use {
+            assertEquals('f'.code, it.read())
+            assertEquals('o'.code, it.read())
+            assertEquals('o'.code, it.read())
+
+            // the second group contains illegal symbols
+            assertFailsWith<IllegalArgumentException> {
+                it.read()
+            }
+        }
+
+        // closed
+        assertFailsWith<IOException> {
+            wrapper.read()
+        }
+    }
+
+    @Test
+    fun separatedPadSymbolsMime() {
+        val inputStream = "Zm9vYg=[,.|^&*@#]=".byteInputStream()
+        val wrapper = inputStream.wrapForDecoding(Base64.Mime)
+
+        wrapper.use {
+            assertEquals('f'.code, it.read())
+            assertEquals('o'.code, it.read())
+            assertEquals('o'.code, it.read())
+            assertEquals('b'.code, it.read())
+            assertEquals(-1, it.read())
+            assertEquals(-1, it.read())
+        }
+
+        // closed
+        assertFailsWith<IOException> {
+            wrapper.read()
+        }
     }
 }

@@ -16,7 +16,7 @@ package kotlin.io.encoding
 public open class Base64 private constructor(
     private val encodeMap: ByteArray,
     private val decodeMap: IntArray,
-    private val isMimeScheme: Boolean
+    internal val isMimeScheme: Boolean
 ) {
     init {
         require(encodeMap.size == 64)
@@ -306,6 +306,10 @@ public open class Base64 private constructor(
         return decodeIntoByteArray(byteSource, destination, destinationOffset)
     }
 
+    internal fun isInAlphabet(symbol: Int): Boolean {
+        return symbol in decodeMap.indices && decodeMap[symbol] >= 0
+    }
+
     // private functions
 
     private fun encodeImpl(
@@ -547,7 +551,7 @@ public open class Base64 private constructor(
         internal const val bytesPerGroup: Int = 3
         internal const val symbolsPerGroup: Int = 4
 
-        private const val padSymbol: Byte = 61 // '='
+        internal const val padSymbol: Byte = 61 // '='
 
         private const val mimeLineLength: Int = 76
         private const val carriageReturnSymbol: Byte = '\r'.code.toByte()

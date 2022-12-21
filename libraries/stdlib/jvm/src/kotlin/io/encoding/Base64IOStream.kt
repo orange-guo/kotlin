@@ -13,6 +13,7 @@ import java.io.OutputStream
 import kotlin.io.encoding.Base64.Default.bitsPerByte
 import kotlin.io.encoding.Base64.Default.bitsPerSymbol
 import kotlin.io.encoding.Base64.Default.bytesPerGroup
+import kotlin.io.encoding.Base64.Default.padSymbol
 import kotlin.io.encoding.Base64.Default.symbolsPerGroup
 
 //import java.io.Reader
@@ -52,7 +53,6 @@ public fun OutputStream.wrapForEncoding(base64: Base64): OutputStream {
 }
 
 
-// TODO: handle mime decode
 private class DecodeInputStream(
     private val input: InputStream,
     private val base64: Base64
@@ -82,7 +82,7 @@ private class DecodeInputStream(
             throw IndexOutOfBoundsException("offset: $offset, length: $length, buffer size: ${buffer.size}")
         }
         if (isClosed) {
-            throw IOException("The input stream is closed.")
+            throw IOException("The input stream is closed.") // Maybe IllegalStateException ?
         }
         if (isEOF) {
             return -1
@@ -114,13 +114,18 @@ private class DecodeInputStream(
             var symbolBufferLength = 0
             val symbolsToRead = minOf(symbolBuffer.size, symbolsNeeded)
             while (!isEOF && symbolBufferLength < symbolsToRead) {
-                when (val read = input.read(symbolBuffer, symbolBufferLength, symbolsToRead - symbolBufferLength)) {
-                    0 ->
-                        error("The wrapped input stream read 0 symbols")
+                val symbol = skipIllegalSymbolsIfMime()
+                when (symbol) {
                     -1 ->
                         isEOF = true
-                    else ->
-                        symbolBufferLength += read
+                    padSymbol.toInt() -> {
+                        symbolBufferLength = handlePaddingSymbol(symbolBufferLength)
+                        isEOF = true
+                    }
+                    else -> {
+                        symbolBuffer[symbolBufferLength] = symbol.toByte()
+                        symbolBufferLength += 1
+                    }
                 }
             }
 
@@ -183,6 +188,35 @@ private class DecodeInputStream(
                 byteBufferStartIndex = 0
             }
         }
+    }
+
+    private fun handlePaddingSymbol(symbolBufferLength: Int): Int {
+        symbolBuffer[symbolBufferLength] = padSymbol
+
+        return when (symbolBufferLength and 3) { // pads expected
+            2 -> { // xx=
+                val secondPad = skipIllegalSymbolsIfMime()
+                if (secondPad >= 0) {
+                    symbolBuffer[symbolBufferLength + 1] = secondPad.toByte()
+                }
+                symbolBufferLength + 2
+            }
+            else ->
+                symbolBufferLength + 1
+        }
+    }
+
+    private fun skipIllegalSymbolsIfMime(): Int {
+        if (!base64.isMimeScheme) {
+            return input.read()
+        }
+
+        var read: Int
+        do {
+            read = input.read()
+        } while (!base64.isInAlphabet(read) && read != -1 && read != padSymbol.toInt())
+
+        return read
     }
 }
 
