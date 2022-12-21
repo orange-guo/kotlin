@@ -333,8 +333,12 @@ open class DefFileTask : DefaultTask() {
         outputFile.writeText(buildString {
             appendLine("language = Objective-C")
             with(pod.get()) {
-                if (headers != null) appendLine("headers = $headers")
-                else appendLine("modules = $moduleName")
+                if (headers != null) {
+                    appendLine("headers = $headers")
+                } else {
+                    appendLine("modules = $moduleName")
+                    appendLine("linkerOpts = -framework $moduleName")
+                }
             }
         })
     }

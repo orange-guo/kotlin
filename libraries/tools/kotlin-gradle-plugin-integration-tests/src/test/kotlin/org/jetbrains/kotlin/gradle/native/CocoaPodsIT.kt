@@ -29,6 +29,8 @@ import java.io.File
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.zip.ZipFile
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
@@ -985,6 +987,19 @@ class CocoaPodsIT : BaseGradleIT() {
                 assertTasksExecuted(listOf(subprojectPodInstallTask))
             }
         }
+    }
+
+    @Test
+    fun testCinteropKlibsProvideLinkerOptsToFramework() = with(project) {
+        gradleBuildScript().addPod("AFNetworking")
+        testWithWrapper(":cinteropAFNetworkingIOS")
+
+        val cinteropKlib = projectDir.resolve("build/classes/kotlin/iOS/main/cinterop/cocoapods-cinterop-AFNetworking.klib")
+        val manifestLines = ZipFile(cinteropKlib).use { zip ->
+            zip.getInputStream(zip.getEntry("default/manifest")).bufferedReader().use { it.readLines() }
+        }
+
+        assertContains(manifestLines, "linkerOpts=-framework AFNetworking")
     }
 
     // test configuration phase
