@@ -50,7 +50,7 @@ class SerializableCompanionIrGenerator(
             val serializableClass = getSerializableClassByCompanion(companionDescriptor) ?: return
             if (serializableClass.shouldHaveGeneratedMethodsInCompanion) {
                 SerializableCompanionIrGenerator(irClass, getSerializableClassByCompanion(irClass)!!, context).generate()
-                irClass.addDefaultConstructorIfAbsent(context)
+                irClass.addDefaultConstructorBodyIfAbsent(context)
                 irClass.patchDeclarationParents(irClass.parent)
             }
         }
