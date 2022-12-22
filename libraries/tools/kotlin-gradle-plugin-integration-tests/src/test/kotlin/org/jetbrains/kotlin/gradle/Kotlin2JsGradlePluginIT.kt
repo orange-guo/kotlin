@@ -520,6 +520,7 @@ class Kotlin2JsGradlePluginIT : AbstractKotlin2JsGradlePluginIT(false) {
 
 @JsGradlePluginTests
 abstract class AbstractKotlin2JsGradlePluginIT(protected val irBackend: Boolean) : KGPBaseTest() {
+    @Suppress("DEPRECATION")
     private val defaultJsOptions = BuildOptions.JsOptions(
         useIrBackend = irBackend,
         jsCompilerType = if (irBackend) KotlinJsCompilerType.IR else KotlinJsCompilerType.LEGACY,

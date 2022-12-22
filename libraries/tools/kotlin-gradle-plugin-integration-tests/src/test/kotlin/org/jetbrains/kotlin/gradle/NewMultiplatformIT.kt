@@ -14,7 +14,6 @@ import org.jetbrains.kotlin.gradle.native.MPPNativeTargets
 import org.jetbrains.kotlin.gradle.native.transformNativeTestProject
 import org.jetbrains.kotlin.gradle.native.transformNativeTestProjectWithPluginDsl
 import org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType
-import org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.*
 import org.jetbrains.kotlin.gradle.plugin.ProjectLocalConfigurations
 import org.jetbrains.kotlin.gradle.plugin.lowerName
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmWithJavaTargetPreset
@@ -261,42 +260,42 @@ class NewMultiplatformIT : BaseGradleIT() {
     fun testLibAndAppJsLegacy() = doTestLibAndAppJsBothCompilers(
         "sample-lib",
         "sample-app",
-        LEGACY
+        KotlinJsCompilerType.LEGACY
     )
 
     @Test
     fun testLibAndAppJsIr() = doTestLibAndAppJsBothCompilers(
         "sample-lib",
         "sample-app",
-        IR
+        KotlinJsCompilerType.IR
     )
 
     @Test
     fun testLibAndAppJsBoth() = doTestLibAndAppJsBothCompilers(
         "sample-lib",
         "sample-app",
-        BOTH
+        KotlinJsCompilerType.BOTH
     )
 
     @Test
     fun testLibAndAppWithGradleKotlinDslJsLegacy() = doTestLibAndAppJsBothCompilers(
         "sample-lib-gradle-kotlin-dsl",
         "sample-app-gradle-kotlin-dsl",
-        LEGACY
+        KotlinJsCompilerType.LEGACY
     )
 
     @Test
     fun testLibAndAppWithGradleKotlinDslJsIr() = doTestLibAndAppJsBothCompilers(
         "sample-lib-gradle-kotlin-dsl",
         "sample-app-gradle-kotlin-dsl",
-        IR
+        KotlinJsCompilerType.IR
     )
 
     @Test
     fun testLibAndAppWithGradleKotlinDslJsBoth() = doTestLibAndAppJsBothCompilers(
         "sample-lib-gradle-kotlin-dsl",
         "sample-app-gradle-kotlin-dsl",
-        BOTH
+        KotlinJsCompilerType.BOTH
     )
 
     private fun doTestLibAndAppJsBothCompilers(
@@ -309,12 +308,12 @@ class NewMultiplatformIT : BaseGradleIT() {
 
         val compileTasksNames =
             listOf(
-                *(if (jsCompilerType != BOTH) {
+                *(if (jsCompilerType != KotlinJsCompilerType.BOTH) {
                     arrayOf("NodeJs")
                 } else {
                     arrayOf(
-                        "NodeJs${LEGACY.lowerName.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}",
-                        "NodeJs${IR.lowerName.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}",
+                        "NodeJs${KotlinJsCompilerType.LEGACY.lowerName.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}",
+                        "NodeJs${KotlinJsCompilerType.IR.lowerName.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}",
                     )
                 }),
             ).map { ":compileKotlin$it" }
@@ -329,7 +328,7 @@ class NewMultiplatformIT : BaseGradleIT() {
                 assertTasksExecuted(*compileTasksNames.toTypedArray(), ":allMetadataJar")
 
                 val groupDir = projectDir.resolve("repo/com/example")
-                val jsExtension = if (jsCompilerType == LEGACY) "jar" else "klib"
+                val jsExtension = if (jsCompilerType == KotlinJsCompilerType.LEGACY) "jar" else "klib"
                 val jsJarName = "sample-lib-nodejs/1.0/sample-lib-nodejs-1.0.$jsExtension"
                 val metadataJarName = "sample-lib/1.0/sample-lib-1.0.jar"
 
@@ -353,7 +352,8 @@ class NewMultiplatformIT : BaseGradleIT() {
                 }
 
                 when (jsCompilerType) {
-                    LEGACY -> {
+                    @Suppress("DEPRECATION")
+                    KotlinJsCompilerType.LEGACY -> {
                         val jsJar = ZipFile(groupDir.resolve(jsJarName))
                         val compiledJs = jsJar.getInputStream(jsJar.getEntry("sample-lib.js")).reader().readText()
                         Assert.assertTrue("function id(" in compiledJs)
@@ -361,10 +361,11 @@ class NewMultiplatformIT : BaseGradleIT() {
                         Assert.assertTrue("function expectedFun(" in compiledJs)
                         Assert.assertTrue("function main(" in compiledJs)
                     }
-                    IR -> {
+                    KotlinJsCompilerType.IR -> {
                         groupDir.resolve(jsJarName).exists()
                     }
-                    BOTH -> {}
+                    @Suppress("DEPRECATION")
+                    KotlinJsCompilerType.BOTH -> {}
                 }
             }
         }
@@ -386,7 +387,8 @@ class NewMultiplatformIT : BaseGradleIT() {
                 }
                 assertTasksExecuted(*compileTaskNames)
 
-                if (jsCompilerType == LEGACY) {
+                @Suppress("DEPRECATION")
+                if (jsCompilerType == KotlinJsCompilerType.LEGACY) {
                     projectDir.resolve(targetClassesDir("nodeJs")).resolve("sample-app.js").readText().run {
                         Assert.assertTrue(contains("console.info"))
                         Assert.assertTrue(contains("function nodeJsMain("))
@@ -401,10 +403,12 @@ class NewMultiplatformIT : BaseGradleIT() {
                 checkAppBuild(jsCompilerType)
             }
 
-            if (jsCompilerType == BOTH) {
+            @Suppress("DEPRECATION")
+            if (jsCompilerType == KotlinJsCompilerType.BOTH) {
+                @Suppress("DEPRECATION")
                 listOf(
-                    LEGACY,
-                    IR
+                    KotlinJsCompilerType.LEGACY,
+                    KotlinJsCompilerType.IR
                 ).forEach {
                     build(
                         "assemble",
@@ -970,9 +974,10 @@ class NewMultiplatformIT : BaseGradleIT() {
         val appProject = Project("sample-app", gradleVersion, "new-mpp-lib-and-app")
 
         val buildOptions = hmppFlags.buildOptions
+        @Suppress("DEPRECATION")
         libProject.build(
             "publish",
-            options = buildOptions.copy(jsCompilerType = BOTH)
+            options = buildOptions.copy(jsCompilerType = KotlinJsCompilerType.BOTH)
         ) {
             assertSuccessful()
         }
@@ -1013,7 +1018,7 @@ class NewMultiplatformIT : BaseGradleIT() {
 
             build(
                 "printMetadataFiles",
-                options = buildOptions.copy(jsCompilerType = IR)
+                options = buildOptions.copy(jsCompilerType = KotlinJsCompilerType.IR)
             ) {
                 assertSuccessful()
 
@@ -1464,6 +1469,7 @@ class NewMultiplatformIT : BaseGradleIT() {
 
     @Test
     fun testJsDceInMpp() = with(Project("new-mpp-js-dce", gradleVersion)) {
+        @Suppress("DEPRECATION")
         build(
             "runRhino",
             options = defaultBuildOptions().copy(warningMode = WarningMode.Summary, jsCompilerType = KotlinJsCompilerType.LEGACY)
