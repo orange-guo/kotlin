@@ -229,6 +229,9 @@ open class CompileToBitcodeExtension @Inject constructor(val project: Project) :
                 // TODO: Should depend only on the toolchain needed to build for the _target
                 dependsOn(":kotlin-native:dependencies:update")
                 dependsOn(this@SourceSet.dependencies)
+                onlyIf {
+                    this@SourceSet.onlyIf.get().all { it.isSatisfiedBy(this@SourceSet) }
+                }
             }
             compilationDatabase.target(_target) {
                 entry {
