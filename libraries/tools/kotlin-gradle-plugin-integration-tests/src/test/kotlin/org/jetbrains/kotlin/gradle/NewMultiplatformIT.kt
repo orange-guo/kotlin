@@ -351,8 +351,8 @@ class NewMultiplatformIT : BaseGradleIT() {
                     )
                 }
 
+                @Suppress("DEPRECATION")
                 when (jsCompilerType) {
-                    @Suppress("DEPRECATION")
                     KotlinJsCompilerType.LEGACY -> {
                         val jsJar = ZipFile(groupDir.resolve(jsJarName))
                         val compiledJs = jsJar.getInputStream(jsJar.getEntry("sample-lib.js")).reader().readText()
@@ -364,7 +364,6 @@ class NewMultiplatformIT : BaseGradleIT() {
                     KotlinJsCompilerType.IR -> {
                         groupDir.resolve(jsJarName).exists()
                     }
-                    @Suppress("DEPRECATION")
                     KotlinJsCompilerType.BOTH -> {}
                 }
             }
