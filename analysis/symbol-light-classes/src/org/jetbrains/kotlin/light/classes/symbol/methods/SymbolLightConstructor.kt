@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.light.classes.symbol.NullabilityType
 import org.jetbrains.kotlin.light.classes.symbol.annotations.computeAnnotations
 import org.jetbrains.kotlin.light.classes.symbol.classes.SymbolLightClassBase
 import org.jetbrains.kotlin.light.classes.symbol.classes.SymbolLightClassForEnumEntry
+import org.jetbrains.kotlin.light.classes.symbol.isOriginEquivalentTo
 import org.jetbrains.kotlin.light.classes.symbol.modifierLists.LazyModifiersBox
 import org.jetbrains.kotlin.light.classes.symbol.modifierLists.SymbolLightMemberModifierList
 import org.jetbrains.kotlin.light.classes.symbol.modifierLists.with
@@ -41,6 +42,10 @@ internal class SymbolLightConstructor(
     override fun hasTypeParameters(): Boolean = false
     override fun getTypeParameterList(): PsiTypeParameterList? = null
     override fun getTypeParameters(): Array<PsiTypeParameter> = PsiTypeParameter.EMPTY_ARRAY
+
+    override fun isEquivalentTo(another: PsiElement?): Boolean {
+        return super.isEquivalentTo(another) || isOriginEquivalentTo(another)
+    }
 
     private val _modifierList: PsiModifierList by lazyPub {
         val initialValue = if (containingClass is SymbolLightClassForEnumEntry) {

@@ -155,7 +155,8 @@ abstract class SymbolLightClassForClassLike<SType : KtClassOrObjectSymbol> prote
 
     override fun isEquivalentTo(another: PsiElement?): Boolean =
         basicIsEquivalentTo(this, another) ||
-                another is PsiClass && qualifiedName != null && another.qualifiedName == qualifiedName
+                another is PsiClass && qualifiedName != null && another.qualifiedName == qualifiedName ||
+                isOriginEquivalentTo(another)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

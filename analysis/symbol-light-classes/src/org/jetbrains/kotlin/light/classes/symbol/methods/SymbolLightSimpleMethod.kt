@@ -71,6 +71,10 @@ internal class SymbolLightSimpleMethod(
     override fun getTypeParameterList(): PsiTypeParameterList? = _typeParameterList
     override fun getTypeParameters(): Array<PsiTypeParameter> = _typeParameterList?.typeParameters ?: PsiTypeParameter.EMPTY_ARRAY
 
+    override fun isEquivalentTo(another: PsiElement?): Boolean {
+        return super.isEquivalentTo(another) || isOriginEquivalentTo(another)
+    }
+
     private fun computeAnnotations(
         modifierList: PsiModifierList,
     ): List<PsiAnnotation> = withFunctionSymbol { functionSymbol ->
