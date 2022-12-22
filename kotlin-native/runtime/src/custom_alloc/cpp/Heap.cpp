@@ -48,9 +48,8 @@ void Heap::Sweep() noexcept {
     largePages_.Sweep();
 }
 
-AtomicStack<ExtraObjectCell>&& Heap::SweepExtraObjects(gc::GCHandle gcHandle) noexcept {
+void Heap::SweepExtraObjects(gc::GCHandle gcHandle, AtomicStack<ExtraObjectCell>& finalizerQueue) noexcept {
     CustomAllocDebug("Heap::SweepExtraObjects()");
-    AtomicStack<ExtraObjectCell> finalizerQueue;
     ExtraObjectPage* page;
     while ((page = usedExtraObjectPages_.Pop())) {
         if (!page->Sweep(finalizerQueue)) {
@@ -60,7 +59,6 @@ AtomicStack<ExtraObjectCell>&& Heap::SweepExtraObjects(gc::GCHandle gcHandle) no
             extraObjectPages_.Push(page);
         }
     }
-    return std::move(finalizerQueue);
 }
 
 MediumPage* Heap::GetMediumPage(uint32_t cellCount) noexcept {

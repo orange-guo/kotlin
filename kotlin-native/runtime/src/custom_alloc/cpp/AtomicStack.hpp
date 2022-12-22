@@ -9,13 +9,18 @@
 #include <atomic>
 
 #include "KAssert.h"
+#include "Utils.hpp"
 
 namespace kotlin::alloc {
 
 template <class T>
-class AtomicStack {
+class AtomicStack: private kotlin::MoveOnly {
 public:
     AtomicStack() {}
+
+    AtomicStack<T>& operator=(AtomicStack<T>&& other) {
+        TransferAllFrom(other);
+    }
 
     AtomicStack(AtomicStack<T>&& other) {
         TransferAllFrom(other);

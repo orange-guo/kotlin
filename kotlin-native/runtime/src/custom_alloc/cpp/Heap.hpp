@@ -32,7 +32,7 @@ public:
     // seen by one sweeper.
     void Sweep() noexcept;
 
-    AtomicStack<ExtraObjectCell>&& SweepExtraObjects(gc::GCHandle gcHandle) noexcept;
+    void SweepExtraObjects(gc::GCHandle gcHandle, AtomicStack<ExtraObjectCell>& finalizerQueue) noexcept;
 
     SmallPage* GetSmallPage(uint32_t cellCount) noexcept;
     MediumPage* GetMediumPage(uint32_t cellCount) noexcept;
