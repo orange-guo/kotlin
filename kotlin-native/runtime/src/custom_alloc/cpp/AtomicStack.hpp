@@ -18,9 +18,7 @@ class AtomicStack: private kotlin::MoveOnly {
 public:
     AtomicStack() {}
 
-    AtomicStack<T>& operator=(AtomicStack<T>&& other) {
-        TransferAllFrom(other);
-    }
+    AtomicStack<T>& operator=(AtomicStack<T>&& other) = delete;
 
     AtomicStack(AtomicStack<T>&& other) {
         TransferAllFrom(other);
