@@ -93,7 +93,7 @@ internal val FirAnnotation.annotationClassSymbol: FirRegularClassSymbol?
 context(CheckerContext)
 @Suppress("IncorrectFormatting") // KTIJ-22227
 internal val FirAnnotation.isMetaSerializableAnnotation: Boolean
-    get() = annotationClassSymbol?.hasAnnotation(SerializationAnnotations.metaSerializableAnnotationClassId) ?: false
+    get() = annotationClassSymbol?.hasAnnotation(SerializationAnnotations.metaSerializableAnnotationClassId, session) ?: false
 
 
 context(CheckerContext)
@@ -115,7 +115,9 @@ internal val FirClassSymbol<*>.serializableOrMetaAnnotationSource: KtSourceEleme
 context(CheckerContext)
 @Suppress("IncorrectFormatting") // KTIJ-22227
 internal val FirBasedSymbol<*>.hasAnySerialAnnotation: Boolean
-    get() = getSerialNameValue(session) != null || resolvedAnnotationsWithClassIds.any { it.annotationClassSymbol?.isSerialInfoAnnotation == true }
+    get() = getSerialNameValue(session) != null || resolvedAnnotationsWithClassIds.any {
+        with(session) { it.annotationClassSymbol?.isSerialInfoAnnotation == true }
+    }
 
 // ---------------------- class utils ----------------------
 

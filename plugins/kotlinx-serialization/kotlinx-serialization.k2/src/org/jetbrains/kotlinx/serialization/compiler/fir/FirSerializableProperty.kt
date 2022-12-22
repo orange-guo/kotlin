@@ -26,7 +26,7 @@ class FirSerializableProperty(
     override val originalDescriptorName: Name
         get() = propertySymbol.name
 
-    override val optional: Boolean = !propertySymbol.serialRequired && declaresDefaultValue
+    override val optional: Boolean = !propertySymbol.getSerialRequired(session) && declaresDefaultValue
 
     override val transient: Boolean = propertySymbol.hasSerialTransient(session) || !propertySymbol.hasBackingField
 

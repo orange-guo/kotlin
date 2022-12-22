@@ -18,7 +18,6 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirBasicDeclaratio
 import org.jetbrains.kotlin.fir.analysis.checkers.getAllowedAnnotationTargets
 import org.jetbrains.kotlin.fir.analysis.checkers.getAnnotationRetention
 import org.jetbrains.kotlin.fir.analysis.checkers.unsubstitutedScope
-import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors
 import org.jetbrains.kotlin.fir.analysis.jvm.checkers.isJvm6
 import org.jetbrains.kotlin.fir.declarations.*
@@ -49,7 +48,7 @@ object FirRepeatableAnnotationChecker : FirBasicDeclarationChecker() {
         val session = context.session
         for (annotation in annotations) {
             val classId = annotation.classId ?: continue
-            val annotationClassId = annotation.toAnnotationClassId() ?: continue
+            val annotationClassId = annotation.toAnnotationClassId(session) ?: continue
             if (annotationClassId.isLocal) continue
             val annotationClass = session.symbolProvider.getClassLikeSymbolByClassId(annotationClassId) ?: continue
 

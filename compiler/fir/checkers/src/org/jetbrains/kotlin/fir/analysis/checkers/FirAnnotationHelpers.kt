@@ -123,7 +123,7 @@ fun checkRepeatedAnnotation(
 }
 
 fun FirAnnotation.isRepeatable(session: FirSession): Boolean {
-    val annotationClassId = this.toAnnotationClassId() ?: return false
+    val annotationClassId = this.toAnnotationClassId(session) ?: return false
     if (annotationClassId.isLocal) return false
     val annotationClass = session.symbolProvider.getClassLikeSymbolByClassId(annotationClassId) ?: return false
 

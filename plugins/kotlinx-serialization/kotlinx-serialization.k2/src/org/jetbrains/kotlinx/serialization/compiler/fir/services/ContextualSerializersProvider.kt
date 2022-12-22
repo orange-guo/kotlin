@@ -100,12 +100,12 @@ fun findTypeSerializerOrContextUnchecked(type: ConeKotlinType): FirClassSymbol<*
  * if [annotations] contains @Contextual or @Polymorphic annotation
  */
 fun analyzeSpecialSerializers(session: FirSession, annotations: List<FirAnnotation>): FirClassSymbol<*>? = when {
-    annotations.hasAnnotation(SerializationAnnotations.contextualClassId) ||
-            annotations.hasAnnotation(SerializationAnnotations.contextualOnPropertyClassId) -> {
+    annotations.hasAnnotation(SerializationAnnotations.contextualClassId, session) ||
+            annotations.hasAnnotation(SerializationAnnotations.contextualOnPropertyClassId, session) -> {
         session.dependencySerializationInfoProvider.getClassFromSerializationPackage(SpecialBuiltins.Names.contextSerializer)
     }
     // can be annotation on type usage, e.g. List<@Polymorphic Any>
-    annotations.hasAnnotation(SerializationAnnotations.polymorphicClassId) -> {
+    annotations.hasAnnotation(SerializationAnnotations.polymorphicClassId, session) -> {
         session.dependencySerializationInfoProvider.getClassFromSerializationPackage(SpecialBuiltins.Names.polymorphicSerializer)
     }
 

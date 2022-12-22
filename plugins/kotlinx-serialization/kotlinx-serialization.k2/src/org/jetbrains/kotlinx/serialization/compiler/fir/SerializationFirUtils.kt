@@ -39,13 +39,14 @@ object AnnotationParameterNames {
 
 // ---------------------- annotations utils ----------------------
 
+context(FirSession)
 val FirBasedSymbol<*>.isSerialInfoAnnotation: Boolean
-    get() = hasAnnotation(serialInfoClassId)
-            || hasAnnotation(inheritableSerialInfoClassId)
-            || hasAnnotation(metaSerializableAnnotationClassId)
+    get() = hasAnnotation(serialInfoClassId, this@FirSession)
+            || hasAnnotation(inheritableSerialInfoClassId, this@FirSession)
+            || hasAnnotation(metaSerializableAnnotationClassId, this@FirSession)
 
-val FirBasedSymbol<*>.isInheritableSerialInfoAnnotation: Boolean
-    get() = hasAnnotation(inheritableSerialInfoClassId)
+fun FirBasedSymbol<*>.isInheritableSerialInfoAnnotation(session: FirSession): Boolean =
+    hasAnnotation(inheritableSerialInfoClassId, session)
 
 fun FirBasedSymbol<*>.getSerialNameAnnotation(session: FirSession): FirAnnotation? =
     resolvedAnnotationsWithArguments.getAnnotationByClassId(serialNameAnnotationClassId, session)
@@ -53,8 +54,8 @@ fun FirBasedSymbol<*>.getSerialNameAnnotation(session: FirSession): FirAnnotatio
 fun FirBasedSymbol<*>.getSerialNameValue(session: FirSession): String? =
     getSerialNameAnnotation(session)?.getStringArgument(AnnotationParameterNames.VALUE)
 
-val FirBasedSymbol<*>.serialRequired: Boolean
-    get() = hasAnnotation(SerializationAnnotations.requiredAnnotationClassId)
+fun FirBasedSymbol<*>.getSerialRequired(session: FirSession): Boolean =
+    hasAnnotation(SerializationAnnotations.requiredAnnotationClassId, session)
 
 fun FirBasedSymbol<*>.hasSerialTransient(session: FirSession): Boolean = getSerialTransientAnnotation(session) != null
 
