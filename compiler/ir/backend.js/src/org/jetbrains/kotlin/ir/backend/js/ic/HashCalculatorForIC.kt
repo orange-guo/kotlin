@@ -26,6 +26,10 @@ import java.security.MessageDigest
 class ICHash(private val hashBytes: ByteArray = ByteArray(HASH_BYTES)) {
     fun copy() = ICHash(hashBytes.copyOf())
 
+    private infix fun ULong.combineWith(other: ULong): ULong {
+        return this xor (other + 0x9e3779b97f4a7c15UL + (this shl 12) + (this shr 4))
+    }
+
     fun combineWithAndUpdate(other: ICHash) {
         val thisBuffer = hashBytes.buffer
         val otherBuffer = other.hashBytes.buffer
@@ -34,7 +38,7 @@ class ICHash(private val hashBytes: ByteArray = ByteArray(HASH_BYTES)) {
             val thisBytes = thisBuffer.getLong(it * Long.SIZE_BYTES).toULong()
             val otherBytes = otherBuffer.getLong(it * Long.SIZE_BYTES).toULong()
 
-            val combined = thisBytes xor (otherBytes + 0x9e3779b97f4a7c15UL + (thisBytes shl 12) + (thisBytes shr 4))
+            val combined = thisBytes combineWith otherBytes
 
             thisBuffer.putLong(it * Long.SIZE_BYTES, combined.toLong())
         }
@@ -44,7 +48,7 @@ class ICHash(private val hashBytes: ByteArray = ByteArray(HASH_BYTES)) {
 
     override fun toString() = toString(HASH_BYTES)
 
-    override fun hashCode() = hashBytes.fold(0U) { acc, b -> acc + b.toUInt() }.toInt()
+    override fun hashCode() = hashBytes.fold(0UL) { acc, b -> acc combineWith b.toULong() }.toInt()
 
     override fun equals(other: Any?): Boolean {
         val otherHash = other as? ICHash ?: return false
@@ -112,6 +116,11 @@ private class HashCalculatorForIC {
 
 internal class ICHasher {
     private val hashCalculator = HashCalculatorForIC()
+
+    fun calculateByteArrayHash(data: ByteArray): ICHash {
+        hashCalculator.update(data)
+        return hashCalculator.finalize()
+    }
 
     fun calculateStringHash(data: String): ICHash {
         hashCalculator.update(data)
