@@ -357,15 +357,25 @@ fun FirCallableSymbol<*>.getImplementationStatus(
             }
         }
     }
-    if (this is FirNamedFunctionSymbol) {
-        if (parentClassSymbol is FirRegularClassSymbol && parentClassSymbol.isData && matchesDataClassSyntheticMemberSignatures) {
-            return ImplementationStatus.INHERITED_OR_SYNTHESIZED
+
+    when (symbol) {
+        is FirNamedFunctionSymbol -> {
+            if (
+                parentClassSymbol is FirRegularClassSymbol &&
+                parentClassSymbol.isData &&
+                symbol.matchesDataClassSyntheticMemberSignatures
+            ) {
+                return ImplementationStatus.INHERITED_OR_SYNTHESIZED
+            }
+            // TODO: suspend function overridden by a Java class in the middle is not properly regarded as an override
+            if (isSuspend) {
+                return ImplementationStatus.INHERITED_OR_SYNTHESIZED
+            }
         }
-        // TODO: suspend function overridden by a Java class in the middle is not properly regarded as an override
-        if (isSuspend) {
-            return ImplementationStatus.INHERITED_OR_SYNTHESIZED
-        }
+        is FirSyntheticPropertySymbol -> return ImplementationStatus.CANNOT_BE_IMPLEMENTED
+        is FirFieldSymbol -> if (symbol.isJavaOrEnhancement) return ImplementationStatus.CANNOT_BE_IMPLEMENTED
     }
+
     return when {
         isFinal -> ImplementationStatus.CANNOT_BE_IMPLEMENTED
         containingClassSymbol === parentClassSymbol && (origin == FirDeclarationOrigin.Source || origin == FirDeclarationOrigin.Precompiled) ->
