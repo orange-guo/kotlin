@@ -32,7 +32,7 @@ import org.jetbrains.kotlin.fir.types.toRegularClassSymbol
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlinx.serialization.compiler.fir.*
-import org.jetbrains.kotlinx.serialization.compiler.fir.serializableWith
+import org.jetbrains.kotlinx.serialization.compiler.fir.getSerializableWith
 import org.jetbrains.kotlinx.serialization.compiler.fir.services.dependencySerializationInfoProvider
 import org.jetbrains.kotlinx.serialization.compiler.resolve.SerialEntityNames
 import org.jetbrains.kotlinx.serialization.compiler.resolve.SerializationAnnotations
@@ -46,7 +46,7 @@ internal val FirClassSymbol<*>?.classSerializer: FirClassSymbol<*>?
     get() {
         if (this == null) return null
         // serializer annotation on class?
-        serializableWith?.let { return it.toRegularClassSymbol(session) }
+        getSerializableWith(session)?.let { return it.toRegularClassSymbol(session) }
         // companion object serializer?
         if (this is FirRegularClassSymbol && with(session) { isInternallySerializableObject }) return companionObjectSymbol
         // can infer @Poly?
@@ -107,7 +107,7 @@ context(CheckerContext)
 @Suppress("IncorrectFormatting") // KTIJ-22227
 internal val FirClassSymbol<*>.serializableOrMetaAnnotationSource: KtSourceElement?
     get() {
-        serializableAnnotation(needArguments = false)?.source?.let { return it }
+        serializableAnnotation(needArguments = false, session)?.source?.let { return it }
         metaSerializableAnnotation(needArguments = false)?.source?.let { return it }
         return null
     }
@@ -115,7 +115,7 @@ internal val FirClassSymbol<*>.serializableOrMetaAnnotationSource: KtSourceEleme
 context(CheckerContext)
 @Suppress("IncorrectFormatting") // KTIJ-22227
 internal val FirBasedSymbol<*>.hasAnySerialAnnotation: Boolean
-    get() = serialNameValue != null || resolvedAnnotationsWithClassIds.any { it.annotationClassSymbol?.isSerialInfoAnnotation == true }
+    get() = getSerialNameValue(session) != null || resolvedAnnotationsWithClassIds.any { it.annotationClassSymbol?.isSerialInfoAnnotation == true }
 
 // ---------------------- class utils ----------------------
 
@@ -155,13 +155,13 @@ internal val FirClassSymbol<*>.serializableAnnotationIsUseless: Boolean
 context(CheckerContext)
 @Suppress("IncorrectFormatting") // KTIJ-22227
 internal val ConeKotlinType.serializableWith: ConeKotlinType?
-    get() = customAnnotations.serializableWith ?: toRegularClassSymbol(session)?.serializableWith
+    get() = customAnnotations.getSerializableWith(session) ?: toRegularClassSymbol(session)?.getSerializableWith(session)
 
 
 context(CheckerContext)
 @Suppress("IncorrectFormatting") // KTIJ-22227
 internal val ConeKotlinType.overriddenSerializer: ConeKotlinType?
-    get() = toRegularClassSymbol(session)?.serializableWith
+    get() = toRegularClassSymbol(session)?.getSerializableWith(session)
 
 
 // ---------------------- others ----------------------

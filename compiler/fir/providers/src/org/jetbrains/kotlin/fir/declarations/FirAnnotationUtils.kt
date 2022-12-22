@@ -121,25 +121,27 @@ fun List<FirAnnotation>.hasAnnotationSafe(classId: ClassId): Boolean {
     return this.any { it.toAnnotationClassIdSafe() == classId }
 }
 
-fun <D> FirBasedSymbol<out D>.getAnnotationByClassId(classId: ClassId): FirAnnotation? where D : FirAnnotationContainer, D : FirDeclaration {
-    return fir.getAnnotationByClassId(classId)
+fun <D> FirBasedSymbol<out D>.getAnnotationByClassId(
+    classId: ClassId,
+    session: FirSession
+): FirAnnotation? where D : FirAnnotationContainer, D : FirDeclaration {
+    return fir.getAnnotationByClassId(classId, session)
 }
 
-fun FirAnnotationContainer.getAnnotationByClassId(classId: ClassId): FirAnnotation? {
-    return annotations.getAnnotationByClassId(classId)
+fun FirAnnotationContainer.getAnnotationByClassId(classId: ClassId, session: FirSession): FirAnnotation? {
+    return annotations.getAnnotationByClassId(classId, session)
 }
 
-fun List<FirAnnotation>.getAnnotationByClassId(classId: ClassId): FirAnnotation? {
-    return find {
-        it.annotationTypeRef.coneTypeSafe<ConeClassLikeType>()?.lookupTag?.classId == classId
-    }
+fun List<FirAnnotation>.getAnnotationByClassId(classId: ClassId, session: FirSession): FirAnnotation? {
+    return getAnnotationsByClassId(classId, session).firstOrNull()
 }
 
-fun FirAnnotationContainer.getAnnotationsByClassId(classId: ClassId): List<FirAnnotation> = annotations.getAnnotationsByClassId(classId)
+fun FirAnnotationContainer.getAnnotationsByClassId(classId: ClassId, session: FirSession): List<FirAnnotation> =
+    annotations.getAnnotationsByClassId(classId, session)
 
-fun List<FirAnnotation>.getAnnotationsByClassId(classId: ClassId): List<FirAnnotation> {
+fun List<FirAnnotation>.getAnnotationsByClassId(classId: ClassId, session: FirSession): List<FirAnnotation> {
     return filter {
-        it.annotationTypeRef.coneTypeSafe<ConeClassLikeType>()?.lookupTag?.classId == classId
+        it.annotationTypeRef.coneTypeSafe<ConeClassLikeType>()?.fullyExpandedType(session)?.lookupTag?.classId == classId
     }
 }
 
@@ -201,8 +203,8 @@ fun FirGetClassCall.getTargetType(): ConeKotlinType? {
     return typeRef.coneType.typeArguments.getOrNull(0)?.type
 }
 
-fun FirAnnotationContainer.getJvmNameFromAnnotation(target: AnnotationUseSiteTarget? = null): String? {
-    val annotationCalls = getAnnotationsByClassId(StandardClassIds.Annotations.JvmName)
+fun FirAnnotationContainer.getJvmNameFromAnnotation(session: FirSession, target: AnnotationUseSiteTarget? = null): String? {
+    val annotationCalls = getAnnotationsByClassId(StandardClassIds.Annotations.JvmName, session)
     return annotationCalls.firstNotNullOfOrNull { call ->
         call.getStringArgument(StandardClassIds.Annotations.ParameterNames.jvmNameName)
             ?.takeIf { target == null || call.useSiteTarget == target }

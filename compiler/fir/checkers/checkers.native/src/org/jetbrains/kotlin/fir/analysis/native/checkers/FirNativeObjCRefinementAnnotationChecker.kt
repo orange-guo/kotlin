@@ -33,7 +33,7 @@ object FirNativeObjCRefinementAnnotationChecker : FirRegularClassChecker() {
                 context
             )
         }
-        val targets = declaration.getAllowedAnnotationTargets()
+        val targets = declaration.getAllowedAnnotationTargets(context.session)
         val unsupportedTargets = targets - supportedTargets
         if (unsupportedTargets.isNotEmpty()) {
             objCAnnotation?.let { reporter.reportOn(it.source, FirNativeErrors.INVALID_OBJC_REFINEMENT_TARGETS, context) }

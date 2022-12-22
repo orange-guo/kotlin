@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
+import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.containsRepeatableAnnotation
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirBasicDeclarationChecker
@@ -60,7 +61,7 @@ object FirRepeatableAnnotationChecker : FirBasicDeclarationChecker() {
 
             if (duplicateAnnotation &&
                 annotationClass.containsRepeatableAnnotation(session) &&
-                annotationClass.getAnnotationRetention() != AnnotationRetention.SOURCE
+                annotationClass.getAnnotationRetention(session) != AnnotationRetention.SOURCE
             ) {
                 if (context.isJvm6()) {
                     reporter.reportOn(annotation.source, FirJvmErrors.REPEATED_ANNOTATION_TARGET6, context)
@@ -68,7 +69,7 @@ object FirRepeatableAnnotationChecker : FirBasicDeclarationChecker() {
                     // It's not allowed to have both a repeated annotation (applied more than once) and its container
                     // on the same element.
                     // See https://docs.oracle.com/javase/specs/jls/se16/html/jls-9.html#jls-9.7.5.
-                    val explicitContainer = annotationClass.resolveContainerAnnotation()
+                    val explicitContainer = annotationClass.resolveContainerAnnotation(session)
                     if (explicitContainer != null && annotations.any { it.classId == explicitContainer }) {
                         reporter.reportOn(
                             annotation.source,
@@ -99,9 +100,9 @@ object FirRepeatableAnnotationChecker : FirBasicDeclarationChecker() {
         }
     }
 
-    private fun FirClassLikeSymbol<*>.resolveContainerAnnotation(): ClassId? {
-        val repeatableAnnotation = getAnnotationByClassId(StandardClassIds.Annotations.Repeatable)
-            ?: getAnnotationByClassId(StandardClassIds.Annotations.Java.Repeatable)
+    private fun FirClassLikeSymbol<*>.resolveContainerAnnotation(session: FirSession): ClassId? {
+        val repeatableAnnotation = getAnnotationByClassId(StandardClassIds.Annotations.Repeatable, session)
+            ?: getAnnotationByClassId(StandardClassIds.Annotations.Java.Repeatable, session)
             ?: return null
         return repeatableAnnotation.resolveContainerAnnotation()
     }
@@ -202,8 +203,8 @@ object FirRepeatableAnnotationChecker : FirBasicDeclarationChecker() {
         context: CheckerContext,
         reporter: DiagnosticReporter
     ) {
-        val annotationRetention = annotationClass.symbol.getAnnotationRetention()
-        val containerRetention = containerClass.getAnnotationRetention()
+        val annotationRetention = annotationClass.symbol.getAnnotationRetention(context.session)
+        val containerRetention = containerClass.getAnnotationRetention(context.session)
         if (containerRetention < annotationRetention) {
             reporter.reportOn(
                 annotationSource,
@@ -224,8 +225,8 @@ object FirRepeatableAnnotationChecker : FirBasicDeclarationChecker() {
         context: CheckerContext,
         reporter: DiagnosticReporter
     ) {
-        val annotationTargets = annotationClass.getAllowedAnnotationTargets()
-        val containerTargets = containerClass.getAllowedAnnotationTargets()
+        val annotationTargets = annotationClass.getAllowedAnnotationTargets(context.session)
+        val containerTargets = containerClass.getAllowedAnnotationTargets(context.session)
 
         // See https://docs.oracle.com/javase/specs/jls/se16/html/jls-9.html#jls-9.6.3.
         // (TBH, the rules about TYPE/TYPE_USE and TYPE_PARAMETER/TYPE_USE don't seem to make a lot of sense, but it's JLS
