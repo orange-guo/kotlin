@@ -5,6 +5,8 @@
 
 package kotlin.io.encoding
 
+import kotlin.native.concurrent.SharedImmutable
+
 /**
  * Provides Base64 encoding and decoding functionality.
  *
@@ -587,6 +589,7 @@ public open class Base64 private constructor(
 
 
 // "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+@SharedImmutable
 private val base64EncodeMap = byteArrayOf(
     65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,  /* 0 - 15 */
     81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  97,  98,  99,  100, 101, 102, /* 16 - 31 */
@@ -594,6 +597,7 @@ private val base64EncodeMap = byteArrayOf(
     119, 120, 121, 122, 48,  49,  50,  51,  52,  53,  54,  55,  56,  57,  43,  47,  /* 48 - 63 */
 )
 
+@SharedImmutable
 private val base64DecodeMap = IntArray(256).apply {
     this.fill(-1)
     base64EncodeMap.forEachIndexed { index, symbol ->
@@ -602,6 +606,7 @@ private val base64DecodeMap = IntArray(256).apply {
 }
 
 // "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+@SharedImmutable
 private val base64UrlEncodeMap = byteArrayOf(
     65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,  /* 0 - 15 */
     81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  97,  98,  99,  100, 101, 102, /* 16 - 31 */
@@ -609,6 +614,7 @@ private val base64UrlEncodeMap = byteArrayOf(
     119, 120, 121, 122, 48,  49,  50,  51,  52,  53,  54,  55,  56,  57,  45,  95,  /* 48 - 63 */
 )
 
+@SharedImmutable
 private val base64UrlDecodeMap = IntArray(256).apply {
     this.fill(-1)
     base64UrlEncodeMap.forEachIndexed { index, symbol ->
