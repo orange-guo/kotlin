@@ -5,53 +5,68 @@
 
 package org.jetbrains.kotlin.ir.backend.js
 
+import org.jetbrains.kotlin.backend.common.serialization.cityHash64
 import org.jetbrains.kotlin.library.SerializedIrModule
-import java.io.File
-import java.security.MessageDigest
 import java.util.*
 
 private const val FILE_FINGERPRINTS_SEPARATOR = " "
-private const val FILE_FINGERPRINTS_KEY_VALUE_SEPARATOR = "-"
+private const val FILE_FINGERPRINTS_HASH_SEPARATOR = "-"
+
+private fun StringBuilder.appendHashed(data: ByteArray, separator: String) {
+    append(cityHash64(data).toString(Character.MAX_RADIX))
+    append(separator)
+}
 
 internal fun SerializedIrModule.calculateSerializedIrFileSha256Fingerprints() = buildString {
-    val fileDigest = MessageDigest.getInstance("SHA-256")
-
-    fun flushAndAppendDigest() {
-        append(Base64.getEncoder().encodeToString(fileDigest.digest()))
-        fileDigest.reset()
-    }
-
     for (file in files.withIndex()) {
         if (file.index != 0) {
             append(FILE_FINGERPRINTS_SEPARATOR)
         }
 
-        fileDigest.update(file.value.path.toByteArray())
-        flushAndAppendDigest()
-
-        append(FILE_FINGERPRINTS_KEY_VALUE_SEPARATOR)
-
-        fileDigest.update(file.value.fileData)
-        fileDigest.update(file.value.fqName.toByteArray())
-        fileDigest.update(file.value.types)
-        fileDigest.update(file.value.signatures)
-        fileDigest.update(file.value.strings)
-        fileDigest.update(file.value.bodies)
-        fileDigest.update(file.value.declarations)
-        fileDigest.update(file.value.debugInfo ?: ByteArray(0))
-
-        flushAndAppendDigest()
+        appendHashed(file.value.path.toByteArray(), FILE_FINGERPRINTS_HASH_SEPARATOR)
+        appendHashed(file.value.fileData, FILE_FINGERPRINTS_HASH_SEPARATOR)
+        appendHashed(file.value.fqName.toByteArray(), FILE_FINGERPRINTS_HASH_SEPARATOR)
+        appendHashed(file.value.types, FILE_FINGERPRINTS_HASH_SEPARATOR)
+        appendHashed(file.value.signatures, FILE_FINGERPRINTS_HASH_SEPARATOR)
+        appendHashed(file.value.strings, FILE_FINGERPRINTS_HASH_SEPARATOR)
+        appendHashed(file.value.bodies, FILE_FINGERPRINTS_HASH_SEPARATOR)
+        appendHashed(file.value.declarations, FILE_FINGERPRINTS_HASH_SEPARATOR)
+        appendHashed(file.value.debugInfo ?: ByteArray(0), "")
     }
 }
 
-class SerializedIrFileSha256Fingerprint(val filePathSha256: ByteArray, val fingerprintSha256: ByteArray)
+class SerializedIrFileSha256Fingerprint(
+    val pathHash: ULong,
+    val fileDataHash: ULong,
+    val fqNameHash: ULong,
+    val typesHash: ULong,
+    val signaturesHash: ULong,
+    val stringsHash: ULong,
+    val bodiesHash: ULong,
+    val declarationsHash: ULong,
+    val debugInfoHash: ULong
+) {
+    companion object {
+        const val HASHES_COUNT = 9
+    }
+}
 
 internal fun String.parseSerializedIrFileSha256Fingerprints(): List<SerializedIrFileSha256Fingerprint> {
     return split(FILE_FINGERPRINTS_SEPARATOR).mapNotNull { fileFingerprintLine ->
-        fileFingerprintLine.split(FILE_FINGERPRINTS_KEY_VALUE_SEPARATOR).takeIf { fingerprint ->
-            fingerprint.size == 2
+        fileFingerprintLine.split(FILE_FINGERPRINTS_HASH_SEPARATOR).takeIf { fingerprint ->
+            fingerprint.size == SerializedIrFileSha256Fingerprint.HASHES_COUNT
         }?.let { fingerprint ->
-            SerializedIrFileSha256Fingerprint(Base64.getDecoder().decode(fingerprint[0]), Base64.getDecoder().decode(fingerprint[1]))
+            SerializedIrFileSha256Fingerprint(
+                fingerprint[0].toULong(Character.MAX_RADIX),
+                fingerprint[1].toULong(Character.MAX_RADIX),
+                fingerprint[2].toULong(Character.MAX_RADIX),
+                fingerprint[3].toULong(Character.MAX_RADIX),
+                fingerprint[4].toULong(Character.MAX_RADIX),
+                fingerprint[5].toULong(Character.MAX_RADIX),
+                fingerprint[6].toULong(Character.MAX_RADIX),
+                fingerprint[7].toULong(Character.MAX_RADIX),
+                fingerprint[8].toULong(Character.MAX_RADIX),
+            )
         }
     }
 }

@@ -693,7 +693,7 @@ fun serializeModuleIntoKlib(
             p.setProperty(KLIB_PROPERTY_CONTAINS_ERROR_CODE, "true")
         }
 
-        p.setProperty(KLIB_PROPERTY_SERIALIZED_IR_FILE_FINGERPRINTS, fullSerializedIr.calculateSerializedIrFileSha256Fingerprints())
+//        p.setProperty(KLIB_PROPERTY_SERIALIZED_IR_FILE_FINGERPRINTS, fullSerializedIr.calculateSerializedIrFileSha256Fingerprints())
     }
 
     buildKotlinLibrary(

@@ -117,11 +117,6 @@ private class HashCalculatorForIC {
 internal class ICHasher {
     private val hashCalculator = HashCalculatorForIC()
 
-    fun calculateByteArrayHash(data: ByteArray): ICHash {
-        hashCalculator.update(data)
-        return hashCalculator.finalize()
-    }
-
     fun calculateStringHash(data: String): ICHash {
         hashCalculator.update(data)
         return hashCalculator.finalize()

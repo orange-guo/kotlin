@@ -5,14 +5,12 @@
 
 package org.jetbrains.kotlin.ir.backend.js.ic
 
-import org.jetbrains.kotlin.backend.common.serialization.IdSignatureDeserializer
-import org.jetbrains.kotlin.backend.common.serialization.IrLibraryBytesSource
-import org.jetbrains.kotlin.backend.common.serialization.IrLibraryFileFromBytes
-import org.jetbrains.kotlin.backend.common.serialization.codedInputStream
+import org.jetbrains.kotlin.backend.common.serialization.*
 import org.jetbrains.kotlin.backend.common.serialization.proto.IrFile
 import org.jetbrains.kotlin.ir.backend.js.jsOutputName
 import org.jetbrains.kotlin.ir.backend.js.serializedIrFileFingerprints
 import org.jetbrains.kotlin.library.KotlinLibrary
+import org.jetbrains.kotlin.library.impl.buffer
 import org.jetbrains.kotlin.protobuf.ExtensionRegistryLite
 import java.io.File
 
@@ -28,8 +26,10 @@ internal interface KotlinLibraryHeader {
 }
 
 internal class KotlinLoadedLibraryHeader(private val library: KotlinLibrary, private val icHasher: ICHasher) : KotlinLibraryHeader {
-    private fun ByteArray.toICHash(): ICHash? {
-        return takeIf { size == ICHash.HASH_BYTES }?.let { ICHash(it) }
+    private fun toICHash(x1: ULong, x2: ULong, x3: ULong, x4: ULong): ICHash {
+        val raw = ByteArray(ICHash.HASH_BYTES)
+        raw.buffer.asLongBuffer().put(longArrayOf(x1.toLong(), x2.toLong(), x3.toLong(), x4.toLong()))
+        return ICHash(raw)
     }
 
     private fun parseFingerprintsFromManifest(): Map<KotlinSourceFile, ICHash>? {
@@ -37,15 +37,17 @@ internal class KotlinLoadedLibraryHeader(private val library: KotlinLibrary, pri
         if (manifestFingerprints.size != sourceFiles.size) {
             return null
         }
-        val sourceFilePathHashes = sourceFiles.associateBy {
-            icHasher.calculateByteArrayHash(it.path.toByteArray())
-        }
+        val sourceFilePathHashes = sourceFiles.associateBy { cityHash64(it.path.toByteArray()) }
         val fingerprints = HashMap<KotlinSourceFile, ICHash>(sourceFiles.size)
         for (manifestFingerprint in manifestFingerprints) {
-            val filePathHash = manifestFingerprint.filePathSha256.toICHash() ?: return null
-            val sourceFile = sourceFilePathHashes[filePathHash] ?: return null
-            fingerprints[sourceFile] = manifestFingerprint.fingerprintSha256.toICHash() ?: return null
+            val sourceFile = sourceFilePathHashes[manifestFingerprint.pathHash] ?: return null
+            fingerprints[sourceFile] = with(manifestFingerprint) {
+                toICHash(fileDataHash, fqNameHash, typesHash, signaturesHash).apply {
+                    combineWithAndUpdate(toICHash(stringsHash, bodiesHash, declarationsHash, debugInfoHash))
+                }
+            }
         }
+
         return fingerprints
     }
 
@@ -54,11 +56,12 @@ internal class KotlinLoadedLibraryHeader(private val library: KotlinLibrary, pri
     override val libraryFile: KotlinLibraryFile = KotlinLibraryFile(library)
 
     override val libraryFingerprint: ICHash by lazy {
-        fingerprintsFromManifest?.entries?.sortedBy { it.key.path }?.let { fingerprints ->
-            ICHash().also { hashByFingerprints ->
-                fingerprints.forEach { hashByFingerprints.combineWithAndUpdate(it.value) }
-            }
-        } ?: icHasher.calculateFileHash(File(libraryFile.path))
+//        fingerprintsFromManifest?.entries?.sortedBy { it.key.path }?.let { fingerprints ->
+//            ICHash().also { hashByFingerprints ->
+//                fingerprints.forEach { hashByFingerprints.combineWithAndUpdate(it.value) }
+//            }
+//        } ?: icHasher.calculateFileHash(File(libraryFile.path))
+        icHasher.calculateFileHash(File(libraryFile.path))
     }
 
     override val sourceFileDeserializers: Map<KotlinSourceFile, IdSignatureDeserializer> by lazy {
@@ -78,7 +81,10 @@ internal class KotlinLoadedLibraryHeader(private val library: KotlinLibrary, pri
     }
 
     override val sourceFileFingerprints: Map<KotlinSourceFile, ICHash> by lazy {
-        fingerprintsFromManifest ?: buildMapUntil(sourceFiles.size) {
+//        fingerprintsFromManifest ?: buildMapUntil(sourceFiles.size) {
+//            put(sourceFiles[it], icHasher.calculateLibrarySrcFileHash(library, it))
+//        }
+        buildMapUntil(sourceFiles.size) {
             put(sourceFiles[it], icHasher.calculateLibrarySrcFileHash(library, it))
         }
     }
