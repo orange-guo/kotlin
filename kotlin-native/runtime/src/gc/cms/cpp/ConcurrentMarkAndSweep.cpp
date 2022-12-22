@@ -13,8 +13,6 @@
 #include "Logging.hpp"
 #include "MarkAndSweepUtils.hpp"
 #include "Memory.h"
-#include "RootSet.hpp"
-#include "Runtime.h"
 #include "ThreadData.hpp"
 #include "ThreadRegistry.hpp"
 #include "ThreadSuspension.hpp"
@@ -190,20 +188,17 @@ bool gc::ConcurrentMarkAndSweep::PerformFullGC(int64_t epoch) noexcept {
     gcHandle.threadsAreResumed();
     auto finalizerQueue = gc::Sweep<SweepTraits>(gcHandle, objectFactoryIterable);
     kotlin::compactObjectPoolInMainThread();
+#else
+    auto finalizerQueue = heap_.SweepExtraObjects(gcHandle);
+
+    mm::ResumeThreads();
+    gcHandle.threadsAreResumed();
+    heap_.Sweep();
+#endif
     state_.finish(epoch);
     gcHandle.finalizersScheduled(finalizerQueue.size());
     gcHandle.finished();
     finalizerProcessor_->ScheduleTasks(std::move(finalizerQueue), epoch);
-#else
-    size_t finalizersScheduled = heap_.SweepExtraObjects(gcHandle, finalizerProcessor_->finalizerQueue_);
-    mm::ResumeThreads();
-    gcHandle.threadsAreResumed();
-    heap_.Sweep();
-    state_.finish(epoch);
-    gcHandle.finalizersScheduled(finalizersScheduled);
-    gcHandle.finished();
-    finalizerProcessor_->SetEpoch(epoch);
-#endif
     return true;
 }
 

@@ -5,17 +5,16 @@
 
 #include "CustomFinalizerProcessor.hpp"
 
+#include <cstdint>
 #include <mutex>
 #include <thread>
 
 #include "AtomicStack.hpp"
-#include "Cleaner.h"
 #include "CustomLogging.hpp"
 #include "ExtraObjectData.hpp"
 #include "FinalizerHooks.hpp"
 #include "Memory.h"
 #include "Runtime.h"
-#include "WorkerBoundReference.h"
 
 namespace kotlin::alloc {
 
@@ -31,40 +30,36 @@ void CustomFinalizerProcessor::StartFinalizerThreadIfNone() noexcept {
             initialized_ = true;
         }
         initializedCondVar_.notify_all();
-        int64_t finalizersEpoch = 0;
-        CustomAllocDebug("CustomFinalizerProcessor: begin");
         while (true) {
-            CustomAllocDebug("CustomFinalizerProcessor: loop");
             std::unique_lock lock(finalizerQueueMutex_);
-            finalizerQueueCondVar_.wait(lock, [this, &finalizersEpoch] {
-                return !finalizerQueue_.isEmpty() || finalizerQueueEpoch_ != finalizersEpoch || shutdownFlag_;
+            finalizerQueueCondVar_.wait(lock, [this] {
+                return finalizedEpoch_ != scheduledEpoch_ || shutdownFlag_;
             });
-            if (finalizerQueue_.isEmpty() && finalizerQueueEpoch_ == finalizersEpoch) {
-                newTasksAllowed_ = false;
+            if (finalizedEpoch_ == scheduledEpoch_) {
                 RuntimeAssert(shutdownFlag_, "Nothing to do, but no shutdownFlag_ is set on wakeup");
+                RuntimeAssert(finalizerQueue_.isEmpty(), "Finalizer queue should be empty when killing finalizer thread");
                 break;
             }
-            finalizersEpoch = finalizerQueueEpoch_;
+            int64_t queueEpoch = scheduledEpoch_;
+            Queue finalizerQueue = std::move(finalizerQueue_);
             lock.unlock();
-            CustomAllocDebug("CustomFinalizerProcessor: unlock");
-            if (!finalizerQueue_.isEmpty()) {
-                ThreadStateGuard guard(ThreadState::kRunnable);
-                ExtraObjectCell* cell;
-                while ((cell = finalizerQueue_.Pop())) {
-                    auto* extraObject = cell->Data();
-                    auto* baseObject = extraObject->GetBaseObject();
-                    RunFinalizers(baseObject);
-                    extraObject->setFlag(mm::ExtraObjectData::FLAGS_FINALIZED);
-                }
+            ThreadStateGuard guard(ThreadState::kRunnable);
+            ExtraObjectCell* cell;
+            while ((cell = finalizerQueue.Pop())) {
+                auto* extraObject = cell->Data();
+                auto* baseObject = extraObject->GetBaseObject();
+                RunFinalizers(baseObject);
+                extraObject->setFlag(mm::ExtraObjectData::FLAGS_FINALIZED);
             }
-            epochDoneCallback_(finalizersEpoch);
+            while (finalizedEpoch_ != queueEpoch) {
+                epochDoneCallback_(++finalizedEpoch_);
+            }
         }
         {
             std::unique_lock guard(initializedMutex_);
             initialized_ = false;
         }
         initializedCondVar_.notify_all();
-        CustomAllocDebug("CustomFinalizerProcessor: done");
     });
 }
 
@@ -80,14 +75,14 @@ void CustomFinalizerProcessor::StopFinalizerThread() noexcept {
     shutdownFlag_ = false;
     RuntimeAssert(finalizerQueue_.isEmpty(), "Finalizer queue should be empty when killing finalizer thread");
     std::unique_lock guard(finalizerQueueMutex_);
-    newTasksAllowed_ = true;
     finalizerQueueCondVar_.notify_all();
 }
 
-void CustomFinalizerProcessor::SetEpoch(int64_t epoch) noexcept {
-    CustomAllocDebug("CustomFinalizerProcessor::SetEpoch(%" PRIu64 ")", epoch);
+void CustomFinalizerProcessor::ScheduleTasks(Queue&& tasks, int64_t epoch) noexcept {
+    std::unique_lock guard(finalizerQueueMutex_);
     StartFinalizerThreadIfNone();
-    finalizerQueueEpoch_ = epoch;
+    finalizerQueue_.TransferAllFrom(tasks);
+    scheduledEpoch_ = epoch;
     finalizerQueueCondVar_.notify_all();
 }
 

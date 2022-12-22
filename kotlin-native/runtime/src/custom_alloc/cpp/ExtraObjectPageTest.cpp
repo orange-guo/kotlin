@@ -42,9 +42,8 @@ TEST(CustomAllocTest, ExtraObjectPageConsequtiveAlloc) {
 TEST(CustomAllocTest, ExtraObjectPageSweepEmptyPage) {
     Page* page = Page::Create();
     Queue finalizerQueue;
-    size_t scheduled = 0;
-    EXPECT_FALSE(page->Sweep(finalizerQueue, scheduled));
-    EXPECT_EQ(scheduled, size_t(0));
+    EXPECT_FALSE(page->Sweep(finalizerQueue));
+    EXPECT_EQ(finalizerQueue.size(), size_t(0));
     free(page);
 }
 
@@ -58,9 +57,8 @@ TEST(CustomAllocTest, ExtraObjectPageSweepFullFinalizedPage) {
     }
     EXPECT_EQ(count, EXTRA_OBJECT_COUNT);
     Queue finalizerQueue;
-    size_t scheduled = 0;
-    EXPECT_FALSE(page->Sweep(finalizerQueue, scheduled));
-    EXPECT_EQ(scheduled, size_t(0));
+    EXPECT_FALSE(page->Sweep(finalizerQueue));
+    EXPECT_EQ(finalizerQueue.size(), size_t(0));
     free(page);
 }
 

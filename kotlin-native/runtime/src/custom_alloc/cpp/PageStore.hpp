@@ -61,7 +61,6 @@ private:
         T* page;
         while ((page = from.Pop())) {
             if (!page->Sweep()) {
-                CustomAllocInfo("SweepAndFreeEmpty free(%p)", page);
                 empty_.Push(page);
             } else {
                 to.Push(page);

@@ -8,7 +8,6 @@
 
 #include <atomic>
 
-#include "CustomLogging.hpp"
 #include "KAssert.h"
 
 namespace kotlin::alloc {
@@ -16,6 +15,12 @@ namespace kotlin::alloc {
 template <class T>
 class AtomicStack {
 public:
+    AtomicStack() {}
+
+    AtomicStack(AtomicStack<T>&& other) {
+        TransferAllFrom(other);
+    }
+
     // Pop() is not fully thread-safe, in that the returned page must not be
     // immediately freed, if another thread might be simultaneously Popping
     // from the same stack. As of writing this comment, this is handled by only
@@ -23,7 +28,6 @@ public:
     T* Pop() noexcept {
         T* elm = stack_.load(std::memory_order_acquire);
         while (elm && !stack_.compare_exchange_weak(elm, elm->next_, std::memory_order_acq_rel)) {}
-        /* CustomAllocDebug("AtomicStack(%p)::Pop() = %p", this, elm); */
         return elm;
     }
 
@@ -55,6 +59,15 @@ public:
     }
 
     bool isEmpty() noexcept { return stack_.load(std::memory_order_relaxed) == nullptr; }
+
+    // Not thread-safe. Named like this to make AtomicStack compatible with FinalizerQueue
+    size_t size() {
+        size_t size = 0;
+        for (T* elm = stack_.load(std::memory_order_relaxed); elm != nullptr; elm = elm->next_) {
+            ++size;
+        }
+        return size;
+    }
 
     ~AtomicStack() noexcept {
         RuntimeAssert(isEmpty(), "AtomicStack must be empty when destroyed");

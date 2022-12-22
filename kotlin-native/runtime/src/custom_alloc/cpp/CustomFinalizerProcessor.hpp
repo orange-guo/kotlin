@@ -6,34 +6,35 @@
 #ifndef CUSTOM_ALLOC_CPP_CUSTOMFINALIZERPROCESSOR_HPP_
 #define CUSTOM_ALLOC_CPP_CUSTOMFINALIZERPROCESSOR_HPP_
 
+#include <cstdint>
+#include <condition_variable>
+
 #include "AtomicStack.hpp"
-#include "ConcurrentMarkAndSweep.hpp"
-#include "ExtraObjectData.hpp"
-#include "GCState.hpp"
+#include "ExtraObjectPage.hpp"
 #include "ScopedThread.hpp"
 
 namespace kotlin::alloc {
 
 class CustomFinalizerProcessor : Pinned {
 public:
+    using Queue = typename kotlin::alloc::AtomicStack<kotlin::alloc::ExtraObjectCell>;
     explicit CustomFinalizerProcessor(std::function<void(int64_t)> epochDoneCallback) : epochDoneCallback_(std::move(epochDoneCallback)) {}
+    void ScheduleTasks(Queue&& tasks, int64_t epoch) noexcept;
     void StopFinalizerThread() noexcept;
-    void SetEpoch(int64_t epoch) noexcept;
     bool IsRunning() noexcept;
     void StartFinalizerThreadIfNone() noexcept;
     void WaitFinalizerThreadInitialized() noexcept;
     ~CustomFinalizerProcessor();
 
 private:
-    friend class gc::ConcurrentMarkAndSweep;
     ScopedThread finalizerThread_;
-    AtomicStack<ExtraObjectCell> finalizerQueue_;
+    Queue finalizerQueue_;
     std::condition_variable finalizerQueueCondVar_;
     std::mutex finalizerQueueMutex_;
     std::function<void(int64_t)> epochDoneCallback_;
-    int64_t finalizerQueueEpoch_ = 0;
+    int64_t scheduledEpoch_ = 0;
+    int64_t finalizedEpoch_ = 0;
     bool shutdownFlag_ = false;
-    bool newTasksAllowed_ = true;
 
     std::mutex initializedMutex_;
     std::condition_variable initializedCondVar_;

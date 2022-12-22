@@ -19,7 +19,7 @@ namespace kotlin::alloc {
 
 bool TryResetMark(void* ptr) noexcept;
 
-bool SweepIsCollectable(ExtraObjectCell* extraObjectCell, AtomicStack<ExtraObjectCell>& finalizerQueue, size_t& finalizersScheduled) noexcept;
+bool SweepIsCollectable(ExtraObjectCell* extraObjectCell, AtomicStack<ExtraObjectCell>& finalizerQueue) noexcept;
 
 void* SafeAlloc(uint64_t size) noexcept;
 

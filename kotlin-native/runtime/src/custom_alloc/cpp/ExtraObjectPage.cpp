@@ -45,7 +45,7 @@ mm::ExtraObjectData* ExtraObjectPage::TryAllocate() noexcept {
     return freeBlock->Data();
 }
 
-bool ExtraObjectPage::Sweep(AtomicStack<ExtraObjectCell>& finalizerQueue, size_t& finalizersScheduled) noexcept {
+bool ExtraObjectPage::Sweep(AtomicStack<ExtraObjectCell>& finalizerQueue) noexcept {
     CustomAllocInfo("ExtraObjectPage(%p)::Sweep()", this);
     // `end` is after the last legal allocation of a block, but does not
     // necessarily match an actual block starting point.
@@ -59,7 +59,7 @@ bool ExtraObjectPage::Sweep(AtomicStack<ExtraObjectCell>& finalizerQueue, size_t
             continue;
         }
         // If the current cell was marked, it's alive, and the whole page is alive.
-        if (!SweepIsCollectable(cell, finalizerQueue, finalizersScheduled)) {
+        if (!SweepIsCollectable(cell, finalizerQueue)) {
             alive = true;
             continue;
         }
