@@ -12,5 +12,4 @@ public enum MyEnumClass /* one.MyEnumClass*/ {
   public final int doo();//  doo()
 
   public static kotlin.enums.EnumEntries<one.MyEnumClass> getEntries();//  getEntries()
-
 }

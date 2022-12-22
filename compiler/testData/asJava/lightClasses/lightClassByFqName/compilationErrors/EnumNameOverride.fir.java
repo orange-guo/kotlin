@@ -11,5 +11,4 @@ public enum EnumNameOverride /* EnumNameOverride*/ implements Bar {
   public static kotlin.enums.EnumEntries<EnumNameOverride> getEntries();//  getEntries()
 
   private  EnumNameOverride();//  .ctor()
-
 }

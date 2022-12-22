@@ -13,5 +13,4 @@ public enum E /* p.E*/ {
   public static p.E[] values();//  values()
 
   private  E();//  .ctor()
-
 }
