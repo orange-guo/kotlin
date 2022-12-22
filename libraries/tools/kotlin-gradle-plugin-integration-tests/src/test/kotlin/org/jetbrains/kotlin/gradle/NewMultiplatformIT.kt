@@ -256,6 +256,7 @@ class NewMultiplatformIT : BaseGradleIT() {
         }
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun testLibAndAppJsLegacy() = doTestLibAndAppJsBothCompilers(
         "sample-lib",
@@ -270,6 +271,7 @@ class NewMultiplatformIT : BaseGradleIT() {
         KotlinJsCompilerType.IR
     )
 
+    @Suppress("DEPRECATION")
     @Test
     fun testLibAndAppJsBoth() = doTestLibAndAppJsBothCompilers(
         "sample-lib",
@@ -277,6 +279,7 @@ class NewMultiplatformIT : BaseGradleIT() {
         KotlinJsCompilerType.BOTH
     )
 
+    @Suppress("DEPRECATION")
     @Test
     fun testLibAndAppWithGradleKotlinDslJsLegacy() = doTestLibAndAppJsBothCompilers(
         "sample-lib-gradle-kotlin-dsl",
@@ -291,6 +294,7 @@ class NewMultiplatformIT : BaseGradleIT() {
         KotlinJsCompilerType.IR
     )
 
+    @Suppress("DEPRECATION")
     @Test
     fun testLibAndAppWithGradleKotlinDslJsBoth() = doTestLibAndAppJsBothCompilers(
         "sample-lib-gradle-kotlin-dsl",
@@ -306,6 +310,7 @@ class NewMultiplatformIT : BaseGradleIT() {
         val libProject = transformProjectWithPluginsDsl(libProjectName, directoryPrefix = "both-js-lib-and-app")
         val appProject = transformProjectWithPluginsDsl(appProjectName, directoryPrefix = "both-js-lib-and-app")
 
+        @Suppress("DEPRECATION")
         val compileTasksNames =
             listOf(
                 *(if (jsCompilerType != KotlinJsCompilerType.BOTH) {
@@ -328,6 +333,7 @@ class NewMultiplatformIT : BaseGradleIT() {
                 assertTasksExecuted(*compileTasksNames.toTypedArray(), ":allMetadataJar")
 
                 val groupDir = projectDir.resolve("repo/com/example")
+                @Suppress("DEPRECATION")
                 val jsExtension = if (jsCompilerType == KotlinJsCompilerType.LEGACY) "jar" else "klib"
                 val jsJarName = "sample-lib-nodejs/1.0/sample-lib-nodejs-1.0.$jsExtension"
                 val metadataJarName = "sample-lib/1.0/sample-lib-1.0.jar"
