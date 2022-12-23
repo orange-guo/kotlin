@@ -101,16 +101,15 @@ class ConstantExpressionEvaluator(
         resolvedArgument: ResolvedValueArgument
     ): ConstantValue<*>? {
         val varargElementType = parameterDescriptor.varargElementType
-        val argumentsAsVararg = varargElementType != null && !hasSpread(resolvedArgument)
+        val argumentsAsVararg = varargElementType != null
         val constantType = if (argumentsAsVararg) varargElementType else parameterDescriptor.type
         val expectedType = getEffectiveExpectedType(parameterDescriptor, resolvedArgument, languageVersionSettings, trace)
-        val compileTimeConstants = resolveAnnotationValueArguments(resolvedArgument, constantType!!, expectedType, trace)
-        val constants = compileTimeConstants.map { it.toConstantValue(expectedType) }
+        val constants = resolveAnnotationValueArguments(resolvedArgument, constantType!!, expectedType, trace)
 
         if (argumentsAsVararg) {
             if (isArrayPassedInNamedForm(constants, resolvedArgument)) return constants.single()
 
-            if (parameterDescriptor.declaresDefaultValue() && compileTimeConstants.isEmpty()) return null
+            if (parameterDescriptor.declaresDefaultValue() && constants.isEmpty()) return null
 
             return ConstantValueFactory.createArrayValue(constants, parameterDescriptor.type)
         } else {
@@ -241,18 +240,13 @@ class ConstantExpressionEvaluator(
         return result
     }
 
-    private fun hasSpread(argument: ResolvedValueArgument): Boolean {
-        val arguments = argument.arguments
-        return arguments.size == 1 && arguments[0].getSpreadElement() != null
-    }
-
     private fun resolveAnnotationValueArguments(
         resolvedValueArgument: ResolvedValueArgument,
         deprecatedExpectedType: KotlinType,
         expectedType: KotlinType,
         trace: BindingTrace
-    ): List<CompileTimeConstant<*>> {
-        val constants = ArrayList<CompileTimeConstant<*>>()
+    ): List<ConstantValue<*>> {
+        val constants = ArrayList<ConstantValue<*>>()
         for (argument in resolvedValueArgument.arguments) {
             val argumentExpression = argument.getArgumentExpression() ?: continue
             val constant = evaluateExpression(argumentExpression, trace, expectedType)
@@ -261,7 +255,12 @@ class ConstantExpressionEvaluator(
                 updateNumberType(defaultType, argumentExpression, StatementFilter.NONE, trace)
             }
             if (constant != null) {
-                constants.add(constant)
+                val constantValue = constant.toConstantValue(expectedType)
+                if (argument.getSpreadElement() != null) {
+                    constants.addAll((constantValue as ArrayValue).value)
+                } else {
+                    constants.add(constantValue)
+                }
             }
 
             val expressionType = trace.getType(argumentExpression) ?: continue
