@@ -409,6 +409,12 @@ projectTest("quickTest", parallel = true, jUnitMode = JUnitMode.JUnit5, maxHeapS
     useJUnitPlatform()
 }
 
+projectTest("jsStdlibApiTest", parallel = true, jUnitMode = JUnitMode.JUnit5, maxHeapSizeMb = 4096) {
+    setUpJsBoxTests(jsEnabled = true, jsIrEnabled = true, firEnabled = true)
+    setTestNameIncludePatterns(listOf("org.jetbrains.kotlin.js.testOld.api.ApiTest.*"))
+    useJUnitPlatform()
+}
+
 testsJar {}
 
 val generateTests by generator("org.jetbrains.kotlin.generators.tests.GenerateJsTestsKt") {
