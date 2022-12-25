@@ -87,8 +87,11 @@ val KotlinLibrary.isBuiltIns: Boolean
 val KotlinLibrary.jsOutputName: String?
     get() = manifestProperties.getProperty(KLIB_PROPERTY_JS_OUTPUT_NAME)
 
-val KotlinLibrary.serializedIrFileFingerprints: List<SerializedIrFileSha256Fingerprint>?
-    get() = manifestProperties.getProperty(KLIB_PROPERTY_SERIALIZED_IR_FILE_FINGERPRINTS)?.parseSerializedIrFileSha256Fingerprints()
+val KotlinLibrary.serializedIrFileFingerprints: List<SerializedIrFileFingerprint>?
+    get() = manifestProperties.getProperty(KLIB_PROPERTY_SERIALIZED_IR_FILE_FINGERPRINTS)?.parseSerializedIrFileFingerprints()
+
+val KotlinLibrary.serializedKlibFingerprint: SerializedKlibFingerprint?
+    get() = manifestProperties.getProperty(KLIB_PROPERTY_SERIALIZED_KLIB_FINGERPRINT)?.let { SerializedKlibFingerprint.fromString(it) }
 
 private val CompilerConfiguration.metadataVersion
     get() = get(CommonConfigurationKeys.METADATA_VERSION) as? KlibMetadataVersion ?: KlibMetadataVersion.INSTANCE
@@ -693,7 +696,9 @@ fun serializeModuleIntoKlib(
             p.setProperty(KLIB_PROPERTY_CONTAINS_ERROR_CODE, "true")
         }
 
-//        p.setProperty(KLIB_PROPERTY_SERIALIZED_IR_FILE_FINGERPRINTS, fullSerializedIr.calculateSerializedIrFileSha256Fingerprints())
+        val fingerprints = fullSerializedIr.files.sortedBy { it.path }.map { SerializedIrFileFingerprint(it) }
+        p.setProperty(KLIB_PROPERTY_SERIALIZED_IR_FILE_FINGERPRINTS, fingerprints.joinIrFileFingerprints())
+        p.setProperty(KLIB_PROPERTY_SERIALIZED_KLIB_FINGERPRINT, SerializedKlibFingerprint(fingerprints).klibFingerprint.toString())
     }
 
     buildKotlinLibrary(
@@ -713,6 +718,7 @@ fun serializeModuleIntoKlib(
 
 const val KLIB_PROPERTY_JS_OUTPUT_NAME = "jsOutputName"
 const val KLIB_PROPERTY_SERIALIZED_IR_FILE_FINGERPRINTS = "serializedIrFileFingerprints"
+const val KLIB_PROPERTY_SERIALIZED_KLIB_FINGERPRINT = "serializedKlibFingerprint"
 
 fun KlibMetadataIncrementalSerializer.serializeScope(
     ktFile: KtFile,

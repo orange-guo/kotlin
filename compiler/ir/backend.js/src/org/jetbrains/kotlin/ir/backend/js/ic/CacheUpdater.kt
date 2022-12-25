@@ -4,6 +4,7 @@
 
 package org.jetbrains.kotlin.ir.backend.js.ic
 
+import org.jetbrains.kotlin.backend.common.serialization.cityHash64
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.ir.backend.js.*
 import org.jetbrains.kotlin.ir.backend.js.codegen.JsGenerationGranularity
@@ -65,7 +66,10 @@ class CacheUpdater(
 
     private val icHasher = ICHasher()
 
-    private val cacheRootDir = File(cacheDir, "version.${icHasher.calculateConfigHash(compilerConfiguration).toString(8)}")
+    private val cacheRootDir = run {
+        val configHash = icHasher.calculateConfigHash(compilerConfiguration)
+        File(cacheDir, "version.${configHash.hash.lowBytes.toString(Character.MAX_RADIX)}")
+    }
 
     fun getDirtyFileLastStats(): KotlinSourceFileMap<EnumSet<DirtyFileState>> = dirtyFileStats
 
@@ -116,9 +120,9 @@ class CacheUpdater(
         private val incrementalCaches = libraryDependencies.keys.associate { lib ->
             val libFile = KotlinLibraryFile(lib)
             val file = File(libFile.path)
-            val pathHash = icHasher.calculateStringHash(file.absolutePath).toString(8)
+            val pathHash = file.absolutePath.cityHash64().toULong().toString(Character.MAX_RADIX)
             val libraryCacheDir = File(cacheRootDir, "${file.name}.$pathHash")
-            libFile to IncrementalCache(KotlinLoadedLibraryHeader(lib, icHasher), libraryCacheDir, icHasher)
+            libFile to IncrementalCache(KotlinLoadedLibraryHeader(lib), libraryCacheDir)
         }
 
         private val removedIncrementalCaches = buildList {
@@ -126,7 +130,7 @@ class CacheUpdater(
                 val availableCaches = incrementalCaches.values.mapTo(HashSet(incrementalCaches.size)) { it.cacheDir }
                 val allDirs = Files.walk(cacheRootDir.toPath(), 1).map { it.toFile() }
                 allDirs.filter { it != cacheRootDir && it !in availableCaches }.forEach { removedCacheDir ->
-                    add(IncrementalCache(KotlinRemovedLibraryHeader(removedCacheDir), removedCacheDir, icHasher))
+                    add(IncrementalCache(KotlinRemovedLibraryHeader(removedCacheDir), removedCacheDir))
                 }
             }
         }
@@ -736,9 +740,7 @@ fun rebuildCacheForDirtyFiles(
     }
 
     val libFile = KotlinLibraryFile(library)
-    val dirtySrcFiles = dirtyFiles?.map {
-        KotlinSourceFile(it)
-    } ?: KotlinLoadedLibraryHeader(library, ICHasher()).sourceFileFingerprints.keys
+    val dirtySrcFiles = dirtyFiles?.map { KotlinSourceFile(it) } ?: KotlinLoadedLibraryHeader(library).sourceFileFingerprints.keys
 
     val modifiedFiles = mapOf(libFile to dirtySrcFiles.associateWith { emptyMetadata })
 

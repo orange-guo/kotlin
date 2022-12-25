@@ -41,7 +41,7 @@ internal class IdSignatureHashCalculator(private val icHasher: ICHasher) {
             } else {
                 icHasher.calculateIrFunctionHash(this)
             }
-            symbol.calculateSymbolHash().apply { combineWithAndUpdate(flatHash) }
+            ICHash(symbol.calculateSymbolHash().hash.combineWith(flatHash.hash))
         }
 
     private val IrFunction.inlineDepends: Collection<IrFunction>
@@ -87,13 +87,11 @@ internal class IdSignatureHashCalculator(private val icHasher: ICHasher) {
         }
 
         val fileAnnotationsHash = srcIrFile?.annotationsHash ?: ICHash()
-        return icHasher.calculateIrSymbolHash(this).apply {
-            combineWithAndUpdate(fileAnnotationsHash)
-        }
+        return ICHash(fileAnnotationsHash.hash.combineWith(icHasher.calculateIrSymbolHash(this).hash))
     }
 
     private fun IrFunction.calculateInlineFunctionTransitiveHash(): ICHash {
-        val transitiveHash = inlineFunctionFlatHash.copy()
+        var transitiveHash = inlineFunctionFlatHash
         val transitiveDepends = hashSetOf(this)
         val newDependsStack = transitiveDepends.toMutableList()
 
@@ -101,7 +99,7 @@ internal class IdSignatureHashCalculator(private val icHasher: ICHasher) {
             newDependsStack.removeLast().inlineDepends.forEach { inlineFunction ->
                 if (transitiveDepends.add(inlineFunction)) {
                     newDependsStack += inlineFunction
-                    transitiveHash.combineWithAndUpdate(inlineFunction.inlineFunctionFlatHash)
+                    transitiveHash = ICHash(transitiveHash.hash.combineWith(inlineFunction.inlineFunctionFlatHash.hash))
                 }
             }
         }
