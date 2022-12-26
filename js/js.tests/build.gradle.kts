@@ -312,6 +312,7 @@ fun Test.setUpJsBoxTests(jsEnabled: Boolean, jsIrEnabled: Boolean, firEnabled: B
     }
 
     exclude("org/jetbrains/kotlin/js/testOld/wasm/semantics/*")
+    exclude("org/jetbrains/kotlin/js/testOld/api/*")
 
     if (jsEnabled && !jsIrEnabled) {
         include("org/jetbrains/kotlin/integration/AntTaskJsTest.class")
@@ -328,7 +329,6 @@ fun Test.setUpJsBoxTests(jsEnabled: Boolean, jsIrEnabled: Boolean, firEnabled: B
             include("org/jetbrains/kotlin/js/test/ir/*")
 
             include("org/jetbrains/kotlin/incremental/*")
-            include("org/jetbrains/kotlin/js/testOld/api/*")
             include("org/jetbrains/kotlin/js/testOld/compatibility/binary/JsKlibBinaryCompatibilityTestGenerated.class")
             include("org/jetbrains/kotlin/benchmarks/GenerateIrRuntime.class")
             include("org/jetbrains/kotlin/integration/JsIrAnalysisHandlerExtensionTest.class")
@@ -379,8 +379,6 @@ val test = projectTest(parallel = true, jUnitMode = JUnitMode.JUnit5, maxHeapSiz
     inputs.dir(testDataDir)
     inputs.dir(rootDir.resolve("dist"))
     inputs.dir(rootDir.resolve("compiler/testData"))
-    inputs.dir(rootDir.resolve("libraries/stdlib/api/js"))
-    inputs.dir(rootDir.resolve("libraries/stdlib/api/js-v1"))
 
     outputs.dir("$buildDir/out")
     outputs.dir("$buildDir/out-min")
@@ -409,10 +407,22 @@ projectTest("quickTest", parallel = true, jUnitMode = JUnitMode.JUnit5, maxHeapS
     useJUnitPlatform()
 }
 
-projectTest("jsStdlibApiTest", parallel = true, jUnitMode = JUnitMode.JUnit5, maxHeapSizeMb = 4096) {
-    setUpJsBoxTests(jsEnabled = true, jsIrEnabled = true, firEnabled = true)
+projectTest("jsStdlibApiTest", parallel = true, maxHeapSizeMb = 4096) {
+    setupV8()
+    setupNodeJs()
+    dependsOn(npmInstall)
+
+    include("org/jetbrains/kotlin/js/testOld/api/*")
+    inputs.dir(rootDir.resolve("libraries/stdlib/api/js"))
+    inputs.dir(rootDir.resolve("libraries/stdlib/api/js-v1"))
+
+    dependsOn(":kotlin-stdlib-js-ir:compileKotlinJs")
+    systemProperty("kotlin.js.full.stdlib.path", "libraries/stdlib/js-ir/build/classes/kotlin/js/main")
+    inputs.dir(rootDir.resolve("libraries/stdlib/js-ir/build/classes/kotlin/js/main"))
+
     setTestNameIncludePatterns(listOf("org.jetbrains.kotlin.js.testOld.api.ApiTest.*"))
-    useJUnitPlatform()
+
+    setUpBoxTests()
 }
 
 testsJar {}

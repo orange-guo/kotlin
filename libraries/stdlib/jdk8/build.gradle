@@ -115,8 +115,8 @@ tasks.named("compileModuleTestJava", JavaCompile) {
     targetCompatibility = JavaVersion.VERSION_1_9
 }
 
-compileModuleTestKotlin {
-    kotlinJavaToolchain.toolchain.use(JvmToolchain.getToolchainLauncherFor(project, JdkMajorVersion.JDK_9_0))
+compileModuleTestKotlin { kotlinCompile ->
+    JvmToolchain.configureTaskToolchain(kotlinCompile, JdkMajorVersion.JDK_9_0)
 }
 
 check.dependsOn(tasks.register("moduleInfoTest", Test) {test ->

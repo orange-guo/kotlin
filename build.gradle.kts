@@ -566,6 +566,7 @@ tasks {
         )).forEach {
             dependsOn("$it:check")
         }
+        dependsOn(":js:js.tests:jsStdlibApiTest")
     }
 
     register("gradlePluginTest") {
