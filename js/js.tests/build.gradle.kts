@@ -412,6 +412,9 @@ projectTest("jsStdlibApiTest", parallel = true, maxHeapSizeMb = 4096) {
     setupNodeJs()
     dependsOn(npmInstall)
 
+    dependsOn(":dist")
+    inputs.dir(rootDir.resolve("dist"))
+
     include("org/jetbrains/kotlin/js/testOld/api/*")
     inputs.dir(rootDir.resolve("libraries/stdlib/api/js"))
     inputs.dir(rootDir.resolve("libraries/stdlib/api/js-v1"))
