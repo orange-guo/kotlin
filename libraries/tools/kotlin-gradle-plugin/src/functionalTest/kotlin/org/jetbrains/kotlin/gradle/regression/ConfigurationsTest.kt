@@ -225,22 +225,24 @@ class ConfigurationsTest : MultiplatformExtensionTest() {
     class TestDisambiguationAttributePropagation {
         private val disambiguationAttribute = org.gradle.api.attributes.Attribute.of("disambiguationAttribute", String::class.java)
 
-        private val mppProject get() = buildProjectWithMPP {
-            kotlin {
-                jvm("plainJvm") {
-                    attributes { attribute(disambiguationAttribute, "plainJvm") }
-                }
+        private val mppProject
+            get() = buildProjectWithMPP {
+                kotlin {
+                    jvm("plainJvm") {
+                        attributes { attribute(disambiguationAttribute, "plainJvm") }
+                    }
 
-                jvm("jvmWithJava") {
-                    withJava()
-                    attributes { attribute(disambiguationAttribute, "jvmWithJava") }
+                    jvm("jvmWithJava") {
+                        withJava()
+                        attributes { attribute(disambiguationAttribute, "jvmWithJava") }
+                    }
                 }
             }
-        }
 
-        private val javaProject get() = buildProject {
-            project.plugins.apply("java-library")
-        }
+        private val javaProject
+            get() = buildProject {
+                project.plugins.apply("java-library")
+            }
 
         //NB: There is no "api" configuration registered by Java Plugin
         private val javaConfigurations = listOf(
