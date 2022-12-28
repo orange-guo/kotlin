@@ -10,5 +10,8 @@ package org.jetbrains.kotlin.library.metadata
  * Should match the comment in `KlibMetadataProtoBuf.proto`.
  */
 object KlibMetadataHeaderFlags {
-    const val PRE_RELEASE = 0x1
+    // TODO: comment.
+    const val PRE_RELEASE_OLD = 0x1
+
+    const val PRE_RELEASE = 0x2
 }
