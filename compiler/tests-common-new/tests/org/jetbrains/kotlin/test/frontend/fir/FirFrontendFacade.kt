@@ -65,9 +65,7 @@ open class FirFrontendFacade(
 
     override val directiveContainers: List<DirectivesContainer>
         get() = listOf(FirDiagnosticsDirectives)
-
-    open fun registerExtraComponents(session: FirSession) {}
-
+    
     override fun analyze(module: TestModule): FirOutputArtifact {
         val moduleInfoProvider = testServices.firModuleInfoProvider
         val compilerConfigurationProvider = testServices.compilerConfigurationProvider
@@ -110,6 +108,10 @@ open class FirFrontendFacade(
         }
 
         val projectEnvironment: VfsBasedProjectEnvironment?
+
+        fun registerExtraComponents(session: FirSession) {
+            testServices.firSessionComponentRegistrar?.registerAdditionalComponent(session)
+        }
 
         when {
             isCommonOrJvm -> {
@@ -286,6 +288,12 @@ private fun buildDependencyList(
     sourceFriendsDependencies(moduleInfoProvider.getDependentFriendSourceModules(module))
     sourceDependsOnDependencies(moduleInfoProvider.getDependentDependsOnSourceModules(module))
 }
+
+abstract class FirSessionComponentRegistrar : TestService {
+    abstract fun registerAdditionalComponent(session: FirSession)
+}
+
+val TestServices.firSessionComponentRegistrar: FirSessionComponentRegistrar? by TestServices.nullableTestServiceAccessor()
 
 fun TargetPlatform.getAnalyzerServices(): PlatformDependentAnalyzerServices {
     return when {
