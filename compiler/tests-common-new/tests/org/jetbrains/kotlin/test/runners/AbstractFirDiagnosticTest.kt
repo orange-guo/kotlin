@@ -37,17 +37,7 @@ import org.jetbrains.kotlin.test.services.sourceProviders.CoroutineHelpersSource
 abstract class AbstractFirDiagnosticTest : AbstractKotlinCompilerTest() {
     override fun TestConfigurationBuilder.configuration() {
         baseFirDiagnosticTestConfiguration()
-        useAdditionalService { FirLazyDeclarationResolverWithPhaseCheckingSessionComponentRegistrar() }
-
-        useAfterAnalysisCheckers(
-            ::DisableLazyResolveChecksAfterAnalysisChecker,
-        )
-
-        firHandlersStep {
-            useHandlers(
-                ::FirResolveContractViolationErrorHandler,
-            )
-        }
+        enableLazyResolvePhaseChecking()
     }
 }
 
@@ -179,6 +169,20 @@ class FirLazyDeclarationResolverWithPhaseCheckingSessionComponentRegistrar : Fir
     @OptIn(org.jetbrains.kotlin.fir.SessionConfiguration::class)
     override fun registerAdditionalComponent(session: FirSession) {
         session.register(FirLazyDeclarationResolver::class, lazyResolver)
+    }
+}
+
+fun TestConfigurationBuilder.enableLazyResolvePhaseChecking() {
+    useAdditionalService { FirLazyDeclarationResolverWithPhaseCheckingSessionComponentRegistrar() }
+
+    useAfterAnalysisCheckers(
+        ::DisableLazyResolveChecksAfterAnalysisChecker,
+    )
+
+    firHandlersStep {
+        useHandlers(
+            ::FirResolveContractViolationErrorHandler,
+        )
     }
 }
 
