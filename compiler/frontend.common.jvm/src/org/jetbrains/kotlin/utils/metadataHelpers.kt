@@ -25,7 +25,7 @@ private val LANGUAGE_TO_METADATA_VERSION = EnumMap<LanguageVersion, JvmMetadataV
 
     check(size == LanguageVersion.values().size) {
         "Please add mappings from the missing LanguageVersion instances to the corresponding JvmMetadataVersion " +
-                "in `GenerationState.LANGUAGE_TO_METADATA_VERSION`"
+                "in `LANGUAGE_TO_METADATA_VERSION`"
     }
 }
 
