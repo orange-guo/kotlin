@@ -683,7 +683,7 @@ class CompileKotlinAgainstCustomBinariesTest : AbstractKotlinCompilerIntegration
         // TODO: looks like now it's not possible to compile library with version 2.0 to be able to compile against it without additional flags
         // Should we delete this test?
         val library = compileLibrary("library", additionalOptions = listOf("-language-version", "2.0", "-Xabi-stability=stable"))
-        compileKotlin("source.kt", tmpdir, listOf(library))
+        compileKotlin("source.kt", tmpdir, listOf(library), additionalOptions = listOf("-Xskip-prerelease-check"))
     }
 
     fun testOldJvmAgainstFirWithAllowUnstableDependencies() {
