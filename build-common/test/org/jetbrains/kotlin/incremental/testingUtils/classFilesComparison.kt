@@ -153,7 +153,7 @@ private fun classFileToString(classFile: File): String {
     ClassReader(classFile.readBytes()).accept(traceVisitor, 0)
 
     val classHeader = LocalFileKotlinClass.create(classFile, JvmMetadataVersion.INSTANCE)?.classHeader ?: return ""
-    if (!classHeader.metadataVersion.isCompatibleWithDeployMetadataVersion()) {
+    if (!classHeader.metadataVersion.isCompatibleWithCurrentCompilerVersion()) {
         error("Incompatible class ($classHeader): $classFile")
     }
 

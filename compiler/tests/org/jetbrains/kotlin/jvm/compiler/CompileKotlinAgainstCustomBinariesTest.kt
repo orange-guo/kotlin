@@ -377,7 +377,7 @@ class CompileKotlinAgainstCustomBinariesTest : AbstractKotlinCompilerIntegration
     }
 
     fun testStrictMetadataVersionSemanticsOldVersion() {
-        val nextMetadataVersion = JvmMetadataVersion.INSTANCE.inc()
+        val nextMetadataVersion = JvmMetadataVersion.INSTANCE.next()
         val library = compileLibrary(
             "library", additionalOptions = listOf("-Xgenerate-strict-metadata-version", "-Xmetadata-version=$nextMetadataVersion")
         )

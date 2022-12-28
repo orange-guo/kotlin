@@ -60,7 +60,7 @@ open class KotlinClsStubBuilder : ClsStubBuilder() {
         val classId = kotlinClass.classId
         val packageFqName = header.packageName?.let { FqName(it) } ?: classId.packageFqName
 
-        if (!header.metadataVersion.isCompatibleWithDeployMetadataVersion()) {
+        if (!header.metadataVersion.isCompatibleWithCurrentCompilerVersion()) {
             return createIncompatibleAbiVersionFileStub()
         }
 

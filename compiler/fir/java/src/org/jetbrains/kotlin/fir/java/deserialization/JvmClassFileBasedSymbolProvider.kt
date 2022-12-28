@@ -104,7 +104,7 @@ class JvmClassFileBasedSymbolProvider(
             val expectedMetadataVersion = session.languageVersionSettings.languageVersion.toMetadataVersion()
             if (classHeader.metadataVersion.isCompatible(expectedMetadataVersion)) return null
             return IncompatibleVersionErrorData(
-                classHeader.metadataVersion, maxOf(expectedMetadataVersion, JvmMetadataVersion.INSTANCE.inc()), location, classId
+                classHeader.metadataVersion, maxOf(expectedMetadataVersion, JvmMetadataVersion.INSTANCE.next()), location, classId
             )
         }
 
