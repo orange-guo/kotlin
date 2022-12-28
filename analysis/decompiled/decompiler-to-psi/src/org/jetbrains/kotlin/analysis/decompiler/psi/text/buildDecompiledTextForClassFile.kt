@@ -49,6 +49,9 @@ fun buildDecompiledTextForClassFile(
             }
             buildText(partMembers)
         }
+        KotlinClassHeader.Kind.MULTIFILE_CLASS_PART -> {
+            buildText(resolver.resolveDeclarationsInFacade(classId.asSingleFqName()))
+        }
         else ->
             throw UnsupportedOperationException("Unknown header kind: $classHeader, class $classId")
     }
