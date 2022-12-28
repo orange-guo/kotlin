@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.ir.backend.js.utils
 
+import org.jetbrains.kotlin.backend.common.lower.parents
 import org.jetbrains.kotlin.descriptors.isClass
 import org.jetbrains.kotlin.descriptors.isInterface
 import org.jetbrains.kotlin.ir.UNDEFINED_OFFSET
@@ -16,6 +17,8 @@ import org.jetbrains.kotlin.ir.expressions.IrReturn
 import org.jetbrains.kotlin.ir.expressions.impl.IrConstImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetFieldImpl
 import org.jetbrains.kotlin.ir.symbols.IrReturnableBlockSymbol
+import org.jetbrains.kotlin.ir.util.isEffectivelyExternal
+import org.jetbrains.kotlin.ir.util.isEnumClass
 import org.jetbrains.kotlin.ir.util.parentClassOrNull
 import org.jetbrains.kotlin.name.FqName
 
@@ -45,6 +48,12 @@ fun IrDeclarationWithName.getFqNameWithJsNameWhenAvailable(shouldIncludePackage:
 private fun getKotlinOrJsQualifier(parent: IrPackageFragment, shouldIncludePackage: Boolean): FqName? {
     return (parent as? IrFile)?.getJsQualifier()?.let { FqName(it) } ?: parent.fqName.takeIf { shouldIncludePackage }
 }
+
+val IrClass.isInstantiableEnum: Boolean
+    get() = isEnumClass && !isExpect && !isEffectivelyExternal()
+
+val IrDeclaration.parentEnumClassOrNull: IrClass?
+    get() = parents.filterIsInstance<IrClass>().firstOrNull { it.isInstantiableEnum }
 
 // TODO: the code is written to pass Repl tests, so we should understand. why in Repl tests we don't have backingField
 fun JsIrBackendContext.getVoid(): IrExpression =

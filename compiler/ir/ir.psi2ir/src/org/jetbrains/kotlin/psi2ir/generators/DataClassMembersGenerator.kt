@@ -80,7 +80,6 @@ class DataClassMembersGenerator(
             irClass,
             ktClassOrObject.fqName,
             origin,
-            context.moduleDescriptor.platform,
             generateBodies = generateBodies
         ) {
             override fun declareSimpleFunction(startOffset: Int, endOffset: Int, functionDescriptor: FunctionDescriptor): IrFunction =

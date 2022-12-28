@@ -59,7 +59,6 @@ open class LoweringDataClassMemberGenerator(
         irClass,
         irClass.kotlinFqName,
         origin,
-        backendContext.ir.irModule.descriptor.platform,
         forbidDirectFieldAccess,
     ) {
 
