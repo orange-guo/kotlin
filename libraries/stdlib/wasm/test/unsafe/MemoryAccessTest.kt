@@ -5,6 +5,14 @@ import kotlin.test.*
 
 @OptIn(UnsafeWasmMemoryApi::class)
 class MemoryAccessTestTest {
+    @Test
+    fun testPointer() {
+        val p: Pointer = 19.toPointer()
+        assertEquals(p.toInt(), 19)
+        assertEquals((p + 10).toInt(), 29)
+        assertEquals((p - 10).toInt(), 9)
+    }
+
     fun <T> testLoadStore(values: List<T>, typeSize: Int, store: (Pointer, T) -> Unit, load: (Pointer) -> T) {
         withScopedMemoryAllocator { a ->
             // Memory layout: [Long1][T][Long2]
