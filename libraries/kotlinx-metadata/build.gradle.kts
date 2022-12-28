@@ -15,3 +15,7 @@ dependencies {
     compileOnly(project(":core:metadata"))
     compileOnly(protobufLite())
 }
+
+tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>>().configureEach {
+    kotlinOptions.freeCompilerArgs += "-Xskip-prerelease-check"
+}
