@@ -14,12 +14,9 @@ import org.jetbrains.kotlin.metadata.deserialization.BinaryVersion
 class JvmMetadataVersion(versionArray: IntArray, val isStrictSemantics: Boolean) : BinaryVersion(*versionArray) {
     constructor(vararg numbers: Int) : this(numbers, isStrictSemantics = false)
 
-    fun isCompatibleWithCurrentCompilerVersion(): Boolean {
+    override fun isCompatibleWithCurrentCompilerVersion(): Boolean {
         return isCompatibleInternal(INSTANCE_NEXT)
     }
-
-    @Deprecated("Please use isCompatibleWithCurrentCompilerVersion()", ReplaceWith("isCompatibleWithCurrentCompilerVersion()"))
-    fun isCompatible(): Boolean = isCompatibleInternal(INSTANCE_NEXT)
 
     fun isCompatible(metadataVersionFromLanguageVersion: JvmMetadataVersion): Boolean {
         // Special case for bootstrap: 1.8 can read 2.0
