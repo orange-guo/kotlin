@@ -45,7 +45,7 @@ class ClsKotlinBinaryClassCache {
         getKotlinBinaryFromCache(file)?.let {
             return it.isKotlinBinary
         }
-        return kotlinJvmBinaryClass(file, fileContent) != null
+        return kotlinJvmBinaryClass(file, fileContent, JvmMetadataVersion.INSTANCE) != null
     }
 
     fun getKotlinBinaryClass(file: VirtualFile, fileContent: ByteArray? = null): KotlinJvmBinaryClass? {
@@ -54,17 +54,18 @@ class ClsKotlinBinaryClassCache {
             return null
         }
 
-        return kotlinJvmBinaryClass(file, fileContent)
+        return kotlinJvmBinaryClass(file, fileContent, cached?.headerData?.metadataVersion ?: JvmMetadataVersion.INSTANCE)
     }
 
     private fun kotlinJvmBinaryClass(
         file: VirtualFile,
-        fileContent: ByteArray?
+        fileContent: ByteArray?,
+        jvmMetadataVersion: JvmMetadataVersion
     ): KotlinJvmBinaryClass? {
         if (ModelBranch.getFileBranch(file) != null) return null
         val classFileContent = try {
             KotlinBinaryClassCache.getKotlinBinaryClassOrClassFileContent(
-                file, jvmMetadataVersion = JvmMetadataVersion.INSTANCE, fileContent = fileContent
+                file, jvmMetadataVersion, fileContent = fileContent
             )
         } catch (e: Exception) {
             if (e is ControlFlowException) throw e
@@ -96,7 +97,7 @@ class ClsKotlinBinaryClassCache {
             }
         }
 
-        val kotlinBinaryClass = kotlinJvmBinaryClass(file, fileContent) ?: return null
+        val kotlinBinaryClass = kotlinJvmBinaryClass(file, fileContent, JvmMetadataVersion.INSTANCE) ?: return null
         return createHeaderInfo(kotlinBinaryClass)
     }
 

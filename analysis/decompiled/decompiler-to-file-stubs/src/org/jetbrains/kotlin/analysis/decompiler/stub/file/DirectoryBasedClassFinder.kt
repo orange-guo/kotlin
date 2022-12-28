@@ -28,7 +28,7 @@ class DirectoryBasedClassFinder(
         }
         val targetName = classId.relativeClassName.pathSegments().joinToString("$", postfix = ".class")
         val virtualFile = packageDirectory.findChild(targetName)
-        if (virtualFile != null && isKotlinWithCompatibleAbiVersion(virtualFile)) {
+        if (virtualFile != null && isKotlinWithCompatibleAbiVersion(virtualFile, jvmMetadataVersion)) {
             return ClsKotlinBinaryClassCache.getInstance().getKotlinBinaryClass(virtualFile)?.let(::KotlinClass)
         }
         return null
@@ -47,12 +47,12 @@ class DirectoryBasedClassFinder(
 /**
  * Checks if this file is a compiled Kotlin class file ABI-compatible with the current plugin
  */
-private fun isKotlinWithCompatibleAbiVersion(file: VirtualFile): Boolean {
+private fun isKotlinWithCompatibleAbiVersion(file: VirtualFile, jvmMetadataVersion: JvmMetadataVersion): Boolean {
     val clsKotlinBinaryClassCache = ClsKotlinBinaryClassCache.getInstance()
     if (!clsKotlinBinaryClassCache.isKotlinJvmCompiledFile(file)) return false
 
     val kotlinClass = clsKotlinBinaryClassCache.getKotlinBinaryClassHeaderData(file)
-    return kotlinClass != null && kotlinClass.metadataVersion.isCompatibleWithCurrentCompilerVersion()
+    return kotlinClass != null && kotlinClass.metadataVersion.isCompatible(jvmMetadataVersion)
 }
 
 
