@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.serialization.deserialization.DeserializationComponents
 import org.jetbrains.kotlin.serialization.deserialization.DeserializedPackageFragment
+import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedContainerSource
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedPackageMemberScope
 import org.jetbrains.kotlin.serialization.deserialization.getClassId
 import org.jetbrains.kotlin.serialization.deserialization.getName
@@ -49,6 +50,11 @@ open class KlibMetadataDeserializedPackageFragment(
             packageAccessHandler?.markNeededForLink(library, fqName.asString())
             return protoForNames
         }
+
+    override val deserializedContainerSource: DeserializedContainerSource? by lazy {
+        val header = (packageAccessHandler ?: SimplePackageAccessHandler).loadModuleHeader(library) // FIXME: suboptimal.
+        KlibDeserializedContainerSource(header, components.configuration, fqName)
+    }
 }
 
 class BuiltInKlibMetadataDeserializedPackageFragment(
@@ -71,7 +77,10 @@ class KlibMetadataCachedPackageFragment(
     module: ModuleDescriptor,
     override val protoForNames: ProtoBuf.PackageFragment = parsePackageFragment(byteArray),
     fqName: FqName = FqName(protoForNames.getExtension(KlibMetadataProtoBuf.fqName))
-) :  KlibMetadataPackageFragment(fqName, storageManager, module)
+) : KlibMetadataPackageFragment(fqName, storageManager, module) {
+    override val deserializedContainerSource: DeserializedContainerSource?
+        get() = null // FIXME
+}
 
 abstract class KlibMetadataPackageFragment(
     fqName: FqName,
@@ -96,8 +105,10 @@ abstract class KlibMetadataPackageFragment(
         NameResolverImpl(protoForNames.strings, protoForNames.qualifiedNames)
     }
 
+    protected abstract val deserializedContainerSource: DeserializedContainerSource?
+
     override val classDataFinder by lazy {
-        KlibMetadataClassDataFinder(protoForNames, nameResolver)
+        KlibMetadataClassDataFinder(protoForNames, nameResolver, deserializedContainerSource)
     }
 
     private val _memberScope by lazy {
@@ -107,7 +118,7 @@ abstract class KlibMetadataPackageFragment(
             proto.getPackage(),
             nameResolver,
             KlibMetadataVersion.INSTANCE,
-            /* containerSource = */ null,
+            /* containerSource = */ deserializedContainerSource,
             components,
             "scope for $this"
         ) { loadClassNames() }
