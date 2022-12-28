@@ -625,6 +625,11 @@ class CompileKotlinAgainstCustomBinariesTest : AbstractKotlinCompilerIntegration
         }
     }
 
+    fun testFirAgainstFirUsingFlag() {
+        val library = compileLibrary("library", additionalOptions = listOf("-language-version", "2.0"))
+        compileKotlin("source.kt", tmpdir, listOf(library), additionalOptions = listOf("-Xuse-k2"))
+    }
+
     fun testFirAgainstFir() {
         val library = compileLibrary("library", additionalOptions = listOf("-language-version", "2.0"))
         compileKotlin("source.kt", tmpdir, listOf(library), additionalOptions = listOf("-language-version", "2.0"))
