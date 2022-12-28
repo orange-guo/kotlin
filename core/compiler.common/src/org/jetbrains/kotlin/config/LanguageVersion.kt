@@ -83,6 +83,3 @@ interface LanguageOrApiVersion : DescriptionAware {
             else -> versionString
         }
 }
-
-fun LanguageVersion.isStableOrReadyForPreview(): Boolean =
-    isStable

@@ -407,6 +407,9 @@ enum class LanguageFeature(
     }
 }
 
+fun LanguageVersion.isStableOrReadyForPreview(): Boolean =
+    isStable
+
 fun LanguageVersion.toKotlinVersion() = KotlinVersion(major, minor)
 
 interface LanguageVersionSettings {
