@@ -18,7 +18,7 @@ class JvmMetadataVersion(versionArray: IntArray, val isStrictSemantics: Boolean)
         return isCompatibleInternal(INSTANCE_NEXT)
     }
 
-    @Deprecated("Please use isCompatibleWithDeployMetadataVersion()", ReplaceWith("isCompatibleWithDeployMetadataVersion()"))
+    @Deprecated("Please use isCompatibleWithCurrentCompilerVersion()", ReplaceWith("isCompatibleWithCurrentCompilerVersion()"))
     fun isCompatible(): Boolean = isCompatibleInternal(INSTANCE_NEXT)
 
     fun isCompatible(metadataVersionFromLanguageVersion: JvmMetadataVersion): Boolean {
