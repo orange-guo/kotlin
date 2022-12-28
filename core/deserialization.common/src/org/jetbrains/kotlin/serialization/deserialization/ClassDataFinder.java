@@ -18,7 +18,6 @@ package org.jetbrains.kotlin.serialization.deserialization;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.config.LanguageVersion;
 import org.jetbrains.kotlin.name.ClassId;
 
 public interface ClassDataFinder {
