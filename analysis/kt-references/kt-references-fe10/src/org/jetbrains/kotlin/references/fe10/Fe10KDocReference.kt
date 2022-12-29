@@ -16,7 +16,7 @@ import org.jetbrains.kotlin.resolve.BindingContext
 class Fe10KDocReference(element: KDocName) : KDocReference(element), KtFe10Reference {
 
     override fun getTargetDescriptors(context: BindingContext): Collection<DeclarationDescriptor> =
-        KtFe10ReferenceResolutionHelper.getInstance().resolveKDocLink(element)
+        KtFe10ReferenceResolutionHelper.getInstance()?.resolveKDocLink(element) ?: emptySet()
 
     override fun isReferenceToImportAlias(alias: KtImportAlias): Boolean {
         return super<KtFe10Reference>.isReferenceToImportAlias(alias)

@@ -26,7 +26,7 @@ interface KtFe10Reference : KtReference {
     fun isReferenceToImportAlias(alias: KtImportAlias): Boolean {
         val importDirective = alias.importDirective ?: return false
         val importedFqName = importDirective.importedFqName ?: return false
-        val helper = KtFe10ReferenceResolutionHelper.getInstance()
+        val helper = KtFe10ReferenceResolutionHelper.getInstance() ?: return false
         val importedDescriptors = helper.resolveImportReference(importDirective.containingKtFile, importedFqName)
         val importableTargets = unwrappedTargets.mapNotNull {
             when {

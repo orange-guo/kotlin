@@ -41,7 +41,10 @@ object DescriptorToSourceUtilsIde {
             // therefore we put both source declaration and decompiled declaration to stream, and afterwards we filter it in getAllDeclarations
             sequenceOfLazyValues(
                 { DescriptorToSourceUtils.getSourceFromDescriptor(effectiveReferenced) },
-                { KtFe10ReferenceResolutionHelper.getInstance().findDecompiledDeclaration(project, effectiveReferenced, builtInsSearchScope) }
+                {
+                    KtFe10ReferenceResolutionHelper.getInstance()
+                        ?.findDecompiledDeclaration(project, effectiveReferenced, builtInsSearchScope)
+                }
             )
         }.filterNotNull()
     }

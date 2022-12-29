@@ -38,6 +38,7 @@ interface KtFe10ReferenceResolutionHelper {
     fun resolveKDocLink(element: KDocName): Collection<DeclarationDescriptor>
 
     companion object {
-        fun getInstance() = ApplicationManager.getApplication().getService(KtFe10ReferenceResolutionHelper::class.java)
+        fun getInstance(): KtFe10ReferenceResolutionHelper? =
+            ApplicationManager.getApplication().getService(KtFe10ReferenceResolutionHelper::class.java)
     }
 }

@@ -24,7 +24,7 @@ object KtFe10PolyVariantResolver : ResolveCache.PolyVariantResolver<KtReference>
 
     private fun resolveToPsiElements(ref: KtFe10Reference): Collection<PsiElement> {
         require(ref is AbstractKtReference<*>) { "reference should be AbstractKtReference, but was ${ref::class}" }
-        val bindingContext = KtFe10ReferenceResolutionHelper.getInstance().partialAnalyze(ref.expression)
+        val bindingContext = KtFe10ReferenceResolutionHelper.getInstance()?.partialAnalyze(ref.expression) ?: return emptySet()
         if (bindingContext == BindingContext.EMPTY) return emptySet()
         return resolveToPsiElements(ref, bindingContext, ref.getTargetDescriptors(bindingContext))
     }

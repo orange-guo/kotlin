@@ -24,7 +24,8 @@ class KtFe10SimpleNameReference(expression: KtSimpleNameExpression) : KtSimpleNa
 
     override fun canBeReferenceTo(candidateTarget: PsiElement): Boolean {
         return element.containingFile == candidateTarget.containingFile ||
-                KtFe10ReferenceResolutionHelper.getInstance().isInProjectOrLibSource(element, includeScriptsOutsideSourceRoots = true)
+                KtFe10ReferenceResolutionHelper.getInstance()
+                    ?.isInProjectOrLibSource(element, includeScriptsOutsideSourceRoots = true) == true
     }
 
     override fun isReferenceToImportAlias(alias: KtImportAlias): Boolean {
@@ -89,7 +90,7 @@ class KtFe10SimpleNameReference(expression: KtSimpleNameExpression) : KtSimpleNa
         val file = element.containingKtFile
         val importDirective = file.findImportByAlias(name) ?: return null
         val fqName = importDirective.importedFqName ?: return null
-        val helper = KtFe10ReferenceResolutionHelper.getInstance()
+        val helper = KtFe10ReferenceResolutionHelper.getInstance() ?: return null
         val importedDescriptors = helper.resolveImportReference(file, fqName).map { it.unwrap() }
         if (getTargetDescriptors(helper.partialAnalyze(element)).any {
                 it.unwrap().getImportableDescriptor() in importedDescriptors
